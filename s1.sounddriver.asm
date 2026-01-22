@@ -26,6 +26,7 @@ dpcmLoopCounter function sampleRate, pcmLoopCounterBase(sampleRate,301/2) ; 301 
 Go_SoundPriorities:	dc.l SoundPriorities
 ; Go_SoundD0:
 Go_SpecSoundIndex:	dc.l SpecSoundIndex
+Go_ExtSoundIndex:	dc.l ExtSoundIndex
 Go_MusicIndex:		dc.l MusicIndex
 Go_SoundIndex:		dc.l SoundIndex
 ; off_719A0:
@@ -194,6 +195,10 @@ UpdateMusic:
 		jsr	PlaySoundID(pc)
 ; loc_71BC8:
 .nonewsound:
+		tst.b	(v_spindash_sfx_timer).w	; is Spin Dash rev timer active?
+		beq.s	.no_spindash			; if not, branch
+		subq.b	#1,(v_spindash_sfx_timer).w	; decay Spin Dash rev timer
+.no_spindash:
 		lea	SMPS_RAM.v_music_dac_track(a6),a5
 		tst.b	SMPS_Track.PlaybackControl(a5)	; Is DAC track playing?
 		bpl.s	.dacdone			; Branch if not
@@ -707,6 +712,8 @@ PlaySoundID:
 	if FixBugs
 		cmpi.b	#spec__Last,d7		; Is this special sfx ($D0-$D0)?
 		bls.w	Sound_PlaySpecial	; Branch if yes
+		cmpi.b	#ext__Last,d7		; Is this extra sfx ($D1-$DF)?
+		bls.w	Sound_PlayMoreSFX	; Branch if yes
 		cmpi.b	#flg__First,d7		; Is this after special sfx but before $E0?
 		blo.w	.locret			; Return if yes
 	else
@@ -965,6 +972,41 @@ PSGInitBytes:	dc.b $80, $A0, $C0	; Specifically, these configure writes to the P
 		even
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
+; Play extra sound effect
+; ---------------------------------------------------------------------------
+; Sound_D1toDF:
+Sound_PlayMoreSFX:
+		tst.b	SMPS_RAM.f_1up_playing(a6)	; Is 1-up playing?
+		bne.w	Sound_PlaySFX.clear_sndprio	; Exit if it is
+		tst.b	SMPS_RAM.v_fadeout_counter(a6)	; Is music being faded out?
+		bne.w	Sound_PlaySFX.clear_sndprio	; Exit if it is
+		tst.b	SMPS_RAM.f_fadein_flag(a6)	; Is music being faded in?
+		bne.w	Sound_PlaySFX.clear_sndprio	; Exit if it is
+
+		clr.b	(v_spindash_sfx_flag).w		; reset Spin Dash rev flag
+		cmp.b	#sfx_SpinDash,d7		; is this the Spin Dash sound?
+		bne.s	.sfx_notSDash			; if not, branch
+		move.w	d0,-(sp)
+		move.b	(v_spindash_sfx_pitch).w,d0	; store extra frequency
+		tst.b	(v_spindash_sfx_timer).w	; is the Spin Dash timer active?
+		bne.s	.sfx_timeractive		; if it is, branch
+		move.b	#-1,d0				; otherwise, reset frequency (becomes 0 on next line)
+.sfx_timeractive:
+		addq.b	#1,d0
+		cmp.b	#$C,d0				; has the limit been reached?
+		bcc.s	.sfx_limitreached		; if it has, branch
+		move.b	d0,(v_spindash_sfx_pitch).w	; otherwise, set new frequency
+.sfx_limitreached:
+		move.b	#1,(v_spindash_sfx_flag).w	; set Spin Dash rev flag
+		move.b	#60,(v_spindash_sfx_timer).w	; set Spin Dash rev reset timer
+		move.w	(sp)+,d0
+		
+.sfx_notSDash:
+		movea.l	(Go_ExtSoundIndex).l,a0		; Use Extended Sound Index
+		subi.b	#ext__First,d7			; Make it 0-based
+		bra.w	Sound_PlaySFX.sfx_common	; Remaining code is identical to default sfx logic
+; ===========================================================================
+; ---------------------------------------------------------------------------
 ; Play normal sound effect
 ; ---------------------------------------------------------------------------
 ; Sound_A0toCF:
@@ -975,6 +1017,7 @@ Sound_PlaySFX:
 		bne.w	.clear_sndprio			; Exit if it is
 		tst.b	SMPS_RAM.f_fadein_flag(a6)	; Is music being faded in?
 		bne.w	.clear_sndprio			; Exit if it is
+		clr.b	(v_spindash_sfx_flag).w		; clear Spin Dash sfx rev flag
 		cmpi.b	#sfx_Ring,d7			; is ring sound effect played?
 		bne.s	.sfx_notRing			; if not, branch
 		tst.b	SMPS_RAM.v_ring_speaker(a6)	; Is the ring sound playing on right speaker?
@@ -994,6 +1037,8 @@ Sound_PlaySFX:
 .sfx_notPush:
 		movea.l	(Go_SoundIndex).l,a0
 		subi.b	#sfx__First,d7		; Make it 0-based
+; SoundEffects_Common:
+.sfx_common:
 		lsl.w	#2,d7			; Convert sfx ID into index
 		movea.l	(a0,d7.w),a3		; SFX data pointer
 		movea.l	a3,a1
@@ -1039,7 +1084,8 @@ Sound_PlaySFX:
 		move.b	d0,(psg_input).l
 ; loc_7226E:
 .sfxoverridedone:
-		movea.l	SFX_SFXChannelRAM(pc,d3.w),a5
+		lea	SFX_SFXChannelRAM(pc),a5
+		movea.l	(a5,d3.w),a5
 		movea.l	a5,a2
 		moveq	#(SMPS_Track.len/4)-1,d0	; $30 bytes
 ; loc_72276:
@@ -1054,6 +1100,13 @@ Sound_PlaySFX:
 		add.l	a3,d0					; Relative pointer
 		move.l	d0,SMPS_Track.DataPointer(a5)		; Store track pointer
 		move.w	(a1)+,SMPS_Track.Transpose(a5)		; load FM/PSG channel modifier
+		tst.b	(v_spindash_sfx_flag).w			; is the Spin Dash sound playing?
+		beq.s	.no_spindash				; if not, branch
+		move.w	d0,-(sp)
+		move.b	(v_spindash_sfx_pitch).w,d0
+		add.b	d0,8(a5)
+		move.w	(sp)+,d0
+.no_spindash:
 		move.b	#1,SMPS_Track.DurationTimeout(a5)	; Set duration of first "note"
 		move.b	d6,SMPS_Track.StackPointer(a5)		; set "gosub" (coord flag $F8) stack init value
 		tst.b	d4					; Is this a PSG channel?
@@ -2747,6 +2800,13 @@ ptr_sndD0:	dc.l SoundD0
 ptr_specend
 
 ; ---------------------------------------------------------------------------
+; Extra sound effect pointers
+; ---------------------------------------------------------------------------
+ExtSoundIndex:
+ptr_sndD1:	dc.l SoundD1
+ptr_extend
+
+; ---------------------------------------------------------------------------
 ; Sound effect data
 ; ---------------------------------------------------------------------------
 SoundA0:	include "sound/sfx/SndA0 - Jump.asm"
@@ -2850,6 +2910,12 @@ SoundCF:	include "sound/sfx/SndCF - Signpost.asm"
 ; Special sound effect data
 ; ---------------------------------------------------------------------------
 SoundD0:	include "sound/sfx/SndD0 - Waterfall.asm"
+		even
+
+; ---------------------------------------------------------------------------
+; Extended sound effect data
+; ---------------------------------------------------------------------------
+SoundD1:	include "sound/sfx/SndD1 - Spin Dash Rev.asm"
 		even
 
 ; ---------------------------------------------------------------------------

@@ -122,6 +122,15 @@ LevSz_SonicPos:
 
 SetScreen:
 LevSz_SkipStartPos:
+		; Initialize tracking buffer to avoid camera glitch on early Spin Dash
+		clr.w	(v_trackpos).w		; reset Sonic's position tracking index
+		lea	(v_tracksonic).w,a2	; load the tracking array into a2
+		moveq	#64-1,d2		; begin a 64-step loop
+	.looppoint:
+		move.w	d1,(a2)+		; fill in X
+		move.w	d0,(a2)+		; fill in Y
+		dbf	d2,.looppoint		; loop
+
 		subi.w	#160,d1		; is Sonic more than 160px from left edge?
 		bcc.s	SetScr_WithinLeft ; if yes, branch
 		moveq	#0,d1

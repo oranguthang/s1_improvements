@@ -15,6 +15,8 @@ PSG_Sample_Rate: equ Z80_Clock/16
 ; VDP addressses
 vdp_data_port:		equ $C00000
 vdp_control_port:	equ $C00004
+VDP_data_port:		equ vdp_data_port
+VDP_control_port:	equ vdp_control_port
 vdp_counter:		equ $C00008
 
 psg_input:		equ $C00011
@@ -132,6 +134,8 @@ flashtime:	equ $30	; time between flashes after getting hit
 invtime:	equ $32	; time left for invincibility
 shoetime:	equ $34	; time left for speed shoes
 stick_to_convex:equ objoff_38
+spindash_flag:	equ $39	; Spin Dash flag
+spindash_count:	equ $3A	; Spin Dash rev counter
 standonobject:	equ $3D	; object Sonic stands on
 
 ; Miscellaneous object scratch-RAM
@@ -250,6 +254,11 @@ spec__First:	equ $D0
 sfx_Waterfall:	equ ((ptr_sndD0-SpecSoundIndex)/4)+spec__First
 spec__Last:	equ ((ptr_specend-SpecSoundIndex-4)/4)+spec__First
 
+; Extra sound effects
+ext__First:	equ $D1
+sfx_SpinDash:	equ ((ptr_sndD1-ExtSoundIndex)/4)+ext__First
+ext__Last:	equ ((ptr_extend-ExtSoundIndex-4)/4)+ext__First
+
 flg__First:	equ $E0
 bgm_Fade:	equ ((ptr_flgE0-Sound_ExIndex)/4)+flg__First
 sfx_Sega:	equ ((ptr_flgE1-Sound_ExIndex)/4)+flg__First
@@ -347,6 +356,12 @@ fr_Float6:	equ $54
 fr_Injury:	equ $55
 fr_GetAir:	equ $56
 fr_WaterSlide:	equ $57
+fr_SpinDash1:	equ $58
+fr_SpinDash2:	equ fr_SpinDash1+1
+fr_SpinDash3:	equ fr_SpinDash2+1
+fr_SpinDash4:	equ fr_SpinDash3+1
+fr_SpinDash5:	equ fr_SpinDash4+1
+fr_SpinDash6:	equ fr_SpinDash5+1
 
 ; Boss locations
 ; The main values are based on where the camera boundaries mainly lie
@@ -502,7 +517,7 @@ ArtTile_Monitor:		equ $680
 ArtTile_HUD:			equ $6CA
 ArtTile_Sonic:			equ $780
 ArtTile_Points:			equ $797
-ArtTile_Lamppost:		equ $7A0
+ArtTile_Lamppost:		equ ($D800/$20)	; =$6C0 (changed from $7A0 to make room for the Spin Dash dust)
 ArtTile_Ring:			equ $7B2
 ArtTile_Lives_Counter:		equ $7D4
 

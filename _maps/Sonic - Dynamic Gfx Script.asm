@@ -90,6 +90,12 @@ SonicDynPLC_internal:	mappingsTable
 	mappingsTableEntry.w	SonPLC_Injury
 	mappingsTableEntry.w	SonPLC_GetAir
 	mappingsTableEntry.w	SonPLC_WaterSlide
+	mappingsTableEntry.w	SonPLC_SpinDash_1
+	mappingsTableEntry.w	SonPLC_SpinDash_2
+	mappingsTableEntry.w	SonPLC_SpinDash_3
+	mappingsTableEntry.w	SonPLC_SpinDash_4
+	mappingsTableEntry.w	SonPLC_SpinDash_5
+	mappingsTableEntry.w	SonPLC_SpinDash_6
 
 SonPLC_Null:	dplcHeader
 SonPLC_Null_End
@@ -601,5 +607,29 @@ SonPLC_WaterSlide:	dplcHeader
 	dplcEntry	$10, $4F6
 	dplcEntry	3, $506
 SonPLC_WaterSlide_End
+
+SonPLC_SpinDash_1:	dplcHeader
+	dplcEntry	$F, $509
+SonPLC_SpinDash_1_End
+
+SonPLC_SpinDash_2:	dplcHeader
+	dplcEntry	$F, $518
+SonPLC_SpinDash_2_End
+
+SonPLC_SpinDash_3:	dplcHeader
+	dplcEntry	$F, $527
+SonPLC_SpinDash_3_End
+
+SonPLC_SpinDash_4:	dplcHeader
+	dplcEntry	$F, $536
+SonPLC_SpinDash_4_End
+
+SonPLC_SpinDash_5:	dplcHeader
+	dplcEntry	$F, $545
+SonPLC_SpinDash_5_End
+
+SonPLC_SpinDash_6:	dplcHeader
+	dplcEntry	$F, $554
+SonPLC_SpinDash_6_End
 
 	even

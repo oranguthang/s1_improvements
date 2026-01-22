@@ -37,6 +37,7 @@ Sonic_Main:	; Routine 0
 		move.w	#$600,(v_sonspeedmax).w ; Sonic's top speed
 		move.w	#$C,(v_sonspeedacc).w ; Sonic's acceleration
 		move.w	#$80,(v_sonspeeddec).w ; Sonic's deceleration
+		move.b	#id_SpinDust,(v_dustobj).w ; prepare spindust object
 
 ; Obj01_Control:
 Sonic_Control:	; Routine 2
@@ -242,6 +243,7 @@ Sonic_Water:
 
 ; Obj01_MdNormal:
 Sonic_MdNormal:
+		bsr.w	Sonic_SpinDash
 		bsr.w	Sonic_Jump
 		bsr.w	Sonic_SlopeResist
 		bsr.w	Sonic_Move
@@ -255,6 +257,7 @@ Sonic_MdNormal:
 
 ; Obj01_MdJump:
 Sonic_MdJump:
+		bclr	#0,spindash_flag(a0)	; clear Spin Dash flag (see-saw fix)
 		bsr.w	Sonic_JumpHeight
 		bsr.w	Sonic_JumpDirection
 		bsr.w	Sonic_LevelBound
@@ -283,6 +286,7 @@ Sonic_MdRoll:
 
 ; Obj01_MdJump2:
 Sonic_MdJump2:
+		bclr	#0,spindash_flag(a0)	; clear Spin Dash flag (see-saw fix)
 		bsr.w	Sonic_JumpHeight
 		bsr.w	Sonic_JumpDirection
 		bsr.w	Sonic_LevelBound
@@ -379,6 +383,10 @@ Sonic_LookUp:
 		btst	#bitUp,(v_jpadhold2).w ; is up being pressed?
 		beq.s	Sonic_Duck	; if not, branch
 		move.b	#id_LookUp,obAnim(a0) ; use "looking up" animation
+		addq.b	#1,(v_cam_y_delay).w	; add 1 to camera Y delay
+		cmpi.b	#120,(v_cam_y_delay).w	; did we reach target wait time of 120 frames (2 seconds)?
+		blo.s	Sonic_ResetScr_Part2	; if not, branch
+		move.b	#120,(v_cam_y_delay).w	; cap wait time
 		cmpi.w	#$C8,(v_lookshift).w
 		beq.s	loc_12FC2
 		addq.w	#2,(v_lookshift).w
@@ -389,6 +397,10 @@ Sonic_Duck:
 		btst	#bitDn,(v_jpadhold2).w ; is down being pressed?
 		beq.s	Sonic_ResetScr	; if not, branch
 		move.b	#id_Duck,obAnim(a0) ; use "ducking" animation
+		addq.b	#1,(v_cam_y_delay).w	; add 1 to camera Y delay
+		cmpi.b	#120,(v_cam_y_delay).w	; did we reach target wait time of 120 frames (2 seconds)?
+		blo.s	Sonic_ResetScr_Part2	; if not, branch
+		move.b	#120,(v_cam_y_delay).w	; cap wait time
 		cmpi.w	#8,(v_lookshift).w
 		beq.s	loc_12FC2
 		subq.w	#2,(v_lookshift).w
@@ -397,6 +409,9 @@ Sonic_Duck:
 
 ; Obj01_ResetScr
 Sonic_ResetScr:
+		clr.b	(v_cam_y_delay).w	; reset camera Y delay timer
+
+Sonic_ResetScr_Part2:
 		cmpi.w	#$60,(v_lookshift).w ; is screen in its default position?
 		beq.s	loc_12FC2	; if yes, branch
 		bcc.s	loc_12FBE
@@ -643,6 +658,17 @@ loc_131AA:
 		subq.w	#5,obY(a0)
 
 loc_131CC:
+		; Reset vertical camera shift when rolling
+ 		cmpi.w	#$60,(v_lookshift).w	; is vertical camera shift already at base value?
+		beq.s	.y_cam_reset_end	; if yes, branch
+		bhs.s	.y_cam_pull_up		; is camera offset downwards? if yes, branch
+		addq.w	#2,(v_lookshift).w	; pull camera back down
+		bra.s	.y_cam_reset_end	; branch over
+
+	.y_cam_pull_up:
+		subq.w	#2,(v_lookshift).w	; pull camera back up
+
+	.y_cam_reset_end:
 		move.b	obAngle(a0),d0
 		jsr	(CalcSine).l
 		muls.w	obInertia(a0),d0
@@ -1818,33 +1844,30 @@ Sonic_LoadGfx:
 		lea	(SonicDynPLC).l,a2 ; load PLC script
 		add.w	d0,d0
 		adda.w	(a2,d0.w),a2
-		moveq	#0,d1
-		move.b	(a2)+,d1	; read "number of entries" value
-		subq.b	#1,d1
+		moveq	#0,d5
+		move.b	(a2)+,d5	; read "number of entries" value
+		subq.w	#1,d5
 		bmi.s	.nochange	; if zero, branch
-		lea	(v_sgfx_buffer).w,a3
-		move.b	#1,(f_sonframechg).w ; set flag for Sonic graphics DMA
+		move.w	#$F000,d4
+		move.l	#Art_Sonic,d6
 
-; SPLC_ReadEntry:
 .readentry:
-		moveq	#0,d2
-		move.b	(a2)+,d2
-		move.w	d2,d0
-		lsr.b	#4,d0
-		lsl.w	#8,d2
-		move.b	(a2)+,d2
-		lsl.w	#5,d2
-		lea	(Art_Sonic).l,a1
-		adda.l	d2,a1
-
-; SPLC_LoadTile:
-.loadtile:
-		movem.l	(a1)+,d2-d6/a4-a6
-		movem.l	d2-d6/a4-a6,(a3)
-		lea	$20(a3),a3	; next tile
-		dbf	d0,.loadtile	; repeat for number of tiles
-
-		dbf	d1,.readentry	; repeat for number of entries
+		moveq	#0,d1
+		move.b	(a2)+,d1
+		lsl.w	#8,d1
+		move.b	(a2)+,d1
+		move.w	d1,d3
+		lsr.w	#8,d3
+		andi.w	#$F0,d3
+		addi.w	#$10,d3
+		andi.w	#$FFF,d1
+		lsl.l	#5,d1
+		add.l	d6,d1		; in Sonic 2, this would house Sonic's art tiles
+		move.w	d4,d2
+		add.w	d3,d4
+		add.w	d3,d4
+		jsr	(QueueDMATransfer).l
+		dbf	d5,.readentry	; repeat for number of entries
 
 .nochange:
 		rts

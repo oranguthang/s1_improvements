@@ -402,7 +402,25 @@ locret_65B0:
 
 
 MoveScreenHoriz:
-		move.w	(v_player+obX).w,d0
+		move.w	(v_cam_x_delay).w,d1		; get current horizontal camera delay value
+		beq.s	.normal				; if there is none, branch (move camera normally)
+		subi.w	#$100,d1			; reduce remaining horizontal camera delay
+		move.w	d1,(v_cam_x_delay).w		; update remaining horizontal camera delay
+		moveq	#0,d1				; clear d1
+		move.b	(v_cam_x_delay).w,d1		; get new remaining camera delay (upper byte only)
+		lsl.b	#2,d1				; multiply by 4
+		addq.b	#4,d1				; add 4
+		move.w	(v_trackpos).w,d0		; get current index of Sonic's tracking position buffer
+		sub.b	d1,d0				; subtract delay value from tracking buffer index
+		lea	(v_tracksonic).w,a1		; get Sonic's tracked position buffer
+		move.w	(a1,d0.w),d0			; use the tracked position from a couple frames ago (based on delay value)
+		andi.w	#$3FFF,d0			; keep value sane
+		bra.s	.x_delay			; don't use Sonic's actual X coordinate
+
+	.normal:
+		move.w	(v_player+obX).w,d0		; get Sonic's current X coordinate
+
+	.x_delay:
 		sub.w	(v_screenposx).w,d0 ; Sonic's distance from left edge of screen
 		subi.w	#144,d0		; is distance less than 144px?
 		bcs.s	SH_BehindMid	; if yes, branch
@@ -433,6 +451,10 @@ SH_SetScreen:
 ; ===========================================================================
 
 SH_BehindMid:
+		cmpi.w	#-$10,d0	; would new horizontal camera position be more than $10 pixels to the left?
+		bgt.s	.ok		; if not, branch
+		moveq	#-$10,d0	; cap leftward camera speed to avoid visual glitches
+	.ok:
 		add.w	(v_screenposx).w,d0
 		cmp.w	(v_limitleft2).w,d0
 		bgt.s	SH_SetScreen

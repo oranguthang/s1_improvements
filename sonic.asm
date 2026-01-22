@@ -20,7 +20,7 @@ Revision	  = 1
 
 ZoneCount	  = 6	; discrete zones are: GHZ, MZ, SYZ, LZ, SLZ, and SBZ
 
-FixBugs		  = 0	; change to 1 to enable bugfixes
+FixBugs		  = 1	; change to 1 to enable bugfixes
 
 zeroOffsetOptimization = 0	; if 1, makes a handful of zero-offset instructions smaller
 
@@ -344,6 +344,7 @@ GameInit:
 		move.l	d7,(a6)+
 		dbf	d6,.clearRAM	; clear RAM ($0000-$FDFF)
 
+		jsr	(InitDMAQueue).l
 		bsr.w	VDPSetupGame
 		bsr.w	DACDriverLoad
 		bsr.w	JoypadInit
@@ -737,13 +738,7 @@ VBla_08:
 
 		writeVRAM	v_hscrolltablebuffer,vram_hscroll
 		writeVRAM	v_spritetablebuffer,vram_sprites
-		tst.b	(f_sonframechg).w ; has Sonic's sprite changed?
-		beq.s	.nochg		; if not, branch
-
-		writeVRAM	v_sgfx_buffer,ArtTile_Sonic*tile_size ; load new Sonic gfx
-		move.b	#0,(f_sonframechg).w
-
-.nochg:
+		jsr	ProcessDMAQueue(pc)
 		startZ80
 		movem.l	(v_screenposx).w,d0-d7
 		movem.l	d0-d7,(v_screenposx_dup).w
@@ -798,13 +793,7 @@ VBla_0A:
 		writeVRAM	v_hscrolltablebuffer,vram_hscroll
 		startZ80
 		bsr.w	PalCycle_SS
-		tst.b	(f_sonframechg).w ; has Sonic's sprite changed?
-		beq.s	.nochg		; if not, branch
-
-		writeVRAM	v_sgfx_buffer,ArtTile_Sonic*tile_size ; load new Sonic gfx
-		move.b	#0,(f_sonframechg).w
-
-.nochg:
+		jsr	ProcessDMAQueue(pc)
 		tst.w	(v_generictimer).w	; is there time left on the demo?
 		beq.w	.end	; if not, return
 		subq.w	#1,(v_generictimer).w	; subtract 1 from time left in demo
@@ -834,12 +823,7 @@ VBla_18:
 		move.w	(v_hbla_hreg).w,(a5)
 		writeVRAM	v_hscrolltablebuffer,vram_hscroll
 		writeVRAM	v_spritetablebuffer,vram_sprites
-		tst.b	(f_sonframechg).w
-		beq.s	.nochg
-		writeVRAM	v_sgfx_buffer,ArtTile_Sonic*tile_size
-		move.b	#0,(f_sonframechg).w
-
-.nochg:
+		jsr	ProcessDMAQueue(pc)
 		startZ80
 		movem.l	(v_screenposx).w,d0-d7
 		movem.l	d0-d7,(v_screenposx_dup).w
@@ -886,12 +870,7 @@ VBla_16:
 		writeVRAM	v_spritetablebuffer,vram_sprites
 		writeVRAM	v_hscrolltablebuffer,vram_hscroll
 		startZ80
-		tst.b	(f_sonframechg).w
-		beq.s	.nochg
-		writeVRAM	v_sgfx_buffer,ArtTile_Sonic*tile_size
-		move.b	#0,(f_sonframechg).w
-
-.nochg:
+		jsr	ProcessDMAQueue(pc)
 		tst.w	(v_generictimer).w
 		beq.w	.end
 		subq.w	#1,(v_generictimer).w
@@ -1077,6 +1056,8 @@ VDPSetupArray:	dc.w $8004		; 8-colour mode
 		dc.w $9200		; window vertical position
 VDPSetupArray_End:
 
+		include	"_inc/DMA-Queue.asm"
+
 ; ---------------------------------------------------------------------------
 ; Subroutine to clear the screen
 ; ---------------------------------------------------------------------------
@@ -1104,6 +1085,7 @@ ClearScreen:
 		clearRAM v_hscrolltablebuffer,v_hscrolltablebuffer_end_padded+4 ; Clears too much RAM, clearing the first 4 bytes of v_objspace.
 	endif
 
+		ResetDMAQueue
 		rts
 ; End of function ClearScreen
 
@@ -6068,9 +6050,12 @@ Map_Bub:	include	"_maps/Bubbles.asm"
 		include	"_anim/Waterfalls.asm"
 Map_WFall:	include	"_maps/Waterfalls.asm"
 
+		include	"_incObj/05 Spindash Dust.asm"
+
 ; ===========================================================================
 
 		include	"_incObj/01 Sonic.asm"
+		include	"_incObj/sub SpinDash.asm"
 		include	"_incObj/0A Drowning Countdown.asm"
 
 
@@ -7539,6 +7524,8 @@ SonicDynPLC:	include	"_maps/Sonic - Dynamic Gfx Script.asm"
 ; Uncompressed graphics - Sonic
 ; ---------------------------------------------------------------------------
 Art_Sonic:	binclude	"artunc/Sonic.bin"	; Sonic
+		even
+Art_SpinDust:	binclude	"artunc/SpinDust.bin"
 		even
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - various

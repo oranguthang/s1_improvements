@@ -138,6 +138,7 @@ loc_DC56:
 		jsr	(QueueSound2).l	; play spring sound
 
 Spring_AniLR:	; Routine $A
+		clr.w	(v_cam_x_delay).w	; clear screen delay counter
 		lea	(Ani_Spring).l,a1
 		bra.w	AnimateSprite
 ; ===========================================================================

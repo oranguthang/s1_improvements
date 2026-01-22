@@ -360,6 +360,7 @@ loc_16C64:
 	endif
 
 .delete:
+		clr.b	obColType(a1)	; immediately remove touch response to avoid taking damage
 		; Mark self for deletion.
 		move.b	#$A,obRoutine(a0)
 
