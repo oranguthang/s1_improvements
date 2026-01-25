@@ -260,6 +260,8 @@ RLoss_Bounce:	; Routine 2
 .chkdel:
 		tst.b	(v_ani3_time).w
 		beq.s	RLoss_Delete
+		cmpi.w	#$FF00,(v_limittop2).w	; is vertical wrapping enabled?
+		beq.w	DisplaySprite		; if so, branch
 		move.w	(v_limitbtm2).w,d0
 		addi.w	#$E0,d0
 		cmp.w	obY(a0),d0	; has object moved below level boundary?
