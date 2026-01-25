@@ -22,6 +22,7 @@ Sonic_Index:	dc.w Sonic_Main-Sonic_Index
 		dc.w Sonic_Hurt-Sonic_Index
 		dc.w Sonic_Death-Sonic_Index
 		dc.w Sonic_ResetLevel-Sonic_Index
+		dc.w Sonic_Drowned-Sonic_Index
 ; ===========================================================================
 
 ; Obj01_Main:
@@ -1551,6 +1552,21 @@ Sonic_ResetLevel:; Routine 8
 
 .return:
 		rts
+
+; ---------------------------------------------------------------------------
+; Sonic when he's drowning
+; ---------------------------------------------------------------------------
+
+; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
+
+
+Sonic_Drowned:	; Routine $A
+		bsr.w	SpeedToPos		; make Sonic able to move
+		addi.w	#$10,obVelY(a0)		; apply gravity
+		bsr.w	Sonic_RecordPosition	; record position
+		bsr.w	Sonic_Animate		; animate Sonic
+		bsr.w	Sonic_LoadGfx		; load Sonic's DPLCs
+		bra.w	DisplaySprite		; display Sonic
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to make Sonic run around loops (GHZ/SLZ)

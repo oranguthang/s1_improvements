@@ -5355,6 +5355,8 @@ loc_D358:
 ; ===========================================================================
 
 loc_D362:
+		cmpi.b	#$A,(v_player+obRoutine).w	; has Sonic drowned?
+		beq.s	loc_D348			; if so, run objects a little longer
 		moveq	#(v_lvlobjspace-v_objspace)/object_size-1,d7
 		bsr.s	loc_D348
 		moveq	#(v_lvlobjend-v_lvlobjspace)/object_size-1,d7
