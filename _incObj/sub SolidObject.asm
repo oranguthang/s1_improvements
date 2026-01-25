@@ -64,7 +64,7 @@ SolidObject71:
 
 .stand:
 		move.w	d4,d2
-		bsr.w	MvSonicOnPtfm
+		jsr	(MvSonicOnPtfm).l
 		moveq	#0,d4
 		rts
 ; ===========================================================================
@@ -205,7 +205,13 @@ Solid_SideAir:
 Solid_Ignore:
 		btst	#5,obStatus(a0)	; is Sonic pushing?
 		beq.s	Solid_Debug	; if not, branch
-		move.w	#id_Run,obAnim(a1) ; use running animation
+		cmpi.b	#id_Roll,obAnim(a1)	; is Sonic in his jumping/rolling animation?
+		beq.s	Solid_NotPushing	; if so, branch
+		cmpi.b	#id_Drown,obAnim(a1)	; is Sonic in his drowning animation?
+		beq.s	Solid_NotPushing	; if so, branch
+		cmpi.b	#id_Hurt,obAnim(a1)	; is Sonic in his hurt animation?
+		beq.s	Solid_NotPushing	; if so, branch
+		move.w	#id_Run,obAnim(a1)	; use running animation
 
 Solid_NotPushing:
 		bclr	#5,obStatus(a0)	; clear pushing flag
