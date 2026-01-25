@@ -208,7 +208,6 @@ RLoss_Count:	; Routine 0
 		move.b	#3,obPriority(a1)
 		move.b	#$47,obColType(a1)
 		move.b	#8,obActWid(a1)
-		move.b	#-1,(v_ani3_time).w
 		tst.w	d4
 		bmi.s	.loc_9D62
 		move.w	d4,d0
@@ -236,6 +235,9 @@ RLoss_Count:	; Routine 0
 		move.w	#0,(v_rings).w	; reset number of rings to zero
 		move.b	#$80,(f_ringcount).w ; update ring counter
 		move.b	#0,(v_lifecount).w
+		moveq	#-1,d0			; set timer value
+		move.b	d0,obDelayAni(a0)	; set personal timer for this ring
+		move.b	d0,(v_ani3_time).w	; set global timer for animation purposes
 		move.w	#sfx_RingLoss,d0
 		jsr	(QueueSound2).l	; play ring loss sound
 
@@ -258,15 +260,20 @@ RLoss_Bounce:	; Routine 2
 		neg.w	obVelY(a0)
 
 .chkdel:
-		tst.b	(v_ani3_time).w
-		beq.s	RLoss_Delete
+		subq.b	#1,obDelayAni(a0)	; subtract 1 from personal timer
+		beq.w	DeleteObject		; if 0, delete
 		cmpi.w	#$FF00,(v_limittop2).w	; is vertical wrapping enabled?
-		beq.w	DisplaySprite		; if so, branch
+		beq.s	.flash			; if so, skip boundary check
 		move.w	(v_limitbtm2).w,d0
 		addi.w	#$E0,d0
 		cmp.w	obY(a0),d0	; has object moved below level boundary?
 		blo.s	RLoss_Delete	; if yes, branch
-		bra.w	DisplaySprite
+.flash:
+		btst	#0,obDelayAni(a0)	; test first bit for flash effect
+		beq.w	DisplaySprite		; if bit is 0, display ring
+		cmpi.b	#80,obDelayAni(a0)	; rings flash during last 80 frames
+		bhi.w	DisplaySprite		; if timer > 80, stay visible
+		rts
 ; ===========================================================================
 
 RLoss_Collect:	; Routine 4
