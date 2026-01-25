@@ -1499,10 +1499,10 @@ Sonic_Death:	; Routine 6
 
 
 GameOver:
-		move.w	(v_limitbtm2).w,d0
+		move.w	(v_screenposy).w,d0	; use screen position instead of level boundary
 		addi.w	#$100,d0
 		cmp.w	obY(a0),d0
-		bhs.w	locret_13900
+		bge.w	locret_13900		; use signed comparison (fixes death at top of level)
 		move.w	#-$38,obVelY(a0)
 		addq.b	#2,obRoutine(a0)
 		clr.b	(f_timecount).w	; stop time counter
