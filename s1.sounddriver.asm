@@ -831,14 +831,14 @@ Sound_PlayBGM:
 		moveq	#0,d1
 		movea.l	a4,a3
 		addq.w	#6,a4			; Point past header
+		move.b	4(a3),d4		; load tempo dividing timing (moved up for 0FM/DAC fix)
+		moveq	#SMPS_Track.len,d6
+		move.b	#1,d5			; Note duration for first "note"
 		moveq	#0,d7
 		move.b	2(a3),d7		; load number of FM+DAC tracks
 		beq.w	.bgm_fmdone		; branch if zero
 		subq.b	#1,d7
 		move.b	#$C0,d1			; Default AMS+FMS+Panning
-		move.b	4(a3),d4		; load tempo dividing timing
-		moveq	#SMPS_Track.len,d6
-		move.b	#1,d5			; Note duration for first "note"
 		lea	SMPS_RAM.v_music_fmdac_tracks(a6),a1
 		lea	FMDACInitBytes(pc),a2
 ; loc_72098:
@@ -1711,6 +1711,15 @@ DoFadeIn:
 .fadedone:
 		bclr	#2,SMPS_RAM.v_music_dac_track.PlaybackControl(a6)	; Clear 'SFX overriding' bit
 		clr.b	SMPS_RAM.f_fadein_flag(a6)				; Stop fadein
+
+		tst.b	SMPS_RAM.v_music_dac_track.PlaybackControl(a6)		; is the DAC channel running?
+		bpl.s	.Resume_NoDAC						; if not, branch
+
+		moveq	#$FFFFFFB6,d0						; prepare FM channel 3/6 L/R/AMS/FMS address
+		move.b	SMPS_RAM.v_music_dac_track.AMSFMSPan(a6),d1			; load DAC channel's L/R/AMS/FMS value
+		jmp	WriteFMII(pc)						; write to FM 6
+
+.Resume_NoDAC:
 		rts
 ; End of function DoFadeIn
 
@@ -2234,6 +2243,10 @@ cfFadeInToPrevious:
 .restoreramloop:
 		move.l	(a1)+,(a0)+
 		dbf	d0,.restoreramloop
+
+		move.b	#$2B,d0		; Register: DAC mode (bit 7 = enable)
+		moveq	#0,d1		; Value: DAC mode disable
+		jsr	WriteFMI(pc)	; Write to YM2612 Port 0 [sub_7272E]
 
 		bset	#2,SMPS_RAM.v_music_dac_track.PlaybackControl(a6)	; Set 'SFX overriding' bit
 		movea.l	a5,a3
