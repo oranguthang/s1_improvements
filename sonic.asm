@@ -5851,6 +5851,9 @@ loc_DA02:
 loc_DA10:
 		bsr.w	loc_DA3C
 		beq.s	loc_DA02
+		tst.b	4(a0)		; was this object a remember state?
+		bpl.s	loc_DA16	; if not, branch
+		subq.b	#1,(a2)		; move right counter back
 
 loc_DA16:
 		move.l	a0,(v_opl_data).w
@@ -5880,7 +5883,7 @@ locret_DA3A:
 loc_DA3C:
 		tst.b	4(a0)
 		bpl.s	OPL_MakeItem
-		bset	#7,2(a2,d2.w)
+		btst	#7,2(a2,d2.w)
 		beq.s	OPL_MakeItem
 		addq.w	#6,a0
 		moveq	#0,d0
@@ -5901,6 +5904,7 @@ OPL_MakeItem:
 		move.b	d1,obStatus(a1)
 		move.b	(a0)+,d0
 		bpl.s	loc_DA80
+		bset	#7,2(a2,d2.w)	; set as removed
 		andi.b	#$7F,d0
 		move.b	d2,obRespawnNo(a1)
 
