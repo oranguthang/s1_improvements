@@ -2355,7 +2355,7 @@ Tit_ClrScroll2:
 ; ---------------------------------------------------------------------------
 
 LevelSelect:
-		move.b	#4,(v_vbla_routine).w
+		move.b	#2,(v_vbla_routine).w
 		bsr.w	WaitForVBla
 		bsr.w	LevSelControls
 		bsr.w	RunPLC
