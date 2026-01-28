@@ -47,7 +47,8 @@ Pow_ChkEggman:
 		move.b	obAnim(a0),d0
 		cmpi.b	#1,d0		; does monitor contain Eggman?
 		bne.s	Pow_ChkSonic
-		rts		; Eggman monitor does nothing
+		move.w	obX(a0),spik_origX(a0)	; needed to display the icon properly
+		jmp	(Spik_Hurt).l		; use spikes to hurt Sonic
 ; ===========================================================================
 
 Pow_ChkSonic:
