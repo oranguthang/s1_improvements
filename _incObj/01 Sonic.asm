@@ -525,6 +525,9 @@ loc_1309A:
 		neg.w	d1
 		cmp.w	d1,d0
 		bgt.s	loc_130A6
+		add.w	d5,d0		; remove this frame's acceleration change
+		cmp.w	d1,d0		; compare speed with top speed
+		ble.s	loc_130A6	; if speed was already greater than the maximum, branch
 		move.w	d1,d0
 
 loc_130A6:
@@ -571,6 +574,9 @@ loc_13104:
 		add.w	d5,d0
 		cmp.w	d6,d0
 		blt.s	loc_1310C
+		sub.w	d5,d0		; remove this frame's acceleration change
+		cmp.w	d6,d0		; compare speed with top speed
+		bge.s	loc_1310C	; if speed was already greater than the maximum, branch
 		move.w	d6,d0
 
 loc_1310C:
@@ -760,6 +766,9 @@ Sonic_JumpDirection:
 		neg.w	d1
 		cmp.w	d1,d0
 		bgt.s	loc_13278
+		add.w	d5,d0			; remove this frame's acceleration change
+		cmp.w	d1,d0			; compare speed with top speed
+		ble.s	loc_13278		; if speed was already greater than the maximum, branch
 		move.w	d1,d0
 
 loc_13278:
@@ -769,6 +778,9 @@ loc_13278:
 		add.w	d5,d0
 		cmp.w	d6,d0
 		blt.s	Obj01_JumpMove
+		sub.w	d5,d0			; remove this frame's acceleration change
+		cmp.w	d6,d0			; compare speed with top speed
+		bge.s	Obj01_JumpMove	; if speed was already greater than the maximum, branch
 		move.w	d6,d0
 
 Obj01_JumpMove:
