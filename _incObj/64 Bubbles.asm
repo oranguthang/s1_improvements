@@ -90,7 +90,6 @@ Bub_ChkWater:	; Routine 4
 		move.w	#$23,objoff_3E(a1)
 		move.b	#0,objoff_3C(a1)
 		bclr	#5,obStatus(a1)
-		bclr	#4,obStatus(a1)
 		btst	#2,obStatus(a1)
 		beq.w	.burst
 		bclr	#2,obStatus(a1)

@@ -39,7 +39,6 @@ Bump_Hit:	; Routine 2
 		asr.l	#8,d0
 		move.w	d0,obVelY(a1)	; bounce Sonic away
 		bset	#1,obStatus(a1)
-		bclr	#4,obStatus(a1)
 		bclr	#5,obStatus(a1)
 		clr.b	objoff_3C(a1)
 		move.b	#1,obAnim(a0)	; use "hit" animation

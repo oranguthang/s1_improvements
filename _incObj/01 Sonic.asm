@@ -755,8 +755,6 @@ Sonic_JumpDirection:
 		move.w	(v_sonspeedmax).w,d6
 		move.w	(v_sonspeedacc).w,d5
 		asl.w	#1,d5
-		btst	#4,obStatus(a0)
-		bne.s	Obj01_ResetScr2
 		move.w	obVelX(a0),d0
 		btst	#bitL,(v_jpadhold2).w ; is left being pressed?
 		beq.s	loc_13278	; if not, branch
@@ -1005,10 +1003,8 @@ Sonic_Jump:
 		clr.b	stick_to_convex(a0)
 		move.w	#sfx_Jump,d0
 		jsr	(QueueSound2).l	; play jumping sound
-		move.b	#$13,obHeight(a0)	; set Sonic's hitbox to standing size. This is a leftover from the victory animation in prototypes.
-		move.b	#9,obWidth(a0)
 		btst	#2,obStatus(a0)	; is Sonic already in a ball state?
-		bne.s	.rolljump	; if so, branch.
+		bne.s	.return		; if so, branch.
 		move.b	#$E,obHeight(a0)	; set Sonic's hitbox to ball size.
 		move.b	#7,obWidth(a0)
 		move.b	#id_Roll,obAnim(a0) ; use "jumping" animation
@@ -1016,10 +1012,6 @@ Sonic_Jump:
 		addq.w	#5,obY(a0)
 
 .return:
-		rts
-
-.rolljump:
-		bset	#4,obStatus(a0)	; set roll-jump flag.
 		rts
 ; End of function Sonic_Jump
 
@@ -1412,16 +1404,8 @@ locret_1379E:
 
 
 Sonic_ResetOnFloor:
-		btst	#4,obStatus(a0)	; is Sonic roll-jumping?
-		beq.s	.notrolljump	; if not, skip.
-		nop	; Unknown removed code.
-		nop	
-		nop	
-
-.notrolljump:
-		bclr	#5,obStatus(a0)	; clear push flag.
-		bclr	#1,obStatus(a0)	; clear in-air flag.
-		bclr	#4,obStatus(a0)	; clear roll-jump flag.
+		bclr	#5,obStatus(a0)	; clear push flag
+		bclr	#1,obStatus(a0)	; clear in-air flag
 		btst	#2,obStatus(a0)	; check if Sonic is in a ball state.
 		beq.s	.notball	; if not, skip.
 		bclr	#2,obStatus(a0)	; clear ball flag.
