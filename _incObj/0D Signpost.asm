@@ -165,8 +165,8 @@ GotThroughAct:
 		move.w	(v_rings).w,d0	; load number of rings
 		mulu.w	#10,d0		; multiply by 10
 		move.w	d0,(v_ringbonus).w ; set ring bonus
-		move.w	#bgm_GotThrough,d0
-		jsr	(QueueSound2).l	; play "Sonic got through" music
+		move.w	#bgm_Fade,d0
+		jsr	(QueueSound2).l	; fade-out music
 
 locret_ECEE:
 		rts

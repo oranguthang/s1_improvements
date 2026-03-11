@@ -88,6 +88,8 @@ loc_C61A:
 		bne.s	loc_C5FE
 		addq.b	#2,obRoutine(a0)
 		move.w	#180,obTimeFrame(a0) ; set time delay to 3 seconds
+		move.w	#bgm_GotThrough,d0
+		jsr	(QueueSound2).l	; play "Sonic got through" music
 
 Got_Wait:	; Routine 4, 8, $C
 		subq.w	#1,obTimeFrame(a0) ; subtract 1 from time delay
@@ -101,6 +103,18 @@ Got_Display:
 Got_TimeBonus:	; Routine 6
 		bsr.w	DisplaySprite
 		move.b	#1,(f_endactbonus).w ; set time/ring bonus update flag
+		moveq	#btnABC,d0		; is button A, B, or C...
+		and.b	(v_jpadhold1).w,d0	; ...held?
+		beq.s	Got_Normal		; if not, tick down score tally normally
+
+		add.w	(v_timebonus).w,d0	; add entire remaining time bonus to d0
+		add.w	(v_ringbonus).w,d0	; add entire remaining ring bonus to d0
+		clr.w	(v_timebonus).w		; clear remaining time bonus
+		clr.w	(v_ringbonus).w		; clear remaining ring bonus
+		jsr	(AddPoints).l		; add up the points stored in d0
+		moveq	#0,d0			; set remaining bonus to 0 so that Got_AddBonus gets skipped
+		bra.s	Got_ChkBonus		; skip regular logic
+Got_Normal:
 		moveq	#0,d0
 		tst.w	(v_timebonus).w	; is time bonus = zero?
 		beq.s	Got_RingBonus	; if yes, branch
@@ -260,13 +274,13 @@ Got_Config:	dc.w 4,		$124,	$BC			; "SONIC HAS"
 		dc.w $40C,	$14C,	$D6			; "ACT" 1/2/3
 		dc.b 				2,	6
 
-		dc.w $520,	$120,	$EC			; score
+		dc.w $520,	$120,	$126			; score
 		dc.b 				2,	2
 
-		dc.w $540,	$120,	$FC			; time bonus
+		dc.w $540,	$120,	$F6			; time bonus
 		dc.b 				2,	3
 
-		dc.w $560,	$120,	$10C			; ring bonus
+		dc.w $560,	$120,	$106			; ring bonus
 		dc.b 				2,	4
 
 		dc.w $20C,	$14C,	$CC			; oval
