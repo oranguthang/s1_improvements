@@ -260,6 +260,7 @@ Sonic_MdNormal:
 
 ; Obj01_MdJump:
 Sonic_MdJump:
+		bsr.w	Sonic_AirRoll
 		bclr	#0,spindash_flag(a0)	; clear Spin Dash flag (see-saw fix)
 		bsr.w	Sonic_JumpHeight
 		bsr.w	Sonic_JumpDirection
@@ -895,9 +896,15 @@ Sonic_LevelBound:
 ; Boundary_Bottom
 .bottom:
 		cmpi.w	#(id_SBZ<<8)+1,(v_zone).w ; is level SBZ2 ?
-		bne.w	KillSonic	; if not, kill Sonic
+		beq.s	.chkx			; if yes, branch
+		jmp	(KillSonic).l		; if not, kill Sonic
+
+.chkx:
 		cmpi.w	#$2000,(v_player+obX).w
-		blo.w	KillSonic
+		bhs.s	.restart		; if yes, branch
+		jmp	(KillSonic).l
+
+.restart:
 		clr.b	(v_lastlamp).w	; clear lamppost counter
 		move.w	#1,(f_restart).w ; restart the level
 		move.w	#(id_LZ<<8)+3,(v_zone).w ; set level to SBZ3 (LZ4)
@@ -1888,6 +1895,30 @@ Sonic_LoadGfx:
 		rts
 
 ; End of function Sonic_LoadGfx
+
+; ---------------------------------------------------------------------------
+; Subroutine to perform an Air Roll while airborne and not in ball state
+; ---------------------------------------------------------------------------
+
+; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
+
+Sonic_AirRoll:
+		moveq	#btnABC,d0		; is A, B, or C...
+		and.b	(v_jpadpress2),d0	; ...pressed?
+		beq.s	.return			; if not, branch
+
+		btst	#2,obStatus(a0)		; is Sonic already in ball state?
+		bne.s	.return			; if yes, branch
+
+		move.b	#id_Roll,obAnim(a0)	; use "rolling" animation.
+		bset	#2,obStatus(a0)		; set rolling flag.
+		move.b	#$E,obHeight(a0)	; set Sonic's hitbox height to ball size.
+		move.b	#7,obWidth(a0)		; set Sonic's hitbox width to ball size.
+		addq.w	#5,obY(a0)		; adjust Y for new height difference ($13-$E pixels).
+
+.return:
+		rts
+; End of function Sonic_AirRoll
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to horizontally pan the camera view ahead of the player.
