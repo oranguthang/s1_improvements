@@ -159,6 +159,7 @@ React_Monitor:
 		bne.s	.donothing
 		neg.w	obVelY(a0)	; reverse Sonic's y-motion
 		addq.b	#2,obRoutine(a1) ; advance the monitor's routine counter
+		bsr.w   ResetHomingAttack
 
 .donothing:
 		rts
@@ -190,6 +191,7 @@ React_Enemy:
 ; ===========================================================================
 
 .breakenemy:
+        bsr.w   ResetHomingAttack
 		bset	#7,obStatus(a1)
 		moveq	#0,d0
 		move.w	(v_itembonus).w,d0
@@ -421,3 +423,14 @@ React_Special:
 		addq.b	#1,obColProp(a1)
 		rts
 ; End of function React_Special
+
+; ||||||||||||||| S U B R O U T I N E |||||||||||||||||||||||||||||||||||||||
+
+ResetHomingAttack:
+        btst    #7,obStatus(a0)         ; was the homing attack flag set?
+        beq.s   .nohoming               ; if not, nothing to do
+        clr.w   obVelX(a0)              ; clear Sonic's X-speed
+        move.w  #-$500,obVelY(a0)       ; bounce Sonic upwards a little from the impact
+        bclr    #7,obStatus(a0)         ; reset homing attack flag so we can do another one
+.nohoming:
+        rts
