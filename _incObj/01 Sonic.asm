@@ -42,6 +42,7 @@ Sonic_Main:	; Routine 0
 
 ; Obj01_Control:
 Sonic_Control:	; Routine 2
+		bsr.w	Sonic_PanCamera		; Run extended camera panning calculations
 		tst.w	(f_debugmode).w	; is debug cheat enabled?
 		beq.s	.nodebug	; if not, branch
 		btst	#bitB,(v_jpadpress1).w ; is button B pressed?
@@ -1887,3 +1888,82 @@ Sonic_LoadGfx:
 		rts
 
 ; End of function Sonic_LoadGfx
+
+; ---------------------------------------------------------------------------
+; Subroutine to horizontally pan the camera view ahead of the player.
+; (Ported from the US version of Sonic CD's "R11A__.MMD" by Nat The Porcupine)
+; ---------------------------------------------------------------------------
+
+Sonic_PanCamera:
+		move.w	(v_camera_pan).w,d1	; Get the current camera pan value
+		tst.b	spindash_flag(a0)	; Is Sonic charging up a spin dash?
+		beq.s	.NoSpindash		; If not, branch
+		btst	#0,obStatus(a0)		; Check the direction that sonic is facing
+		beq.s	.MovingRight		; If he's facing right, pan the camera to the right
+		bra.s	.MovingLeft		; Otherwise, pan the camera to the left
+
+    .NoSpindash:
+		move.w	obInertia(a0),d0	; Get Sonic's ground speed
+		btst	#1,obStatus(a0)		; Is Sonic airborne?
+		beq.s	.IsGrounded		; If not, branch
+		move.w	obVelX(a0),d0		; Use X velocity instead if airborne
+
+	.IsGrounded:
+		tst.w	d0			; Check if speed is positive
+		spl.b	d2			; Remember whether our value was positive or negative (needed a bit further down below)
+		bpl.s	.PosInertia		; If yes, branch
+		neg.w	d0			; Otherwise, convert speed to an absolute value
+
+	.PosInertia:
+
+; These lines were intended to prevent the Camera from panning while
+; going up the very first giant ramp in Palmtree Panic Zone Act 1.
+; However, given that no such object exists in Sonic 1, I just went
+; ahead and commented these out.
+;		btst	#1,$2C(a0)		; Are we on a 3D ramp?
+;		beq.s	.No3DRamp		; If not, branch
+;		cmpi.w	#$1B00,obX(a0)		; Are we on the 3D ramp at the start of the level?
+;		bcs.s	.ResetPan		; If so, branch
+;.No3DRamp:
+
+		cmpi.w	#$600,d0		; Are we going at max regular speed?
+		bcs.s	.BelowMax		; If not, branch
+
+		tst.b	d2			; Check if the direction was positive or negative
+		bne.s	.MovingRight		; If the direction was positive, then speed was negative, so we pan the screen right
+
+.MovingLeft:
+		addq.w	#2,d1			; Pan the camera to the right
+		cmpi.w	#(320/2)+64,d1		; Has it panned far enough?
+		bcs.s	.SetPanVal		; If not, branch
+		move.w	#(320/2)+64,d1		; Cap the camera's position
+		bra.s	.SetPanVal
+
+.MovingRight:
+		subq.w	#2,d1			; Pan the camera to the left
+		cmpi.w	#(320/2)-64,d1		; Has it panned far enough
+		bcc.s	.SetPanVal		; If not, branch
+		move.w	#(320/2)-64,d1		; Cap the camera's position
+		bra.s	.SetPanVal
+
+.BelowMax:
+		cmpi.w	#$4B0,d0		; Have we dropped ~20% below max speed?
+		bcs.s	.ResetPan		; If yes, start resetting pan
+		rts				; Otherwise hold current pan value
+
+.ResetPan:
+		cmpi.w	#320/2,d1		; Has the camera panned back to the middle?
+		beq.s	.SetPanVal		; If so, branch
+		bcc.s	.ResetLeft		; If it's panning back left
+
+.ResetRight:
+		addq.w	#2,d1			; Pan back to the right
+		bra.s	.SetPanVal		; Skip
+
+.ResetLeft:
+		subq.w	#2,d1			; Pan back to the left
+
+.SetPanVal:
+		move.w	d1,(v_camera_pan).w	; Update camera X center position
+		rts
+; End of function Sonic_PanCamera

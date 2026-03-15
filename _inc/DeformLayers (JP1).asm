@@ -705,10 +705,11 @@ MoveScreenHoriz:
 
 	.x_delay:
 		sub.w	(v_screenposx).w,d0 ; Sonic's distance from left edge of screen
-		subi.w	#144,d0		; is distance less than 144px?
-		bmi.s	SH_BehindMid	; if yes, branch (signed for horizontal wrap fix)
-		subi.w	#16,d0		; is distance more than 160px?
-		bpl.s	SH_AheadOfMid	; if yes, branch (signed for horizontal wrap fix)
+		sub.w	(v_camera_pan).w,d0	; Horizontal camera pan value
+		addi.w	#16,d0			; is distance less than 144px?
+		blt.s	SH_BehindMid		; if yes, branch
+		subi.w	#16,d0			; is distance more than 160px?
+		bge.s	SH_AheadOfMid		; if yes, branch
 		clr.w	(v_scrshiftx).w
 		rts
 ; ===========================================================================

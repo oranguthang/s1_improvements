@@ -421,11 +421,12 @@ MoveScreenHoriz:
 		move.w	(v_player+obX).w,d0		; get Sonic's current X coordinate
 
 	.x_delay:
-		sub.w	(v_screenposx).w,d0 ; Sonic's distance from left edge of screen
-		subi.w	#144,d0		; is distance less than 144px?
-		bmi.s	SH_BehindMid	; if yes, branch (signed for horizontal wrap fix)
-		subi.w	#16,d0		; is distance more than 160px?
-		bpl.s	SH_AheadOfMid	; if yes, branch (signed for horizontal wrap fix)
+		sub.w	(v_screenposx).w,d0	; Sonic's distance from left edge of screen
+		sub.w	(v_camera_pan).w,d0	; apply extended camera pan value
+		addi.w	#16,d0			; is distance less than 144px?
+		bmi.s	SH_BehindMid		; if yes, branch (signed for horizontal wrap fix)
+		subi.w	#16,d0			; is distance more than 160px?
+		bpl.s	SH_AheadOfMid		; if yes, branch (signed for horizontal wrap fix)
 		clr.w	(v_scrshiftx).w
 		rts
 ; ===========================================================================

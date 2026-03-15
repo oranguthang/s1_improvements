@@ -33,6 +33,7 @@ LevelSizeLoad:
 		move.w	#$1010,(v_fg_xblock).w ; and v_fg_yblock
 		move.w	(a0)+,d0
 		move.w	d0,(v_lookshift).w
+		move.w	#(320/2),(v_camera_pan).w	; Reset the horizontal camera pan value to half screen width
 		bra.w	LevSz_ChkLamp
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
