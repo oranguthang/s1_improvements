@@ -110,6 +110,7 @@ ptr_mus90:	dc.l Music90
 ptr_mus91:	dc.l Music91
 ptr_mus92:	dc.l Music92
 ptr_mus93:	dc.l Music93
+ptr_mus94:	dc.l Music94
 ptr_musend
 ; ---------------------------------------------------------------------------
 ; Priority of sound. New music or SFX must have a priority higher than or equal
@@ -2756,6 +2757,8 @@ Music91:	include "sound/music/Mus91 - Credits.asm"
 Music92:	include "sound/music/Mus92 - Drowning.asm"
 		even
 Music93:	include "sound/music/Mus93 - Get Emerald.asm"
+		even
+Music94:	include "sound/music/Mus94 - Super Sonic.asm"
 		even
 
 ; ---------------------------------------------------------------------------

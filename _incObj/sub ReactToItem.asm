@@ -168,6 +168,8 @@ React_Monitor:
 React_Enemy:
 		tst.b	(v_invinc).w	; is Sonic invincible?
 		bne.s	.donthurtsonic	; if yes, branch
+		tst.b	(v_supersonic).w	; is Sonic super?
+		bne.s	.donthurtsonic	; if yes, branch
 		cmpi.b	#id_SpinDash,obAnim(a0)	; is Sonic Spin Dashing?
 		beq.s	.donthurtsonic		; if yes, branch
 		cmpi.b	#id_Roll,obAnim(a0) ; is Sonic rolling/jumping?
@@ -239,13 +241,19 @@ React_Caterkiller:
 React_ChkHurt:
 		tst.b	(v_invinc).w	; is Sonic invincible?
 		beq.s	.notinvincible	; if not, branch
+		moveq	#-1,d0
+		rts
+
+.notinvincible:
+		tst.b	(v_supersonic).w	; is Sonic super?
+		beq.s	.not_super	; if not, branch
 
 .isflashing:
 		moveq	#-1,d0
 		rts
 ; ===========================================================================
 
-.notinvincible:
+.not_super:
 		nop	
 		tst.w	flashtime(a0)		; is Sonic flashing?
 		bne.s	.isflashing	; if yes, branch
@@ -335,6 +343,8 @@ KillSonic:
 		tst.w	(v_debuguse).w	; is debug mode active?
 		bne.s	.dontdie	; if yes, branch
 		move.b	#0,(v_invinc).w	; remove invincibility
+		move.b	#0,(v_supersonic).w
+		move.w	#0,(v_superframe).w
 		move.b	#6,obRoutine(a0)
 		bsr.w	Sonic_ResetOnFloor
 		bset	#1,obStatus(a0)

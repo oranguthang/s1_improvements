@@ -66,6 +66,8 @@ Pow_ChkShoes:
 		cmpi.b	#3,d0		; does monitor contain speed shoes?
 		bne.s	Pow_ChkShield
 
+		tst.b	(v_supersonic).w
+		bne.s	.super
 		move.b	#1,(v_shoes).w	; speed up the BG music
 		move.w	#$4B0,(v_player+shoetime).w	; time limit for the power-up
 		move.w	#$C00,(v_sonspeedmax).w ; change Sonic's top speed
@@ -73,6 +75,9 @@ Pow_ChkShoes:
 		move.w	#$80,(v_sonspeeddec).w	; change Sonic's deceleration
 		move.w	#bgm_Speedup,d0
 		jmp	(QueueSound1).l		; Speed up the music
+
+.super:
+		rts
 ; ===========================================================================
 
 Pow_ChkShield:
@@ -80,7 +85,11 @@ Pow_ChkShield:
 		bne.s	Pow_ChkInvinc
 
 		move.b	#1,(v_shield).w	; give Sonic a shield
+		tst.b	(v_supersonic).w
+		bne.s	.noshieldgfx
 		move.b	#id_ShieldItem,(v_shieldobj).w ; load shield object ($38)
+
+.noshieldgfx:
 		move.w	#sfx_Shield,d0
 		jmp	(QueueSound1).l	; play shield sound
 ; ===========================================================================
@@ -89,6 +98,8 @@ Pow_ChkInvinc:
 		cmpi.b	#5,d0		; does monitor contain invincibility?
 		bne.s	Pow_ChkRings
 
+		tst.b	(v_supersonic).w
+		bne.s	.super
 		move.b	#1,(v_invinc).w	; make Sonic invincible
 		move.w	#$4B0,(v_player+invtime).w ; time limit for the power-up
 		move.b	#id_ShieldItem,(v_starsobj1).w ; load stars object ($3801)
@@ -107,6 +118,9 @@ Pow_ChkInvinc:
 		endif
 		move.w	#bgm_Invincible,d0
 		jmp	(QueueSound1).l ; play invincibility music
+
+.super:
+		rts
 ; ===========================================================================
 
 Pow_NoMusic:

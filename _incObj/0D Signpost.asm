@@ -124,7 +124,7 @@ loc_EC70:
 		move.w	(v_limitright2).w,d1
 		addi.w	#$128,d1
 		cmp.w	d1,d0
-		blo.s	locret_ECEE
+		blo.w	locret_ECEE
 
 loc_EC86:
 		addq.b	#2,obRoutine(a0)
@@ -142,6 +142,11 @@ GotThroughAct:
 		bne.s	locret_ECEE
 		move.w	(v_limitright2).w,(v_limitleft2).w
 		clr.b	(v_invinc).w	; disable invincibility
+		clr.b	(v_supersonic).w
+		clr.w	(v_superframe).w
+		move.w	#$600,(v_sonspeedmax).w
+		move.w	#$C,(v_sonspeedacc).w
+		move.w	#$80,(v_sonspeeddec).w
 		clr.b	(f_timecount).w	; stop time counter
 		move.b	#id_GotThroughCard,(v_endcard).w
 		moveq	#plcid_TitleCard,d0

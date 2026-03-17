@@ -39,6 +39,10 @@ Sonic_Main:	; Routine 0
 		move.w	#$C,(v_sonspeedacc).w ; Sonic's acceleration
 		move.w	#$80,(v_sonspeeddec).w ; Sonic's deceleration
 		move.b	#id_SpinDust,(v_dustobj).w ; prepare spindust object
+		clr.b	(v_supersonic).w
+		clr.w	(v_superframe).w
+		clr.b	objoff_3D(a0)
+		clr.b	objoff_3F(a0)
 
 ; Obj01_Control:
 Sonic_Control:	; Routine 2
@@ -68,6 +72,7 @@ Sonic_Control:	; Routine 2
 
 .ignoremodes:
 		bsr.s	Sonic_Display
+		bsr.w	Sonic_Super
 		bsr.w	Sonic_RecordPosition
 		bsr.w	Sonic_Water
 		move.b	(v_anglebuffer).w,objoff_36(a0)
@@ -154,10 +159,12 @@ Sonic_Display:
 		beq.s	.exit
 		subq.w	#1,shoetime(a0)	; subtract 1 from time
 		bne.s	.exit
+		move.b	#0,(v_shoes).w	; cancel speed shoes
+		tst.b	(v_supersonic).w
+		bne.s	.exit
 		move.w	#$600,(v_sonspeedmax).w ; restore Sonic's speed
 		move.w	#$C,(v_sonspeedacc).w ; restore Sonic's acceleration
 		move.w	#$80,(v_sonspeeddec).w ; restore Sonic's deceleration
-		move.b	#0,(v_shoes).w	; cancel speed shoes
 		move.w	#bgm_Slowdown,d0
 		jmp	(QueueSound1).l	; run music at normal speed
 
@@ -206,9 +213,12 @@ Sonic_Water:
 		bsr.w	ResumeMusic
 		move.b	#id_DrownCount,(v_sonicbubbles).w ; load bubbles object from Sonic's mouth
 		move.b	#$81,(v_sonicbubbles+obSubtype).w
-		move.w	#$300,(v_sonspeedmax).w ; change Sonic's top speed
-		move.w	#6,(v_sonspeedacc).w ; change Sonic's acceleration
-		move.w	#$40,(v_sonspeeddec).w ; change Sonic's deceleration
+		bsr.w	Sonic_ApplySpeedSettings
+		tst.b	(v_supersonic).w
+		beq.s	.nosuperwaterin
+		bsr.w	Sonic_RefreshPalettes
+
+.nosuperwaterin:
 		asr	obVelX(a0)
 		asr	obVelY(a0)
 		asr	obVelY(a0)	; slow Sonic
@@ -223,9 +233,12 @@ Sonic_Water:
 		bclr	#6,obStatus(a0)
 		beq.s	.exit
 		bsr.w	ResumeMusic
-		move.w	#$600,(v_sonspeedmax).w ; restore Sonic's speed
-		move.w	#$C,(v_sonspeedacc).w ; restore Sonic's acceleration
-		move.w	#$80,(v_sonspeeddec).w ; restore Sonic's deceleration
+		bsr.w	Sonic_ApplySpeedSettings
+		tst.b	(v_supersonic).w
+		beq.s	.nosuperwaterout
+		bsr.w	Sonic_RefreshPalettes
+
+.nosuperwaterout:
 		asl	obVelY(a0)
 		tst.w	obVelY(a0)
 		beq.w	.exit
@@ -290,6 +303,7 @@ Sonic_MdRoll:
 
 ; Obj01_MdJump2:
 Sonic_MdJump2:
+		bsr.w	Sonic_ToggleSuper
 		bsr.w	Sonic_HomingAttack
 		bclr	#0,spindash_flag(a0)	; clear Spin Dash flag (see-saw fix)
 		bsr.w	Sonic_JumpHeight
@@ -991,6 +1005,11 @@ Sonic_Jump:
 		cmpi.w	#6,d1
 		blt.w	.return
 		move.w	#$680,d2	; set initial jump force.
+		tst.b	(v_supersonic).w	; is Sonic super?
+		beq.s	.chkunderwater	; if not, branch
+		move.w	#$800,d2	; set higher jump force for Super Sonic
+
+.chkunderwater:
 		btst	#6,obStatus(a0)	; is Sonic underwater?
 		beq.s	.notunderwater	; if not, continue.
 		move.w	#$380,d2	; set underwater jump force.
@@ -1417,6 +1436,8 @@ Sonic_ResetOnFloor:
 		bclr	#5,obStatus(a0)	; clear push flag
 		bclr	#1,obStatus(a0)	; clear in-air flag
 		bclr	#7,obStatus(a0)	; clear homing attack flag
+		clr.b	objoff_3D(a0)
+		clr.b	objoff_3F(a0)
 		btst	#2,obStatus(a0)	; check if Sonic is in a ball state.
 		beq.s	.notball	; if not, skip.
 		bclr	#2,obStatus(a0)	; clear ball flag.
@@ -1921,6 +1942,286 @@ Sonic_AirRoll:
 .return:
 		rts
 ; End of function Sonic_AirRoll
+
+; ---------------------------------------------------------------------------
+; Subroutine called at the peak of a jump to transform into Super Sonic
+; ---------------------------------------------------------------------------
+; Subroutine to toggle Super Sonic with a buffered A+B or B+C combination
+; ---------------------------------------------------------------------------
+
+Sonic_ToggleSuper:
+		btst	#7,objoff_3F(a0)	; is Super toggle locked until button release?
+		beq.s	.checktimer		; if not, branch
+		move.b	(v_jpadhold2).w,d0
+		andi.b	#btnABC,d0
+		bne.s	.return			; keep lock while buttons are still held
+		clr.b	objoff_3D(a0)
+		clr.b	objoff_3F(a0)
+		rts
+
+.checktimer:
+		tst.b	objoff_3D(a0)
+		beq.s	.checkpress
+		subq.b	#1,objoff_3D(a0)
+		bne.s	.checkpress
+		clr.b	objoff_3F(a0)
+
+.checkpress:
+		move.b	(v_jpadpress2).w,d0
+		andi.b	#btnABC,d0		; was any jump button newly pressed?
+		beq.s	.return			; if not, branch
+		move.b	objoff_3F(a0),d1
+		andi.b	#btnABC,d1
+		or.b	d0,d1			; merge with recent jump-button presses
+		move.b	d1,objoff_3F(a0)
+		move.b	#6,objoff_3D(a0)	; keep the combo window short
+		move.b	d1,d2
+		andi.b	#btnA|btnB,d2		; was A+B pressed within the window?
+		cmpi.b	#btnA|btnB,d2
+		beq.s	.toggle
+		andi.b	#btnB|btnC,d1		; was B+C pressed within the window?
+		cmpi.b	#btnB|btnC,d1
+		bne.s	.return			; if not, branch
+
+.toggle:
+		clr.b	objoff_3D(a0)
+		move.b	#$80,objoff_3F(a0)
+		bclr	#bitB,(v_jpadpress2).w	; consume the combo this frame
+		bclr	#bitA,(v_jpadpress2).w
+		bclr	#bitC,(v_jpadpress2).w
+		tst.b	(v_supersonic).w	; is Sonic already Super?
+		beq.s	.activate		; if not, branch
+		bra.w	Sonic_RevertToNormal
+
+.activate:
+		bra.w	Sonic_ActivateSuper
+
+.return:
+		rts
+; End of function Sonic_ToggleSuper
+
+; ---------------------------------------------------------------------------
+; Subroutine to transform into Super Sonic
+; ---------------------------------------------------------------------------
+
+Sonic_ActivateSuper:
+		tst.b	(v_supersonic).w	; is Sonic already Super?
+		beq.s	.chk_rings		; if not, branch
+		bra.w	.return
+;		cmpi.b	#6,(v_emeralds).w	; do we have all six emeralds?
+;		bne.s	.return			; if not, branch
+
+.chk_rings:
+		cmpi.w	#10,(v_rings).w		; does Sonic have at least 10 rings?
+		bhs.s	.chk_time		; if yes, branch
+		bra.w	.return
+
+.chk_time:
+		tst.b	(f_timecount).w		; has the act already ended?
+		bne.s	.activate		; if not, branch
+		bra.w	.return
+
+.activate:
+
+		move.b	#1,(v_supersonic).w
+		move.w	#60,(v_superframe).w
+		clr.b	(v_shoes).w
+		clr.w	shoetime(a0)
+		move.b	(v_snddriver_ram.v_tempo_mod).w,(v_snddriver_ram.v_main_tempo).w
+		move.b	(v_snddriver_ram.v_tempo_mod).w,(v_snddriver_ram.v_main_tempo_timeout).w
+		clr.b	(v_snddriver_ram.f_speedup).w
+		clr.b	(v_invinc).w
+		clr.w	invtime(a0)
+		clr.b	(v_starsobj1).w
+		clr.b	(v_starsobj2).w
+		clr.b	(v_starsobj3).w
+		clr.b	(v_starsobj4).w
+		clr.b	objoff_3D(a0)
+		move.b	#$80,objoff_3F(a0)
+		bsr.w	Sonic_ApplySpeedSettings
+		bsr.w	Sonic_RefreshPalettes
+		move.w	#bgm_Super,d0
+		jsr	(QueueSound1).l
+
+.return:
+		rts
+; End of function Sonic_ActivateSuper
+
+; ---------------------------------------------------------------------------
+; Subroutine doing the extra logic for Super Sonic
+; ---------------------------------------------------------------------------
+
+Sonic_Super:
+		tst.b	(v_supersonic).w	; ignore all this code if not Super Sonic
+		beq.s	Sonic_Super_Return	; if not, branch
+		subq.w	#1,(v_superframe).w
+		bpl.s	Sonic_Super_Return	; if time remains, branch
+		move.w	#60,(v_superframe).w	; reset frame counter to 60
+		tst.w	(v_rings).w		; does Sonic have any rings left?
+		beq.s	Sonic_RevertToNormal	; if not, revert
+		subq.w	#1,(v_rings).w
+		move.b	#$81,(f_ringcount).w	; fully redraw rings counter
+		bne.s	Sonic_Super_Return	; if rings remain, branch
+
+Sonic_RevertToNormal:
+		clr.b	(v_supersonic).w
+		clr.w	(v_superframe).w
+		tst.b	(v_shield).w
+		beq.s	.noshield
+		tst.b	(v_shieldobj).w
+		bne.s	.noshield
+		move.b	#id_ShieldItem,(v_shieldobj).w
+
+.noshield:
+		clr.b	objoff_3D(a0)
+		move.b	#$80,objoff_3F(a0)
+		bsr.w	Sonic_ApplySpeedSettings
+		bsr.w	Sonic_RefreshPalettes
+		bsr.w	Sonic_RefreshMusic
+
+Sonic_Super_Return:
+		rts
+; End of function Sonic_Super
+
+; ---------------------------------------------------------------------------
+; Subroutine to apply Sonic's current speed settings
+; ---------------------------------------------------------------------------
+
+Sonic_ApplySpeedSettings:
+		tst.b	(v_supersonic).w	; is Sonic super?
+		beq.s	.normal			; if not, branch
+		btst	#6,obStatus(a0)		; is Sonic underwater?
+		beq.s	.superdry		; if not, branch
+		move.w	#$500,(v_sonspeedmax).w
+		move.w	#$18,(v_sonspeedacc).w
+		move.w	#$80,(v_sonspeeddec).w
+		rts
+
+.superdry:
+		move.w	#$A00,(v_sonspeedmax).w
+		move.w	#$30,(v_sonspeedacc).w
+		move.w	#$100,(v_sonspeeddec).w
+		rts
+
+.normal:
+		btst	#6,obStatus(a0)		; is Sonic underwater?
+		beq.s	.normaldry		; if not, branch
+		tst.b	(v_shoes).w		; are speed shoes active?
+		beq.s	.normalwater		; if not, branch
+		move.w	#$600,(v_sonspeedmax).w
+		move.w	#$C,(v_sonspeedacc).w
+		move.w	#$40,(v_sonspeeddec).w
+		rts
+
+.normalwater:
+		move.w	#$300,(v_sonspeedmax).w
+		move.w	#6,(v_sonspeedacc).w
+		move.w	#$40,(v_sonspeeddec).w
+		rts
+
+.normaldry:
+		tst.b	(v_shoes).w		; are speed shoes active?
+		beq.s	.noshoes		; if not, branch
+		move.w	#$C00,(v_sonspeedmax).w
+		move.w	#$18,(v_sonspeedacc).w
+		move.w	#$80,(v_sonspeeddec).w
+		rts
+
+.noshoes:
+		move.w	#$600,(v_sonspeedmax).w
+		move.w	#$C,(v_sonspeedacc).w
+		move.w	#$80,(v_sonspeeddec).w
+		rts
+; End of function Sonic_ApplySpeedSettings
+
+; ---------------------------------------------------------------------------
+; Subroutine to refresh Sonic's palettes for normal/Super states
+; ---------------------------------------------------------------------------
+
+Sonic_RefreshPalettes:
+		lea	(Pal_Sonic+4).l,a1
+		tst.b	(v_supersonic).w
+		beq.s	.normalpals
+		lea	(Pal_SuperSonic+4).l,a1
+
+.normalpals:
+		lea	(v_palette+$4).w,a2
+		move.l	(a1)+,(a2)+
+		move.l	(a1),(a2)
+
+		cmpi.b	#id_LZ,(v_zone).w
+		beq.s	.loadwater
+		cmpi.w	#(id_LZ<<8)+3,(v_zone).w
+		bne.s	.return
+
+.loadwater:
+		tst.b	(v_supersonic).w
+		beq.s	.normalwater
+		lea	(Pal_SuperSonicWater+4).l,a1
+		bra.s	.copywater
+
+.normalwater:
+		cmpi.b	#id_LZ,(v_zone).w
+		bne.s	.sbz3water
+		lea	(Pal_LZSonWater+4).l,a1
+		bra.s	.copywater
+
+.sbz3water:
+		lea	(Pal_SBZ3SonWat+4).l,a1
+
+.copywater:
+		lea	(v_palette_water+$4).w,a2
+		move.l	(a1)+,(a2)+
+		move.l	(a1),(a2)
+
+.return:
+		rts
+; End of function Sonic_RefreshPalettes
+
+; ---------------------------------------------------------------------------
+; Subroutine to restore the correct music for Sonic's current state
+; ---------------------------------------------------------------------------
+
+Sonic_RefreshMusic:
+		cmpi.w	#$C,(v_air).w		; leave drowning music alone
+		blo.s	.return			; if air is low, branch
+		tst.b	(v_supersonic).w	; does Sonic have Super Sonic music?
+		beq.s	.chkinvincmusic		; if not, branch
+		move.w	#bgm_Super,d0
+		bra.s	.play
+
+.chkinvincmusic:
+		tst.b	(v_invinc).w		; does Sonic have invincibility?
+		beq.s	.chkshoesmusic		; if not, branch
+		move.w	#bgm_Invincible,d0
+		bra.s	.play
+
+.chkshoesmusic:
+		tst.b	(v_shoes).w		; does Sonic have speed shoes?
+		beq.s	.levelmusic		; if not, branch
+		move.w	#bgm_Speedup,d0
+		bra.s	.play
+
+.levelmusic:
+		moveq	#0,d0
+		move.b	(v_zone).w,d0
+		cmpi.w	#(id_LZ<<8)+3,(v_zone).w ; check if level is SBZ3
+		bne.s	.musicselected
+		moveq	#5,d0			; play SBZ music
+
+.musicselected:
+		lea	(MusicList2).l,a1
+		move.b	(a1,d0.w),d0
+		tst.b	(f_lockscreen).w	; is boss mode on?
+		beq.s	.play			; if not, branch
+		move.w	#bgm_Boss,d0
+
+.play:
+		jsr	(QueueSound1).l
+
+.return:
+		rts
+; End of function Sonic_RefreshMusic
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to perform a homing attack or jumpdash while airborne

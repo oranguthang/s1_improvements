@@ -2003,6 +2003,19 @@ Pal_SSResult:	bincludePalette	"palette/Special Stage Results.bin"
 Pal_Continue:	bincludePalette	"palette/Special Stage Continue Bonus.bin"
 Pal_Ending:	bincludePalette	"palette/Ending.bin"
 
+; Super Sonic palette using the existing Sonic art/mappings pipeline.
+Pal_SuperSonic:
+		dc.w $0000, $0000, $04AA, $0ACA, $0ECC, $0EEE, $0EEE, $0CC0
+		dc.w $0888, $0444, $08AE, $046A, $000E, $0008, $0004, $00EE
+
+Pal_SuperSonic_end:
+
+Pal_SuperSonicWater:
+		dc.w $0000, $0000, $0E88, $0EAA, $0EAC, $0ECC, $0EEE, $0AA0
+		dc.w $0888, $0444, $06AA, $0266, $0048, $0024, $0002, $00EE
+
+Pal_SuperSonicWater_end:
+
 ; ---------------------------------------------------------------------------
 ; Subroutine to wait for VBlank routines to complete
 ; ---------------------------------------------------------------------------

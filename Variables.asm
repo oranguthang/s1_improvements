@@ -346,6 +346,7 @@ v_shield:		ds.b	1		; shield status (00 = no; 01 = yes)
 v_invinc:		ds.b	1		; invinciblity status (00 = no; 01 = yes)
 v_shoes:		ds.b	1		; speed shoes status (00 = no; 01 = yes)
 v_unused1:		ds.b	1		; an unused fourth player status (Goggles?)
+v_supersonic = v_unused1
 
 v_lastlamp:		ds.b	2		; number of the last lamppost you hit
 v_lamp_xpos:		ds.w	1		; x-axis for Sonic to respawn at lamppost
@@ -428,8 +429,11 @@ v_title_dcount:		ds.w	1		; number of times the d-pad is pressed on title screen
 v_title_ccount:		ds.w	1		; number of times C is pressed on title screen
 			ds.b	2		; unused
 v_unused2:		ds.w	1		; unused
+v_superframe = v_unused2
 v_unused3:		ds.b	1		; unused
+v_superinputtime = v_unused3
 v_unused4:		ds.b	1		; unused
+v_superinputmask = v_unused4
 v_unused5:		ds.b	1		; unused
 v_unused6:		ds.b	1		; unused
 f_demo:			ds.w	1		; demo mode flag (0 = no; 1 = yes; $8001 = ending)
