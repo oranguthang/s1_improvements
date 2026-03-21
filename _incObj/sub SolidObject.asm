@@ -24,7 +24,7 @@ SolidObject:
 		add.w	d1,d0
 		bmi.s	.leave		; if Sonic moves off the left, branch
 		cmp.w	d2,d0		; has Sonic moved off the right?
-		blo.s	.stand		; if not, branch
+		bls.s	.stand		; if not, branch
 
 .leave:
 		bclr	#3,obStatus(a1)	; clear Sonic's standing flag
@@ -53,7 +53,7 @@ SolidObject71:
 		add.w	d1,d0
 		bmi.s	.leave
 		cmp.w	d2,d0
-		blo.s	.stand
+		bls.s	.stand
 
 .leave:
 		bclr	#3,obStatus(a1)
@@ -226,7 +226,7 @@ Solid_TopBottom:
 		tst.w	d3		; is Sonic below the object?
 		bmi.s	Solid_Below	; if yes, branch
 		cmpi.w	#$10,d3		; has Sonic landed on the object?
-		blo.s	Solid_Landed	; if yes, branch
+		bls.s	Solid_Landed	; if yes, branch
 		bra.s	Solid_Ignore
 ; ===========================================================================
 
