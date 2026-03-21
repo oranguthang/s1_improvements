@@ -75,6 +75,8 @@ DLE_GHZx:	dc.w DLE_GHZ1-DLE_GHZx
 ; ===========================================================================
 
 DLE_GHZ1:
+		cmpi.b	#id_Title,(v_gamemode).w	; is this the title screen?
+		beq.s	locret_6E08			; if yes, don't run DLE
 		move.w	#$300,(v_limitbtm1).w ; set lower y-boundary
 		cmpi.w	#$1780,(v_screenposx).w ; has the camera reached $1780 on x-axis?
 		blo.s	locret_6E08	; if not, branch

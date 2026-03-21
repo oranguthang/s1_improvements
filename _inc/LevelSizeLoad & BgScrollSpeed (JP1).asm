@@ -101,6 +101,18 @@ LevSz_ChkLamp:
 ; ===========================================================================
 
 LevSz_StartLoc:
+		cmpi.b	#id_Title,(v_gamemode).w	; is this the title screen?
+		bne.s	LevSz_NotTitle			; if not, branch
+		move.w	#$24BF,(v_limitright2).w	; force right level size to GHZ1 default
+		move.w	#$0300,d0			; force bottom boundary to GHZ1 default
+		move.w	d0,(v_limitbtm2).w		; '' current
+		move.w	d0,(v_limitbtm1).w		; '' target
+		move.w	#$0050,d1			; X coordinate (this also dictates the little delay before the title screen starts scrolling)
+		move.w	#$03B0,d0			; Y coordinate
+		move.w	d1,(v_player+obX).w		; set X coordinate
+		move.w	d0,(v_player+obY).w		; set Y coordinate
+		bra.s	LevSz_SkipStartPos		; skip normal logic
+LevSz_NotTitle:
 		move.w	(v_zone).w,d0
 		lsl.b	#6,d0
 		lsr.w	#4,d0

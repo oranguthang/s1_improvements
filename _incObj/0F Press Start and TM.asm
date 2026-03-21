@@ -16,7 +16,7 @@ PSB_Index:	dc.w PSB_Main-PSB_Index
 
 PSB_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)
-		move.w	#$D0,obX(a0)
+		move.w	#$D8,obX(a0)
 		move.w	#$130,obScreenY(a0)
 		move.l	#Map_PSB,obMap(a0)
 		move.w	#make_art_tile(ArtTile_Title_Foreground,0,0),obGfx(a0)
@@ -28,7 +28,7 @@ PSB_Main:	; Routine 0
 		bne.s	PSB_Exit	; if not, branch
 
 		move.w	#make_art_tile(ArtTile_Title_Trademark,1,0),obGfx(a0) ; "TM" specific code
-		move.w	#$170,obX(a0)
+		move.w	#$178,obX(a0)
 		move.w	#$F8,obScreenY(a0)
 
 PSB_Exit:	; Routine 4
