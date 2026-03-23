@@ -2204,6 +2204,10 @@ Tit_LoadText:
 		bsr.w	QueueSound2	; play title screen music
 		move.b	#0,(f_debugmode).w ; disable debug mode
 		move.w	#376,(v_generictimer).w ; run title screen for 376 frames
+		btst	#6,(v_megadrive).w	; is Mega Drive set to PAL region?
+		beq.s	.notPAL			; if not, branch
+		subi.w	#60,(v_generictimer).w	; correct title screen duration for PAL
+	.notPAL:
 		
 	if FixBugs
 		clearRAM v_sonicteam,v_sonicteam+object_size
