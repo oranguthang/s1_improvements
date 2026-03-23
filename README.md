@@ -37,6 +37,7 @@ See also:
 - [Fix the Level Select graphics bug](https://info.sonicretro.org/SCHG_How-to:Fix_the_Level_Select_graphics_bug)
 - [Fix Spikes Backside Damage in Sonic 1](https://info.sonicretro.org/SCHG_How-to:Fix_Spikes_Backside_Damage_in_Sonic_1)
 - [Fix the Title Screen position in Sonic 1](https://info.sonicretro.org/SCHG_How-to:Fix_the_Title_Screen_position_in_Sonic_1)
+- [Correct Sonic 1 PAL Music Tempo](https://info.sonicretro.org/SCHG_How-to:Correct_Sonic_1_PAL_Music_Tempo)
 
 ## Work in progress
 
