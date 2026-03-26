@@ -172,8 +172,6 @@ Lamp_LoadInfo:
 		move.w	(v_lamp_ypos).w,(v_player+obY).w
 		move.w	(v_lamp_rings).w,(v_rings).w
 		move.b	(v_lamp_lives).w,(v_lifecount).w
-		clr.w	(v_rings).w
-		clr.b	(v_lifecount).w
 		move.l	(v_lamp_time).w,(v_time).w
 		move.b	#59,(v_timecent).w
 		subq.b	#1,(v_timesec).w

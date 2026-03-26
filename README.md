@@ -38,6 +38,7 @@ See also:
 - [Fix Spikes Backside Damage in Sonic 1](https://info.sonicretro.org/SCHG_How-to:Fix_Spikes_Backside_Damage_in_Sonic_1)
 - [Fix the Title Screen position in Sonic 1](https://info.sonicretro.org/SCHG_How-to:Fix_the_Title_Screen_position_in_Sonic_1)
 - [Correct Sonic 1 PAL Music Tempo](https://info.sonicretro.org/SCHG_How-to:Correct_Sonic_1_PAL_Music_Tempo)
+- [Retain Rings when returning at a Star Post](https://info.sonicretro.org/SCHG_How-to:Retain_Rings_when_returning_at_a_Star_Post)
 
 ## Work in progress
 
