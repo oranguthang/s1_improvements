@@ -573,8 +573,12 @@ VBlank:
 		move.b	#0,(v_vbla_routine).w
 		move.w	#1,(f_hbla_pal).w
 		andi.w	#$3E,d0
+		move.w	d0,-(sp)
 		move.w	VBla_Index(pc,d0.w),d0
 		jsr	VBla_Index(pc,d0.w)
+		move.w	(sp)+,d0
+		cmpi.w	#$14,d0
+		beq.s	VBla_Exit
 
 VBla_Music:
 		jsr	(UpdateMusic).l
@@ -2082,17 +2086,22 @@ Sega_WaitPal:
 
 		move.b	#sfx_Sega,d0
 		bsr.w	QueueSound2	; play "SEGA" sound
-		move.b	#$14,(v_vbla_routine).w
-		bsr.w	WaitForVBla
-		move.w	#30,(v_generictimer).w
-
-Sega_WaitEnd:
 		move.b	#2,(v_vbla_routine).w
 		bsr.w	WaitForVBla
+		move.w	#3*60,(v_generictimer).w
+
+Sega_WaitEnd:
+		move.b	#$14,(v_vbla_routine).w
+		bsr.w	WaitForVBla
+		bsr.w	ReadJoypads
 		tst.w	(v_generictimer).w
 		beq.s	Sega_GotoTitle
-		andi.b	#btnStart,(v_jpadpress1).w ; is Start button pressed?
+		move.b	(v_jpadpress1).w,d0	; is Start button pressed?
+		andi.b	#btnStart,d0
 		beq.s	Sega_WaitEnd	; if not, branch
+		disable_ints
+		bsr.w	DACDriverLoad
+		enable_ints
 
 Sega_GotoTitle:
 		move.b	#id_Title,(v_gamemode).w ; go to title screen

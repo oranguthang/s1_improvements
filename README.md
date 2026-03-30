@@ -40,6 +40,10 @@ See also:
 - [Correct Sonic 1 PAL Music Tempo](https://info.sonicretro.org/SCHG_How-to:Correct_Sonic_1_PAL_Music_Tempo)
 - [Retain Rings when returning at a Star Post](https://info.sonicretro.org/SCHG_How-to:Retain_Rings_when_returning_at_a_Star_Post)
 
+## Custom fixes
+
+- Allow skipping the SEGA screen with Start while the sound is playing
+
 ## Work in progress
 
 - [Add Super Sonic to Sonic 1](https://info.sonicretro.org/SCHG_How-to:Add_Super_Sonic_to_Sonic_1) is currently `WIP` and lives on the `super_sonic` branch for now.

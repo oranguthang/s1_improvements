@@ -756,19 +756,6 @@ ptr_flgend
 ; Sound_E1: PlaySega:
 PlaySegaSound:
 		move.b	#$88,(z80_ram+zDAC_Sample).l	; Queue Sega PCM
-		startZ80
-		move.w	#$11,d1
-; loc_71FC0:
-.busyloop_outer:
-		move.w	#-1,d0
-; loc_71FC4:
-.busyloop:
-		nop	
-		dbf	d0,.busyloop
-
-		dbf	d1,.busyloop_outer
-
-		addq.w	#4,sp	; Tamper return value so we don't return to caller
 		rts
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
