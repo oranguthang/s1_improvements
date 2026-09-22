@@ -123,7 +123,16 @@ SSR_RingBonus:	; Routine 6
 		move.b	#1,(f_endactbonus).w			; set time/ring bonus HUD update flag
 
 		tst.w	(v_ringbonus).w				; is any ring bonus left?
-		beq.s	.finished				; if not, branch
+		beq.w	.finished				; if not, branch
+		moveq	#btnABC,d0				; match the act card's A/B/C tally shortcut
+		and.b	(v_jpadhold1).w,d0
+		beq.s	.countNormally
+		moveq	#0,d0
+		move.w	(v_ringbonus).w,d0		; award all remaining ring bonus
+		clr.w	(v_ringbonus).w
+		jsr	(AddPoints).l
+		bra.w	.finished
+	.countNormally:
 		subi.w	#10,(v_ringbonus).w			; subtract 100 points from remaining ring bonus
 		moveq	#10,d0					; set to add 100 points to score
 		jsr	(AddPoints).l				; add d0 points to score

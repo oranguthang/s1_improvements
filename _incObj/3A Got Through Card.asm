@@ -107,6 +107,8 @@ Got_MoveIn:
 		bne.s	.checkOffScreen				; if not, branch
 		addq.b	#2,obRoutine(a0)			; set to Got_Wait (4)
 		move.w	#3*60,obTimeFrame(a0)			; set time delay before tally to 3 seconds
+		move.w	#bgm_GotThrough,d0			; play the act clear music when the card arrives
+		jsr	(QueueSound2).l
 ; ---------------------------------------------------------------------------
 
 Got_Wait:	; Routine 4, 8, $C
@@ -124,6 +126,17 @@ Got_Bonus:	; Routine 6
 		bsr.w	DisplaySprite				; keep displaying card sprites
 		move.b	#1,(f_endactbonus).w			; set time/ring bonus HUD update flag
 		moveq	#0,d0					; set ticked-down bonus points to 0 by default
+		moveq	#btnABC,d0				; is A, B or C held?
+		and.b	(v_jpadhold1).w,d0
+		beq.s	.timeBonus				; if not, count down normally
+		moveq	#0,d0					; discard button bits before calculating the bonus
+		add.w	(v_timebonus).w,d0			; award all remaining bonus points
+		add.w	(v_ringbonus).w,d0
+		clr.w	(v_timebonus).w
+		clr.w	(v_ringbonus).w
+		jsr	(AddPoints).l
+		moveq	#0,d0
+		bra.s	.checkFinished
 
 	.timeBonus:
 		tst.w	(v_timebonus).w				; is any time bonus left?
@@ -304,19 +317,19 @@ Got_ItemData:
 
 		; Score tally
 		dc.w $520, $120
-		dc.w $EC
+		dc.w $126
 		dc.b 2
 		dc.b 2
 
 		; Time Bonus tally
 		dc.w $540, $120
-		dc.w $FC
+		dc.w $F6
 		dc.b 2
 		dc.b 3
 
 		; Ring Bonus tally
 		dc.w $560, $120
-		dc.w $10C
+		dc.w $106
 		dc.b 2
 		dc.b 4
 

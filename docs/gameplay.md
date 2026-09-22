@@ -15,3 +15,7 @@ Movement can preserve speed above the normal running cap. Input acceleration and
 ## Rolling jumps
 
 Directional steering remains available after jumping from a roll.
+
+## Score tally
+
+Press an action button during act or Special Stage results to finish counting the remaining bonus immediately.
