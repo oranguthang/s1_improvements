@@ -93,6 +93,7 @@ SonicSS_Modes:	dc.w SonicSS_OnWall-SonicSS_Modes		; 0 - while touching a block
 
 ; Obj09_OnWall:
 SonicSS_OnWall:	; While Sonic is touching a solid block
+		bclr	#7,obStatus(a0)				; clear the jump-origin flag after landing
 		bsr.w	SonicSS_Jump				; allow Sonic to jump from walls
 		bsr.w	SonicSS_Move				; update position based on button inputs
 		bsr.w	SonicSS_Fall				; apply gravity based on stage rotation
@@ -101,7 +102,7 @@ SonicSS_OnWall:	; While Sonic is touching a solid block
 
 ; Obj09_InAir:
 SonicSS_InAir:	; While Sonic is airborne from jumping or falling
-		bsr.w	SonicSS_JumpHeight_Unused		; (disabled code) would have allowed to granularly control jump height
+		bsr.w	SonicSS_JumpHeight			; shorten jumps when ABC is released
 		bsr.w	SonicSS_Move				; update position based on button inputs
 		bsr.w	SonicSS_Fall				; apply gravity based on stage rotation
 ; ---------------------------------------------------------------------------
@@ -296,8 +297,7 @@ SonicSS_Jump:
 		andi.b	#btnABC,d0				; is A, B or C pressed?
 		beq.s	SonicSS_NoJump				; if not, branch
 
-		move.b	(v_ssangle).w,d0			; get current angle of the special stage rotation
-		andi.b	#$FC,d0					; snap to nearest multiple of 4 to match stage rotation
+		move.b	(v_ssangle).w,d0			; get current angle of the special stage rotation (unsnapped, like the smooth display)
 		neg.b	d0					; negate for sine calculation
 		subi.b	#$40,d0					; rotate it perpendicularly for jump trajectory
 		jsr	(CalcSine).l				; get sine and cosine values based on angle
@@ -309,6 +309,7 @@ SonicSS_Jump:
 		move.w	d0,obVelY(a0)				; set result as new Y speed
 
 		bset	#1,obStatus(a0)				; set in-air flag
+		bset	#7,obStatus(a0)				; remember that Sonic jumped
 
 		move.w	#sfx_Jump,d0				; set jump sound
 		jsr	(QueueSound2).l				; play jumping sound
@@ -321,24 +322,42 @@ SonicSS_NoJump:
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
-; Unused subroutine to limit Sonic's upward vertical speed depending on
-; how long the jump button was held after the initial jump. This likely got
-; removed as it doesn't work (it doesn't account for the stage rotation).
+; Limit jump speed along the stage's rotated upward axis after ABC is released.
 ; ---------------------------------------------------------------------------
 
 ; nullsub_2:
-SonicSS_JumpHeight_Unused:
-		rts						; immediately return
-; ---------------------------------------------------------------------------
-
-		; dead code
-		move.w	#-$400,d1				; set maximum jump speed
-		cmp.w	obVelY(a0),d1				; is Sonic already below the cap?
-		ble.s	.return					; if yes, branch
+SonicSS_JumpHeight:
 		move.b	(v_jpadhold2).w,d0			; get held buttons
 		andi.b	#btnABC,d0				; is A, B, or C being held?
-		bne.s	.return					; if yes, branch
-		move.w	d1,obVelY(a0)				; cap vertical speed if not holding ABC
+		bne.s	.return					; if yes, keep current jump speed
+		btst	#7,obStatus(a0)				; did Sonic jump rather than fall or hit a bumper?
+		beq.s	.return					; if not, leave velocity unchanged
+
+		move.b	(v_ssangle).w,d0			; get stage rotation (unsnapped)
+		neg.b	d0
+		subi.b	#$40,d0					; rotate to the jump axis
+		jsr	(CalcSine).l				; d0 = sine, d1 = cosine
+		move.w	obVelY(a0),d2
+		muls.w	d2,d0
+		asr.l	#8,d0
+		move.w	obVelX(a0),d2
+		muls.w	d2,d1
+		asr.l	#8,d1
+		add.w	d0,d1					; speed along the jump axis
+		cmpi.w	#$400,d1
+		ble.s	.return					; already at or below released-jump speed
+
+		move.b	(v_ssangle).w,d0
+		neg.b	d0
+		subi.b	#$40,d0
+		jsr	(CalcSine).l
+		muls.w	#$400,d1
+		asr.l	#8,d1
+		move.w	d1,obVelX(a0)
+		muls.w	#$400,d0
+		asr.l	#8,d0
+		move.w	d0,obVelY(a0)
+		bclr	#7,obStatus(a0)				; only shorten this jump once
 
 ; locret_1BBB4:
 .return:
@@ -442,8 +461,7 @@ SonicSS_ExitStage_Unused:
 SonicSS_Fall:
 		move.l	obY(a0),d2				; get Sonic's current Y position
 		move.l	obX(a0),d3				; get Sonic's current X position
-		move.b	(v_ssangle).w,d0			; get current angle of the special stage rotation
-		andi.b	#$FC,d0					; snap to nearest multiple of 4 to match stage rotation
+		move.b	(v_ssangle).w,d0			; get current angle of the special stage rotation (unsnapped, like the smooth display)
 		jsr	(CalcSine).l				; get sine and cosine values based on angle
 
 		move.w	obVelX(a0),d4				; get Sonic's current X velocity
@@ -806,6 +824,7 @@ SonicSS_ChkBumper:
 		move.w	d0,obVelY(a0)				; set final result to Sonic's Y-speed
 
 		bset	#1,obStatus(a0)				; set in-air flag
+		bclr	#7,obStatus(a0)				; a bumper launch is not a jump
 
 		bsr.w	SS_FindFreeAnimationSlot		; find a free animation slot
 		bne.s	SonicSS_BumpSnd				; if none are free, branch
