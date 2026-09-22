@@ -31,3 +31,7 @@ The horizontal camera looks farther ahead as Sonic runs. Demo exits preserve the
 ## Air Roll
 
 Press an action button while airborne to curl into a ball when no higher-priority move consumes that input.
+
+## Jump Dash and Homing Attack
+
+An airborne action can dash toward a valid forward target. Homing targets the upper part of the object so low targets do not pull Sonic into the floor.

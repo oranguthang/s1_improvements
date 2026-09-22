@@ -236,6 +236,7 @@ React_Monitor:
 		bne.s	.return					; if not, don't break monitor
 		neg.w	obVelY(a0)				; reverse Sonic's y-motion
 		addq.b	#2,obRoutine(a1)			; advance the monitor's routine counter
+		bsr.w	React_ResetHomingAttack		; bounce and permit another dash after breaking a monitor
 
 	.return:
 		rts						; return
@@ -302,14 +303,17 @@ React_BadnikHit:
 		cmp.w	obY(a1),d0				; was Sonic below badnik on impact?
 		bhs.s	.boostFromBelow				; if yes, branch
 		neg.w	obVelY(a0)				; negate Sonic's Y-speed to make him bounce upwards
+		bsr.w	React_ResetHomingAttack
 		rts						; return
 
 	.slowFromBelow:
 		addi.w	#$100,obVelY(a0)			; slow down Sonic going up if badnik touched from below
+		bsr.w	React_ResetHomingAttack
 		rts						; return
 
 	.boostFromBelow:
 		subi.w	#$100,obVelY(a0)			; add a bit of boost speed when touching from below
+		bsr.w	React_ResetHomingAttack
 		rts						; return
 
 ; ---------------------------------------------------------------------------
@@ -568,3 +572,13 @@ React_LZPole:
 		rts						; return
 ; End of function React_Special
 ; ===========================================================================
+
+; Restore the air dash after hitting a valid target.
+React_ResetHomingAttack:
+		btst	#7,obStatus(a0)
+		beq.s	.return
+		clr.w	obVelX(a0)
+		move.w	#-$500,obVelY(a0)
+		bclr	#7,obStatus(a0)
+.return:
+		rts

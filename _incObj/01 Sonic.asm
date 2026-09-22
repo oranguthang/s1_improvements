@@ -359,6 +359,7 @@ Sonic_MdRoll:	; While Sonic is on the ground and rolling
 
 ; Obj01_MdJump2:
 Sonic_MdJump2:	; While Sonic is in the air and rolling (usually, but not limited to, jumping)
+		bsr.w	Sonic_HomingAttack			; trigger a homing dash on a new button press
 		bsr.w	Sonic_JumpHeight			; handle Sonic's jump height based on whether the jump button is still held
 		bsr.w	Sonic_JumpDirection			; handle midair direction adjustments while jumping
 		bsr.w	Sonic_LevelBound			; make sure Sonic stays within level bounds and handle bottomless pits
@@ -1811,6 +1812,7 @@ Sonic_FloorRight:
 Sonic_ResetOnFloor:
 		bclr	#5,obStatus(a0)				; clear push flag
 		bclr	#1,obStatus(a0)				; clear in-air flag
+		bclr	#7,obStatus(a0)				; allow another homing attack after landing
 	if FixBugs
 		; This line was placed too late into the routine,
 		; occasionally causing Sonic "sliding" on the floor
@@ -2409,6 +2411,112 @@ Sonic_AirRoll:
 		move.b	#sonic_roll_width,obWidth(a0)
 		addq.w	#sonic_height-sonic_roll_height,obY(a0)
 .return:
+		rts
+
+; Dash toward the closest valid target, or in the direction Sonic faces.
+Sonic_HomingAttack:
+		btst	#7,obStatus(a0)				; only one attack per jump until a target is hit
+		bne.s	.return
+		moveq	#btnABC,d0
+		and.b	(v_jpadpress2).w,d0
+		beq.s	.return
+		bset	#7,obStatus(a0)
+		move.w	#sfx_Teleport,d0
+		jsr	(QueueSound2).l
+		bsr.w	Sonic_FindHomingTarget
+		beq.s	.jumpDash				; no valid target
+		move.w	obX(a2),d1
+		sub.w	obX(a0),d1
+		movea.l	a2,a1
+		bsr.w	Sonic_HomingTargetY			; use the same hitbox point as target selection
+		sub.w	obY(a0),d2
+		jsr	(CalcAngle).l
+		jsr	(CalcSine).l
+		asl.w	#3,d0
+		asl.w	#3,d1
+		move.w	d0,obVelY(a0)
+		move.w	d1,obVelX(a0)
+.return:
+		rts
+.jumpDash:
+		clr.w	obVelY(a0)
+		move.w	#$800,d0
+		btst	#0,obStatus(a0)
+		beq.s	.faceRight
+		neg.w	d0
+.faceRight:
+		move.w	d0,obVelX(a0)
+		rts
+
+; Scan level objects and return the nearest badnik or intact monitor ahead.
+; The result is Z=0 and a2=target, or Z=1 when no target is in range.
+Sonic_FindHomingTarget:
+		moveq	#-1,d3					; best squared distance so far
+		lea	(v_lvlobjspace).w,a1
+		moveq	#(v_lvlobjend-v_lvlobjspace)/object_size-1,d0
+.nextObject:
+		tst.b	obID(a1)
+		beq.w	.advance
+		move.b	obColType(a1),d1
+		beq.w	.advance
+		cmpi.b	#$E,d1					; badnik collision type
+		bls.s	.checkRange
+		cmpi.b	#$46,d1					; monitor collision type
+		bne.w	.advance
+		cmpi.b	#2,obRoutine(a1)			; is monitor still intact?
+		bhi.w	.advance
+.checkRange:
+		move.w	obX(a1),d1
+		sub.w	obX(a0),d1
+		btst	#0,obStatus(a0)
+		bne.s	.facingLeft
+		tst.w	d1					; target must be on Sonic's right
+		bmi.w	.advance
+		bra.s	.xDistance
+.facingLeft:
+		tst.w	d1					; target must be on Sonic's left
+		bpl.w	.advance
+.xDistance:
+		bpl.s	.xPositive
+		neg.w	d1
+.xPositive:
+		cmpi.w	#150,d1
+		bhi.w	.advance
+		bsr.w	Sonic_HomingTargetY
+		sub.w	obY(a0),d2
+		bpl.s	.yPositive
+		neg.w	d2
+.yPositive:
+		cmpi.w	#150,d2
+		bhi.w	.advance
+		muls.w	d1,d1
+		muls.w	d2,d2
+		add.l	d2,d1
+		cmp.l	d3,d1
+		bhs.s	.advance
+		move.l	d1,d3
+		movea.l	a1,a2
+.advance:
+		adda.w	#object_size,a1
+		dbf	d0,.nextObject
+		addq.l	#1,d3					; sets Z only when no target was selected
+		rts
+
+; Aim at the middle of the upper third of the effective collision box.
+; a1 = badnik/intact monitor; d2 = target Y. Clobbers d4/a3 only.
+; React_Sizes stores half-height h, so the point is origin - floor(2*h/3).
+Sonic_HomingTargetY:
+		moveq	#0,d4
+		move.b	obColType(a1),d4
+		andi.w	#$3F,d4
+		add.w	d4,d4
+		lea	(React_Sizes).l,a3
+		move.b	-1(a3,d4.w),d4			; collision half-height
+		andi.w	#$FF,d4
+		add.w	d4,d4
+		divu.w	#3,d4
+		move.w	obY(a1),d2
+		sub.w	d4,d2
 		rts
 
 ; Pan the camera ahead when Sonic moves quickly, then ease back to center.
