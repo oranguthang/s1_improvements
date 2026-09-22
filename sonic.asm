@@ -851,7 +851,7 @@ VBlank_Levels:
 		cmpi.b	#96,(v_hblank_line).w			; is LZ water surface within 96 pixels of the top of the screen?
 		bhs.s	VBlank_UpdateScreen			; if not, do screen updates now
 		move.b	#1,(f_doupdatesinhblank).w		; otherwise, we don't have enough time to do them now before HBlank hits, defer updates to then
-		addq.l	#4,sp					; skip return address (i.e. postpone updating the sound driver as well)
+		addq.l	#6,sp					; skip return address and saved VBlank mode (postpone sound driver update too)
 		bra.w	VBlank_Exit				; go straight back to to the VBlank exit
 
 ; ===========================================================================
