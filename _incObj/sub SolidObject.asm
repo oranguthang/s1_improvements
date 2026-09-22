@@ -45,12 +45,8 @@ SolidObject:
 
 	.stand:
 		move.w	d4,d2
-	if FixBugs
+		; MvSonicOnPtfm is out of bsr.w range in this project, with or without FixBugs
 		jsr	(MvSonicOnPtfm).l
-	else
-		; Goes out of range just from enabling FixBugs
-		bsr.w	MvSonicOnPtfm
-	endif
 		moveq	#0,d4					; clear flag for no new collision
 		rts
 
@@ -83,12 +79,8 @@ SolidObject_NoRenderChk:
 
 	.stand:
 		move.w	d4,d2
-	if FixBugs
+		; MvSonicOnPtfm is out of bsr.w range in this project, with or without FixBugs
 		jsr	(MvSonicOnPtfm).l
-	else
-		; Goes out of range just from enabling FixBugs
-		bsr.w	MvSonicOnPtfm
-	endif
 		moveq	#0,d4
 		rts
 

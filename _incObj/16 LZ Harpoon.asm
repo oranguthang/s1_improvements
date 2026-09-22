@@ -29,7 +29,7 @@ Harp_Main:	; Routine 0
 
 Harp_Move:	; Routine 2
 		lea	(Ani_Harp).l,a1				; load animation scripts
-		bsr.w	AnimateSprite				; (advances obRoutine to Harp_Wait on animation finish)
+		jsr	(AnimateSprite).l				; (advances obRoutine to Harp_Wait on animation finish)
 
 		moveq	#0,d0
 		move.b	obFrame(a0),d0				; get current frame number after animations have run

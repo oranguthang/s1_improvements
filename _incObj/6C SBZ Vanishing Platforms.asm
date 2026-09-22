@@ -63,7 +63,7 @@ VanP_Sync:	; Routine 6
 	.animate:
 		lea	(Ani_Van).l,a1				; load animation script
 		jsr	(AnimateSprite).l			; (stays on final animation frame indefinitely)
-		bra.w	RememberState				; display sprite, or delete if offscreen
+		jmp	(RememberState).l				; display sprite, or delete if offscreen
 ; ===========================================================================
 
 ; VanP_Vanish: VanP_Appear:
@@ -93,7 +93,7 @@ VanP_StoodOn:	; Routine 4
 		moveq	#0,d1					; clear d1
 		move.b	obActWid(a0),d1				; use sprite display width as solidity width
 		jsr	(PlatformObject).l			; allow Sonic to stand on platform (obRoutine is set to 4 here if he is)
-		bra.w	RememberState				; display sprite, or delete if offscreen
+		jmp	(RememberState).l				; display sprite, or delete if offscreen
 ; ===========================================================================
 
 .sonicOnPlatform:
@@ -103,7 +103,7 @@ VanP_StoodOn:	; Routine 4
 
 		move.w	obX(a0),d2				; get platform's X-position
 		jsr	(MvSonicOnPtfm2).l			; move Sonic with platform
-		bra.w	RememberState				; display sprite, or delete if offscreen
+		jmp	(RememberState).l				; display sprite, or delete if offscreen
 ; ===========================================================================
 
 .notSolid:
@@ -116,7 +116,7 @@ VanP_StoodOn:	; Routine 4
 		clr.b	obSolid(a0)				; clear platform solidity flag
 
 	.display:
-		bra.w	RememberState				; display sprite, or delete if offscreen
+		jmp	(RememberState).l				; display sprite, or delete if offscreen
 
 ; ===========================================================================
 

@@ -98,7 +98,7 @@ Newt_Action_Drop:
 	endif
 
 		bsr.w	ObjectFall				; make Newtron fall
-		bsr.w	ObjFloorDist				; get distance to floor
+		jsr	(ObjFloorDist).l				; get distance to floor
 		tst.w	d1					; has Newtron hit the floor?
 		bpl.s	.return					; if not, branch
 		add.w	d1,obY(a0)				; align Newtron with floor on landing
@@ -128,7 +128,7 @@ Newt_Action_Drop:
 Newt_Action_MoveOnFloor:
 		bsr.w	SpeedToPos				; move Newtron sideways
 
-		bsr.w	ObjFloorDist				; get distance to floor
+		jsr	(ObjFloorDist).l				; get distance to floor
 		cmpi.w	#-8,d1					; is there a steep upward slope ahead?
 		blt.s	.detach					; if yes, branch
 		cmpi.w	#$C,d1					; is there a large drop ahead?

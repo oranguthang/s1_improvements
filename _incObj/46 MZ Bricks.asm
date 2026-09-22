@@ -102,7 +102,7 @@ Brick_Type03:	; subtype 3 = fall until floor is hit
 		bsr.w	SpeedToPos				; update coordinates based on speed
 		addi.w	#$18,obVelY(a0)				; increase falling speed
 
-		bsr.w	ObjFloorDist				; check distance to floor
+		jsr	(ObjFloorDist).l			; check distance to floor
 		tst.w	d1					; has the block hit the floor?
 		bpl.w	.return					; if not, branch
 		add.w	d1,obY(a0)				; align block to floor

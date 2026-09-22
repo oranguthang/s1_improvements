@@ -58,7 +58,7 @@ Gird_Action:	; Routine 2
 		move.b	obHeight(a0),d2				; get object height as solidity height
 		move.w	d2,d3					; d2 = initial, d3 = while stood-on
 		addq.w	#1,d3					; +1px for stood-on height
-		bsr.w	SolidObject				; make girder blocks solid
+		jsr	(SolidObject).l				; make girder blocks solid
 ; ---------------------------------------------------------------------------
 
 	.chkdel:

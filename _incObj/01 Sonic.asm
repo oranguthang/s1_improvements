@@ -1107,9 +1107,9 @@ Sonic_LevelBound:
 		blo.s	JumpTo_KillSonic			; if not, kill Sonic
 	else
 		cmpi.w	#id_SBZ_act2,(v_zone_act).w		; is level SBZ2?
-		bne.w	KillSonic				; if not, kill Sonic
+		bne.s	JumpTo_KillSonic			; if not, kill Sonic
 		cmpi.w	#$2000,(v_player+obX).w			; is Sonic far enough into the level?
-		blo.w	KillSonic				; if not, kill Sonic
+		blo.s	JumpTo_KillSonic			; if not, kill Sonic
 	endif
 
 		; Transition from SBZ2 to SBZ3
@@ -1128,12 +1128,10 @@ Sonic_LevelBound:
 		bra.s	.chkbottom				; check for bottom boundary collision as well
 ; ===========================================================================
 
-	if FixBugs
-; Jump-redirect to the KillSonic subroutine, as it otherwise results in an out-of-range error
-; just from enabling FixBugs. This is also a very common beginner's trap
+; Jump-redirect to the KillSonic subroutine, as it is out of branch range in this
+; project (with or without FixBugs). This is also a very common beginner's trap
 JumpTo_KillSonic:
 		jmp	(KillSonic).l				; kill Sonic
-	endif
 ; End of function Sonic_LevelBound
 
 
@@ -1901,7 +1899,7 @@ Sonic_HurtStop:
 	else
 		; This would cause Sonic to die from the upper/top boundary of the level, while in hurt state.
 		; Also, the above branch goes out of range just from enabling FixBugs.
-		blo.w	KillSonic				; if yes, kill Sonic (unsigned, this will kill Sonic if leaving the top screen)
+		blo.w	JumpTo_KillSonic			; if yes, kill Sonic (unsigned, this will kill Sonic if leaving the top screen)
 	endif
 
 		bsr.w	Sonic_Floor				; handle Sonic landing on the floor again

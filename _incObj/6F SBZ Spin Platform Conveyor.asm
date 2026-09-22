@@ -198,7 +198,7 @@ SpinC_Solid:	; Routine 2
 		move.w	d2,d3					; set platform collision height (stood-on)
 		addq.w	#1,d3					; +1px while stood-on
 		move.w	(sp)+,d4				; restore previous X-position as input for SolidObject
-		bra.w	SolidObject				; make platform solid
+		jmp	(SolidObject).l				; make platform solid
 ; ---------------------------------------------------------------------------
 
 .spinning:

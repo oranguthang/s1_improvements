@@ -184,7 +184,7 @@ LBall_RiseAndFall:
 LBall_Up:
 		bset	#1,obStatus(a0)				; set Y-flip flag (face up)
 
-		bsr.w	ObjHitCeiling				; get distance to ceiling
+		jsr	(ObjHitCeiling).l				; get distance to ceiling
 		tst.w	d1					; has ball hit the ceiling?
 		bpl.s	.return					; if not, branch
 		move.b	#8,obSubtype(a0)			; set to LBall_DoNothing (stop moving)
@@ -199,7 +199,7 @@ LBall_Up:
 LBall_Down:
 		bclr	#1,obStatus(a0)				; clear Y-flip flag (face down)
 
-		bsr.w	ObjFloorDist				; get distance to floor
+		jsr	(ObjFloorDist).l				; get distance to floor
 		tst.w	d1					; has ball hit the floor?
 		bpl.s	.return					; if not, branch
 		move.b	#8,obSubtype(a0)			; set to LBall_DoNothing (stop moving)
@@ -215,7 +215,7 @@ LBall_Left:
 		bset	#0,obStatus(a0)				; set X-flip flag (face left)
 
 		moveq	#-8,d3					; check 8px ahead to the left
-		bsr.w	ObjHitWallLeft				; get distance to wall
+		jsr	(ObjHitWallLeft).l				; get distance to wall
 		tst.w	d1					; has ball hit the wall?
 		bpl.s	.return					; if not, branch
 		move.b	#8,obSubtype(a0)			; set to LBall_DoNothing (stop moving)
@@ -231,7 +231,7 @@ LBall_Right:
 		bclr	#0,obStatus(a0)				; clear X-flip flag (face right)
 
 		moveq	#8,d3					; check 8px ahead to the right
-		bsr.w	ObjHitWallRight				; get distance to wall
+		jsr	(ObjHitWallRight).l				; get distance to wall
 		tst.w	d1					; has ball hit the wall?
 		bpl.s	.return					; if not, branch
 		move.b	#8,obSubtype(a0)			; set to LBall_DoNothing (stop moving)

@@ -61,7 +61,7 @@ Ledge_ChkTouch:	; Routine 2
 		move.w	#96/2,d1
 		lea	(Ledge_SlopeData).l,a2
 		bsr.w	SlopeObject				; sets obRoutine to 4 on touch (Ledge_OnPlatform)
-		bra.w	RememberState
+		jmp	(RememberState).l
 ; ===========================================================================
 
 Ledge_OnPlatform:	; Routine 4
@@ -79,7 +79,7 @@ Ledge_WalkOff:	; Routine $A
 		lea	(Ledge_SlopeData).l,a2
 		move.w	obX(a0),d2
 		bsr.w	SlopeObject_AssumeStoodOn
-		bra.w	RememberState
+		jmp	(RememberState).l
 ; ===========================================================================
 
 Ledge_FragmentPiece:	; Routine 6
@@ -197,7 +197,7 @@ CFlo_ChkTouch:	; Routine 2
 		bset	#sprite_xflip_bit,obRender(a0)		; flip platform to inverse collapsing pattern
 
 	.display:
-		bra.w	RememberState
+		jmp	(RememberState).l
 ; ===========================================================================
 
 CFlo_OnPlatform:	; Routine 4
@@ -213,7 +213,7 @@ CFlo_WalkOff:	; Routine $A
 
 		move.w	obX(a0),d2
 		bsr.w	MvSonicOnPtfm2
-		bra.w	RememberState
+		jmp	(RememberState).l
 ; ===========================================================================
 
 CFlo_FragmentPiece:	; Routine 6

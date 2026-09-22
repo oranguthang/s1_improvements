@@ -29,7 +29,7 @@ Jun_Main:	; Routine 0
 ; ---------------------------------------------------------------------------
 
 	.loop:
-		bsr.w	FindFreeObj				; find a free object slot
+		jsr	(FindFreeObj).l				; find a free object slot (absolute: Super Sonic data extends branch distance)
 		bne.s	.next					; if object RAM is full, branch
 		_move.b	#id_Junction,obID(a1)			; load circular cover-up filler sprites object
 		addq.b	#4,obRoutine(a1)			; set to Jun_Display (do nothing but display)
