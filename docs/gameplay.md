@@ -3,3 +3,7 @@
 ## Special Stages
 
 Special Stage rotation and jump calculations use matching angular precision. Bumpers and jumps preserve the stage collision rules.
+
+## Lost rings
+
+Scattered rings use underwater gravity and flashing near expiry. Their lifetime handles timer wrapping.

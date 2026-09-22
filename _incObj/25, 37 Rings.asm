@@ -277,6 +277,14 @@ RLoss_Count:	; Routine 0
 		bsr.w	CalcSine				; calculate sine and cosine of current spread value (upper byte is ignored)
 		move.w	d4,d2					; get current spread value again
 		lsr.w	#8,d2					; get upper byte of spread value ($2xx => 2)
+		tst.b	(f_water).w				; does this level have water?
+		beq.s	.airSpeed
+		move.w	(v_waterpos1).w,d6			; get the water surface
+		cmp.w	obY(a0),d6				; is Sonic above the water?
+		bgt.s	.airSpeed
+		asr.w	#1,d0					; scatter rings more slowly underwater
+		asr.w	#1,d1
+.airSpeed:
 		asl.w	d2,d0					; boost X-speed by that value (multiply by 4)
 		asl.w	d2,d1					; boost Y-speed by that value (multiply by 4)
 		move.w	d0,d2					; store X-speed
@@ -316,6 +324,13 @@ RLoss_Bounce:	; Routine 2
 
 		bsr.w	SpeedToPos				; update ring position based on speed
 		addi.w	#$18,obVelY(a0)				; make ring fall faster
+		tst.b	(f_water).w				; does this level have water?
+		beq.s	.airGravity
+		move.w	(v_waterpos1).w,d6			; get the water surface
+		cmp.w	obY(a0),d6				; is this ring above the water?
+		bgt.s	.airGravity
+		subi.w	#$E,obVelY(a0)			; use reduced gravity underwater
+.airGravity:
 		bmi.s	.chkdel					; is ring still going upwards? if yes, skip floor collision check
 
 		move.b	(v_vblank_byte).w,d0			; get VBlank counter byte
@@ -343,6 +358,8 @@ RLoss_Bounce:	; Routine 2
 		beq.s	RLoss_Delete				; if yes, delete ring
 	endif
 
+		tst.w	(v_limittop2).w			; looping levels have no bottom despawn plane
+		bmi.s	.keepLostRing
 		move.w	(v_limitbtm2).w,d0			; get current bottom level boundary
 		addi.w	#224,d0					; add vertical screen height
 		cmp.w	obY(a0),d0				; has object moved below the bottom level boundary?
@@ -353,7 +370,17 @@ RLoss_Bounce:	; Routine 2
 	else
 		blo.s	RLoss_Delete				; if yes, delete ring
 	endif
+.keepLostRing:
+	if FixBugs
+		; Flash scattered rings during their last 80 frames.
+		cmpi.b	#80,obDelayAni(a0)
+		bhi.w	DisplaySprite
+		btst	#0,obDelayAni(a0)
+		beq.w	DisplaySprite
+		rts
+	else
 		bra.w	DisplaySprite				; display this ring
+	endif
 ; ===========================================================================
 
 RLoss_Collect:	; Routine 4
