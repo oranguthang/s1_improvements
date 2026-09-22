@@ -35,3 +35,7 @@ Press an action button while airborne to curl into a ball when no higher-priorit
 ## Jump Dash and Homing Attack
 
 An airborne action can dash toward a valid forward target. Homing targets the upper part of the object so low targets do not pull Sonic into the floor.
+
+## Startup
+
+Start can skip the SEGA screen while its sound is playing.

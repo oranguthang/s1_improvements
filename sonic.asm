@@ -675,8 +675,12 @@ VBlank:
 		move.b	#id_VBlank_Lag,(v_vblank_routine).w	; reset actual routine to lag frame (which ideally should get set again in the next frame)
 		move.w	#1,(f_hblank_pal).w			; set HBlank palette swap flag (only relevant for LZ)
 		andi.w	#$3E,d0					; mask out irrelevant bits in VBlank routine
+		move.w	d0,-(sp)				; remember whether Sega PCM is active
 		move.w	VBlank_Index(pc,d0.w),d0		; load address to relevant VBlank routine
 		jsr	VBlank_Index(pc,d0.w)			; jump to VBlank routine and then return here
+		move.w	(sp)+,d0
+		cmpi.w	#id_VBlank_SegaPCM,d0
+		beq.s	VBlank_Exit				; leave PCM uninterrupted
 
 VBlank_Music:
 		jsr	(UpdateMusic).l				; run sound driver to advance music
@@ -1863,20 +1867,25 @@ Sega_WaitPal:		; while light scanning effect is active
 		; while "SEGA" sound is playing
 		move.b	#sfx_Sega,d0				; set "SEGA" sound
 		bsr.w	QueueSound2				; queue it
-		move.b	#id_VBlank_SegaPCM,(v_vblank_routine).w	; set VBlank routine to $14
-		bsr.w	WaitForVBlank				; wait for VBlank to play the sound (CPU is frozen here until sound finished playing)
+		move.b	#id_VBlank_Sega,(v_vblank_routine).w	; process the sound queue this VBlank
+		bsr.w	WaitForVBlank
 ; ---------------------------------------------------------------------------
 
 		; after sound has finished playing
-		move.w	#30,(v_generictimer).w			; wait 30 frames before automatic fade-out
+		move.w	#3*60,(v_generictimer).w		; let the chant finish before automatic fade-out
 
 Sega_WaitEnd:
-		move.b	#id_VBlank_Sega,(v_vblank_routine).w	; set VBlank routine to $02
+		move.b	#id_VBlank_SegaPCM,(v_vblank_routine).w ; keep PCM playing without driver updates
 		bsr.w	WaitForVBlank				; wait for VBlank to finish
+		bsr.w	ReadJoypads				; poll Start during the sound
 		tst.w	(v_generictimer).w			; has post-chant timer expired?
 		beq.s	Sega_GotoTitle				; if yes, go to title screen
-		andi.b	#btnStart,(v_jpadpress1).w		; is Start button pressed?
+		move.b	(v_jpadpress1).w,d0
+		andi.b	#btnStart,d0				; is Start pressed?
 		beq.s	Sega_WaitEnd				; if not, loop post-chant routine
+		disable_ints
+		bsr.w	DACDriverLoad				; stop PCM before entering the title screen
+		enable_ints
 ; ---------------------------------------------------------------------------
 
 Sega_GotoTitle:		; transition to title screen
