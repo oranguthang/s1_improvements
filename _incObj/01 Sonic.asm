@@ -652,6 +652,9 @@ Sonic_MoveLeft:
 		neg.w	d1					; negate it for left-side check
 		cmp.w	d1,d0					; is new speed above max speed?
 		bgt.s	.nocap					; if not, branch
+		add.w	d5,d0					; recover speed before this frame's acceleration
+		cmp.w	d1,d0					; was Sonic already faster than the normal limit?
+		ble.s	.nocap					; keep momentum gained from outside forces
 		move.w	d1,d0					; cap Sonic's ground speed
 
 ; loc_130A6:
@@ -716,6 +719,9 @@ Sonic_MoveRight:
 		add.w	d5,d0					; add acceleration to current ground speed
 		cmp.w	d6,d0					; is new speed above max speed?
 		blt.s	.nocap					; if not, branch
+		sub.w	d5,d0					; recover speed before this frame's acceleration
+		cmp.w	d6,d0					; was Sonic already faster than the normal limit?
+		bge.s	.nocap					; keep momentum gained from outside forces
 		move.w	d6,d0					; cap Sonic's ground speed
 
 ; loc_1310C:
@@ -953,6 +959,9 @@ Sonic_JumpDirection:
 		neg.w	d1					; negate it for leftward movement check
 		cmp.w	d1,d0					; is new speed exceeding maximum?
 		bgt.s	.notleft				; if not, branch
+		add.w	d5,d0					; recover speed before this frame's acceleration
+		cmp.w	d1,d0					; was Sonic already faster than the normal limit?
+		ble.s	.notleft				; keep momentum gained from outside forces
 		move.w	d1,d0					; cap leftward X-speed to maximum
 
 ; loc_13278:
@@ -963,6 +972,9 @@ Sonic_JumpDirection:
 		add.w	d5,d0					; increase rightward movement speed
 		cmp.w	d6,d0					; is new speed exceeding maximum?
 		blt.s	Sonic_JumpMove				; if not, branch
+		sub.w	d5,d0					; recover speed before this frame's acceleration
+		cmp.w	d6,d0					; was Sonic already faster than the normal limit?
+		bge.s	Sonic_JumpMove				; keep momentum gained from outside forces
 		move.w	d6,d0					; cap rightward X-speed to maximum
 
 ; Obj01_JumpMove:
