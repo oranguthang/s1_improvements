@@ -32,6 +32,11 @@ DemoRecorder:
 ; ===========================================================================
 
 MDemo_On:
+		cmpi.b	#id_Demo,(v_gamemode).w		; is a level demo still running?
+		beq.s	.checkquit
+		cmpi.b	#id_Special,(v_gamemode).w	; or a Special Stage demo?
+		bne.s	.dontquit				; ignore Start after the fade-out begins
+.checkquit:
 		tst.b	(v_jpadhold1).w				; is start button held?
 		bpl.s	.dontquit				; if not, branch
 		tst.w	(f_demo).w				; is this an ending sequence demo?

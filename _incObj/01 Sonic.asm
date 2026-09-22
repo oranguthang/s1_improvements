@@ -49,6 +49,7 @@ Sonic_Main:	; Routine 0
 
 ; Obj01_Control:
 Sonic_Control:	; Routine 2
+		bsr.w	Sonic_PanCamera				; adjust horizontal camera focus
 		tst.w	(f_debugmode).w				; is debug cheat enabled?
 		beq.s	.nodebug				; if not, branch
 		btst	#bitB,(v_jpadpress1).w			; is button B pressed?
@@ -2393,3 +2394,46 @@ Sonic_LoadGfx:
 		rts						; return
 ; End of function Sonic_LoadGfx
 ; ===========================================================================
+
+; Pan the camera ahead when Sonic moves quickly, then ease back to center.
+Sonic_PanCamera:
+		move.w	(v_camera_pan).w,d1
+		move.w	obInertia(a0),d0
+		btst	#1,obStatus(a0)				; use horizontal velocity in the air
+		beq.s	.speedReady
+		move.w	obVelX(a0),d0
+.speedReady:
+		move.w	d0,d2					; retain movement direction
+		bpl.s	.absoluteSpeed
+		neg.w	d0
+.absoluteSpeed:
+		cmpi.w	#$600,d0				; reached normal top speed?
+		blo.s	.slow
+		tst.w	d2
+		bmi.s	.panLeft
+.panRight:
+		subq.w	#2,d1					; move Sonic toward the left of the view
+		cmpi.w	#320/2-64,d1
+		bhs.s	.store
+		move.w	#320/2-64,d1
+		bra.s	.store
+.panLeft:
+		addq.w	#2,d1					; move Sonic toward the right of the view
+		cmpi.w	#320/2+64,d1
+		blo.s	.store
+		move.w	#320/2+64,d1
+		bra.s	.store
+.slow:
+		cmpi.w	#$4B0,d0				; hold the current pan until speed drops
+		bhs.s	.return
+		cmpi.w	#320/2,d1
+		beq.s	.store
+		blo.s	.centerFromRight
+		subq.w	#2,d1
+		bra.s	.store
+.centerFromRight:
+		addq.w	#2,d1
+.store:
+		move.w	d1,(v_camera_pan).w
+.return:
+		rts

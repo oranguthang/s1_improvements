@@ -23,3 +23,7 @@ Press an action button during act or Special Stage results to finish counting th
 ## Checkpoints
 
 Lampposts save the ring count for a checkpoint restart.
+
+## Extended camera
+
+The horizontal camera looks farther ahead as Sonic runs. Demo exits preserve the final camera position through the fade.

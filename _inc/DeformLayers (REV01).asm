@@ -85,6 +85,8 @@ Deform_GHZ:
 		move.w	(v_screenposx).w,d0			; use regular camera X-position as input
 		cmpi.b	#id_Title,(v_gamemode).w		; are we on the title screen?
 		bne.s	.notTitle				; if not, branch
+		tst.w	(f_demo).w				; Start sets title mode during the last demo frame
+		bne.s	.notTitle				; keep the demo camera position until fade-out
 		moveq	#0,d0					; force FB X-position to 0 at all times (to keep Title Screen emblem in place)
 	.notTitle:
 		neg.w	d0

@@ -34,8 +34,8 @@ ScrollHoriz:
 MoveScreenHoriz:
 		move.w	(v_player+obX).w,d0			; get Sonic's current X-position
 		sub.w	(v_screenposx).w,d0			; d0 = Sonic's distance from left edge of screen
-
-		subi.w	#(320/2)-16,d0				; is distance less than 144px?
+		sub.w	(v_camera_pan).w,d0			; offset the focus ahead of Sonic
+		addi.w	#16,d0					; retain the original 16px camera dead zone
 	if FixBugs
 		; Fix horizontal wrap bug (left)
 		blt.s	SH_MoveCameraLeft			; if yes, branch (signed)

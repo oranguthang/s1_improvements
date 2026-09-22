@@ -42,6 +42,7 @@ LevelSizeLoad:
 
 		move.w	(a0)+,d0				; load final entry in level size array
 		move.w	d0,(v_lookshift).w			; write to vertical look shift (redundant, this is always $0060)
+		move.w	#320/2,(v_camera_pan).w		; center horizontal camera focus
 
 		bra.w	LevSz_InitScreenAndPlayerStart		; continue to remaining level setup for start location and camera position
 

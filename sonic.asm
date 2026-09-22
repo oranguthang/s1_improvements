@@ -3058,7 +3058,7 @@ Level_ChkDemo:
 		cmpi.b	#id_Demo,(v_gamemode).w			; is game mode still demo?
 		beq.w	Level_MainLoop				; if yes, loop level game mode
 		move.b	#id_Sega,(v_gamemode).w			; otherwise, return to Sega screen
-		rts						; return to MainGameLoop
+		bra.s	Level_FadeDemo				; use the same fade as a timed-out demo
 ; ===========================================================================
 
 Level_EndDemo:
@@ -3079,6 +3079,7 @@ Level_FDLoop:
 		bsr.w	WaitForVBlank				; wait until VBlank has finished
 		bsr.w	MoveSonicInDemo				; continue updating demo controls during fade-out
 		jsr	(ExecuteObjects).l			; continue executing objects during fade-out
+		bsr.w	DeformLayers				; keep camera and background scroll in sync with moving objects
 		jsr	(BuildSprites).l			; continue building sprites during fade-out
 		jsr	(ObjPosLoad).l				; continue running object manager during fade-out
 
