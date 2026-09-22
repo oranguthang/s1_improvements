@@ -40,13 +40,19 @@ PalFadeIn_Alt:	; start position and size are already set
 		move.w	d1,(a0)+				; make color black
 		dbf	d0,.fillBlack 				; loop until colors have been filled with black
 
-		move.w	#22-1,d4				; fade in for 22 frames (d4 must not be used elsewhere!)
+		moveq	#14,d4					; highest Genesis color component
+		moveq	#0,d6					; update every other frame
 	.fadeMainLoop:
+		bsr.w	RunPLC
 		move.b	#id_VBlank_PaletteFade,(v_vblank_routine).w ; set VBlank routine to fade-in ($12)
 		bsr.w	WaitForVBlank				; wait for VBlank to transfer CRAM and sync screen
+		bchg	#0,d6
+		beq.s	.fadeMainLoop
 		bsr.s	FadeIn_FromBlack			; fade-in all affected colors from black a bit more
-		bsr.w	RunPLC					; run any PLC, if necessary
-		dbf	d4,.fadeMainLoop			; loop for 22 frames
+		subq.b	#2,d4
+		bne.s	.fadeMainLoop
+		move.b	#id_VBlank_PaletteFade,(v_vblank_routine).w
+		bsr.w	WaitForVBlank				; transfer the final colors
 
 		rts						; return
 ; End of function PaletteFadeIn
@@ -84,45 +90,29 @@ FadeIn_FromBlack:
 ; End of function FadeIn_FromBlack
 ; ===========================================================================
 
-; The fade-in logic increases one RGB value at a time until the target color
-; has been reached. Sonic 1 fades blue first, then green, then red, resulting
-; in the characteristic blue-tinted fade seen throughout the entire game.
-; A simultaneous RGB fade would appear more natural, but would also complete
-; much faster. This staggered approach may have been chosen to extend
-; the fade duration while giving it a distinct visual style.
+; Fade all three color components together on alternating frames.
 
 FadeIn_AddColor:
-		move.w	(a1)+,d2				; get current target color (and advance index for next color)
-		move.w	(a0),d3					; get current active color
-		cmp.w	d2,d3					; has active color already reached its target level?
-		beq.s	.nextColor				; if yes, fade is done for this color
-
-	.addBlue:
-		move.w	d3,d1					; get current active color
-		addi.w	#$200,d1				; increase blue value by one step
-		cmp.w	d2,d1					; has blue exceeded target level?
-		bhi.s	.addGreen				; if yes, start fading in green
-		move.w	d1,(a0)+				; update active color
-		rts						; do not update green or red values until blue is done
-; ---------------------------------------------------------------------------
-
-	.addGreen:
-		move.w	d3,d1					; get current active color
-		addi.w	#$020,d1				; increase green value by one step
-		cmp.w	d2,d1					; has green exceeded target level?
-		bhi.s	.addRed					; if yes, start fading in red
-		move.w	d1,(a0)+				; update active color
-		rts						; do not update red value until green is done
-; ---------------------------------------------------------------------------
-
-	.addRed:
-		addq.w	#$002,(a0)+				; increase red value by one step & update active color
-		rts						; return
-; ---------------------------------------------------------------------------
-
-	.nextColor:
-		addq.w	#2,a0					; advance active palette buffer to next color
-		rts						; return
+		move.b	(a1),d5					; target blue component
+		move.w	(a1)+,d1				; target green and red components
+		move.b	d1,d2
+		lsr.b	#4,d1					; isolate green
+		andi.b	#$0E,d2					; isolate red
+		move.w	(a0),d3
+		cmp.b	d5,d4					; add blue when its target step is reached
+		bhi.s	.noBlue
+		addi.w	#$200,d3
+.noBlue:
+		cmp.b	d1,d4
+		bhi.s	.noGreen
+		addi.b	#$20,d3
+.noGreen:
+		cmp.b	d2,d4
+		bhi.s	.noRed
+		addq.b	#2,d3
+.noRed:
+		move.w	d3,(a0)+
+		rts
 ; End of function FadeIn_AddColor
 
 
@@ -134,13 +124,16 @@ FadeIn_AddColor:
 PaletteFadeOut:
 		move.w	#$003F,(v_pfade_start).w		; set start position = 0; affect all $40 palette colors
 
-		move.w	#22-1,d4				; fade in for 22 frames (d4 must not be used elsewhere!)
+		moveq	#8-1,d4				; eight simultaneous color steps
+		moveq	#0,d6					; update every other frame
 	.fadeMainLoop:
+		bsr.w	RunPLC
 		move.b	#id_VBlank_PaletteFade,(v_vblank_routine).w ; set VBlank routine to fade-in ($12)
 		bsr.w	WaitForVBlank				; wait for VBlank to transfer CRAM and sync screen
+		bchg	#0,d6
+		beq.s	.fadeMainLoop
 		bsr.s	FadeOut_ToBlack				; fade-out all affected colors to black a bit more
-		bsr.w	RunPLC					; run any PLC, if necessary
-		dbf	d4,.fadeMainLoop			; loop for 22 frames
+		dbf	d4,.fadeMainLoop
 
 		rts						; return
 ; End of function PaletteFadeOut
@@ -171,36 +164,24 @@ FadeOut_ToBlack:
 ; ===========================================================================
 
 FadeOut_DecColor:
-		move.w	(a0),d2					; get current active color
-		beq.s	.nextColor				; if it's already fully black ($000), fade-out is done for this color
-
-	.decRed:
-		move.w	d2,d1					; get current active color again
-		andi.w	#$00E,d1				; only look at red channel
-		beq.s	.decGreen				; if red channel is already at 0, start fading out green
-		subq.w	#$002,(a0)+				; decrease red value
-		rts						; do not update green or blues values until blue is done
-; ---------------------------------------------------------------------------
-
-	.decGreen:
-		move.w	d2,d1					; get current active color again
-		andi.w	#$0E0,d1				; only look at green channel
-		beq.s	.decBlue				; if green channel is already at 0, start fading out blue
-		subi.w	#$020,(a0)+				; decrease green value
-		rts						; do not update blue value until green is done
-; ---------------------------------------------------------------------------
-
-	.decBlue:
-		move.w	d2,d1					; get current active color again
-		andi.w	#$E00,d1				; only look at blue channel
-		beq.s	.nextColor				; if blue channel is already at 0, exit
-		subi.w	#$200,(a0)+				; decrease blue value
-		rts						; return
-; ---------------------------------------------------------------------------
-
-	.nextColor:
-		addq.w	#2,a0					; advance active palette buffer to next color
-		rts						; return
+		move.w	(a0),d5
+		move.w	d5,d1
+		move.b	d1,d2
+		move.b	d1,d3
+		andi.w	#$0E00,d1
+		beq.s	.noBlue
+		subi.w	#$200,d5
+.noBlue:
+		andi.w	#$00E0,d2
+		beq.s	.noGreen
+		subi.b	#$20,d5
+.noGreen:
+		andi.b	#$0E,d3
+		beq.s	.noRed
+		subq.b	#2,d5
+.noRed:
+		move.w	d5,(a0)+
+		rts
 ; End of function FadeOut_DecColor
 
 
@@ -224,13 +205,19 @@ PalWhiteIn_Alt:	; start position and size are already set
 		move.w	d1,(a0)+				; make color white
 		dbf	d0,.fillWhite				; fill palette with white
 
-		move.w	#22-1,d4				; fade in for 22 frames (d4 must not be used elsewhere!)
+		moveq	#14,d4					; highest Genesis color component
+		moveq	#0,d6					; update every other frame
 	.fadeMainLoop:
+		bsr.w	RunPLC
 		move.b	#id_VBlank_PaletteFade,(v_vblank_routine).w ; set VBlank routine to fade-in ($12)
 		bsr.w	WaitForVBlank				; wait for VBlank to transfer CRAM and sync screen
+		bchg	#0,d6
+		beq.s	.fadeMainLoop
 		bsr.s	WhiteIn_FromWhite			; fade-in all affected colors from white a bit more
-		bsr.w	RunPLC					; run any PLC, if necessary
-		dbf	d4,.fadeMainLoop			; loop for 22 frames
+		subq.b	#2,d4
+		bne.s	.fadeMainLoop
+		move.b	#id_VBlank_PaletteFade,(v_vblank_routine).w
+		bsr.w	WaitForVBlank				; transfer the final colors
 
 		rts						; return
 ; End of function PaletteWhiteIn
@@ -269,39 +256,26 @@ WhiteIn_FromWhite:
 ; ===========================================================================
 
 WhiteIn_DecColor:
-		move.w	(a1)+,d2				; get current target color (and advance index for next color)
-		move.w	(a0),d3					; get current active color
-		cmp.w	d2,d3					; has active color already reached its target level?
-		beq.s	.nextColor				; if yes, fade is done for this color
-
-	.decBlue:
-		move.w	d3,d1					; get current active color
-		subi.w	#$200,d1				; decrease blue value by one step
-		blo.s	.decGreen				; was blue value already at 0? if yes, start fading in green
-		cmp.w	d2,d1					; has blue value exceeded target level?
-		blo.s	.decGreen				; if yes, start fading in green
-		move.w	d1,(a0)+				; update active color
-		rts						; do not update green or red value until blue is done
-; ---------------------------------------------------------------------------
-
-	.decGreen:
-		move.w	d3,d1					; get current active color
-		subi.w	#$020,d1				; decrease green value by one step
-		blo.s	.decRed					; was green value already at 0? if yes, start fading in red
-		cmp.w	d2,d1					; has green value exceeded target level?
-		blo.s	.decRed					; if yes, start fading in red
-		move.w	d1,(a0)+				; update active color
-		rts						; do not update red value until green is done
-; ---------------------------------------------------------------------------
-
-	.decRed:
-		subq.w	#$002,(a0)+				; decrease red value by one step & update active color
-		rts						; return
-; ---------------------------------------------------------------------------
-
-	.nextColor:
-		addq.w	#2,a0					; advance active palette buffer to next color
-		rts						; return
+		move.b	(a1),d5
+		move.w	(a1)+,d1
+		move.b	d1,d2
+		lsr.b	#4,d1
+		andi.b	#$0E,d2
+		move.w	(a0),d3
+		cmp.b	d5,d4					; lower blue while current step is above target
+		bls.s	.noBlue
+		subi.w	#$200,d3
+.noBlue:
+		cmp.b	d1,d4
+		bls.s	.noGreen
+		subi.b	#$20,d3
+.noGreen:
+		cmp.b	d2,d4
+		bls.s	.noRed
+		subq.b	#2,d3
+.noRed:
+		move.w	d3,(a0)+
+		rts
 ; End of function WhiteIn_DecColor
 
 
@@ -313,13 +287,16 @@ WhiteIn_DecColor:
 PaletteWhiteOut:
 		move.w	#$003F,(v_pfade_start).w		; set start position = 0; affect all $40 palette colors
 
-		move.w	#22-1,d4				; fade in for 22 frames (d4 must not be used elsewhere!)
+		moveq	#8-1,d4				; eight simultaneous color steps
+		moveq	#0,d6					; update every other frame
 	.fadeMainLoop:
+		bsr.w	RunPLC
 		move.b	#id_VBlank_PaletteFade,(v_vblank_routine).w ; set VBlank routine to fade-in ($12)
 		bsr.w	WaitForVBlank				; wait for VBlank to transfer CRAM and sync screen
+		bchg	#0,d6
+		beq.s	.fadeMainLoop
 		bsr.s	WhiteOut_ToWhite			; fade-out all affected colors to white bit more
-		bsr.w	RunPLC					; run any PLC, if necessary
-		dbf	d4,.fadeMainLoop			; loop for 22 frames
+		dbf	d4,.fadeMainLoop
 
 		rts						; return
 ; End of function PaletteWhiteOut
@@ -350,38 +327,25 @@ WhiteOut_ToWhite:
 ; ===========================================================================
 
 WhiteOut_AddColor:
-		move.w	(a0),d2					; get current active color
-		cmpi.w	#cWhite,d2				; is color already at fully white? ($EEE)
-		beq.s	.nextColor				; if yes, fade-out is done for this color
-
-	.addRed:
-		move.w	d2,d1					; get current active color again
-		andi.w	#$00E,d1				; only look at red channel
-		cmpi.w	#cRed,d1				; is channel already at fully red? ($00E)
-		beq.s	.addGreen				; if yes, start fading out green
-		addq.w	#$002,(a0)+				; increase red value
-		rts						; do not update green or blues values until blue is done
-; ---------------------------------------------------------------------------
-
-	.addGreen:
-		move.w	d2,d1					; get current active color again
-		andi.w	#$0E0,d1				; only look at green channel
-		cmpi.w	#cGreen,d1				; is channel already at fully green? ($0E0)
-		beq.s	.addBlue				; if yes, start fading out blue
-		addi.w	#$020,(a0)+				; increase green value
-		rts						; do not update blue value until green is done
-; ---------------------------------------------------------------------------
-
-	.addBlue:
-		move.w	d2,d1					; get current active color again
-		andi.w	#$E00,d1				; only look at blue channel
-		cmpi.w	#cBlue,d1				; is channel already at fully blue? ($E00)
-		beq.s	.nextColor				; if yes, exit
-		addi.w	#$200,(a0)+				; increase blue value
-		rts						; return
-; ---------------------------------------------------------------------------
-
-	.nextColor:
-		addq.w	#2,a0					; advance active palette buffer to next color
-		rts						; return
+		move.w	(a0),d5
+		move.w	d5,d1
+		move.b	d1,d2
+		move.b	d1,d3
+		andi.w	#$0E00,d1
+		cmpi.w	#$0E00,d1
+		beq.s	.noBlue
+		addi.w	#$200,d5
+.noBlue:
+		andi.w	#$00E0,d2
+		cmpi.w	#$00E0,d2
+		beq.s	.noGreen
+		addi.b	#$20,d5
+.noGreen:
+		andi.b	#$0E,d3
+		cmpi.b	#$0E,d3
+		beq.s	.noRed
+		addq.b	#2,d5
+.noRed:
+		move.w	d5,(a0)+
+		rts
 ; End of function WhiteOut_AddColor
