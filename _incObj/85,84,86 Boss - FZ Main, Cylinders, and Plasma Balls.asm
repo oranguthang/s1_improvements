@@ -290,6 +290,7 @@ BossFinal_Eggman_Crush:
 
 ; loc_19FBC:
 .defeated:
+		clr.b	(f_bossmusic).w			; the final fight is over
 	if Revision<>0
 		moveq	#100,d0
 		bsr.w	AddPoints

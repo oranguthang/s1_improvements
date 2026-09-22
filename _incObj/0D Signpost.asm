@@ -30,6 +30,7 @@ Sign_Index:	dc.w Sign_Main-Sign_Index
 spintime:	equ objoff_30		; time for signpost to spin
 sparkletime:	equ objoff_32		; time between sparkles
 sparkle_id:	equ objoff_34		; counter to keep track of sparkles
+sign_fadetime:	equ objoff_36		; delay Super music fade until the signpost SFX finishes
 ; ===========================================================================
 
 Sign_Main:	; Routine 0
@@ -48,8 +49,18 @@ Sign_Touch:	; Routine 2
 		bhs.s	.notouch				; if not, branch
 
 		; Touched
+		tst.b	(v_supersonic).w
+		beq.s	.signSound
+		; Keep the current song and preserve any older queued command.
+		; Reversion normally queues act music, but the signpost will fade
+		; the Super song after its SFX (21 notes of 5 frames) has finished.
+		move.b	(v_snddriver_ram.v_soundqueue0).w,-(sp)
+		jsr	(Sonic_RevertFromEvent).l		; smoothly return Super Sonic to normal colours
+		move.b	(sp)+,(v_snddriver_ram.v_soundqueue0).w
+		move.w	#2*60,sign_fadetime(a0)		; frame count also covers the SFX at PAL speed
+	.signSound:
 		move.w	#sfx_Signpost,d0			; set signpost sound
-		jsr	(QueueSound1).l				; play play it
+		jsr	(QueueSound2).l				; SFX must not overwrite the music command
 		clr.b	(f_timecount).w				; stop time counter
 		move.w	(v_limitright2).w,(v_limitleft2).w	; lock screen position
 		addq.b	#2,obRoutine(a0)			; advance to Sign_Spin
@@ -59,6 +70,14 @@ Sign_Touch:	; Routine 2
 ; ===========================================================================
 
 Sign_Spin:	; Routine 4
+		tst.w	sign_fadetime(a0)
+		beq.s	.spin
+		subq.w	#1,sign_fadetime(a0)
+		bne.s	.spin
+		; Starting fade disables/stops SFX in SMPS; do it after the chime.
+		move.w	#bgm_Fade,d0
+		jsr	(QueueSound1).l
+	.spin:
 		subq.w	#1,spintime(a0)				; subtract 1 from spin time
 		bpl.s	.chksparkle				; if time remains, branch
 
@@ -144,7 +163,7 @@ Sign_SonicRun:	; Routine 6
 		move.w	(v_limitright2).w,d1			; get right level boundary
 		addi.w	#320-24,d1				; add screen width minus 24px of leeway (see Sonic_LevelBound)
 		cmp.w	d1,d0					; has Sonic crossed the right side including leeway?
-		blo.s	Sign_Return				; if not, don't load end cards yet
+		blo.w	Sign_Return				; if not, don't load end cards yet
 
 ; loc_EC86:
 Sign_LoadEndCards:
@@ -157,10 +176,11 @@ Sign_LoadEndCards:
 
 GotThroughAct:
 		tst.b	(v_endcard).w				; are end cards already loaded?
-		bne.s	Sign_Return				; if yes, don't load them again
+		bne.w	Sign_Return				; if yes, don't load them again
 
 		; Setup end card sequence
 		move.w	(v_limitright2).w,(v_limitleft2).w	; set left level boundary to be the same as the right one
+		jsr	(Sonic_RevertFromEvent).l		; fallback for alternate ways of ending the act
 		clr.b	(v_invinc).w				; disable invincibility
 		clr.b	(f_timecount).w				; stop time counter
 		move.b	#id_GotThroughCard,(v_endcard).w	; load end card object (and prevent this routine from running again)

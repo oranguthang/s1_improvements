@@ -19,7 +19,7 @@ ResumeMusic:
 		beq.s	.notInvincible				; if not, branch
 		move.w	#bgm_Invincible,d0			; play invincibility music instead
 	.notInvincible:
-		tst.b	(f_lockscreen).w			; is Sonic at a boss?
+		tst.b	(f_bossmusic).w			; is boss music active?
 		beq.s	.playselected				; if not, branch
 		move.w	#bgm_Boss,d0				; play boss music instead
 	.playselected:

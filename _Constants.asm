@@ -358,13 +358,14 @@ bgm_Continue:		equ ((ptr_mus90-MusicIndex)/4)+bgm__First
 bgm_Credits:		equ ((ptr_mus91-MusicIndex)/4)+bgm__First
 bgm_Drowning:		equ ((ptr_mus92-MusicIndex)/4)+bgm__First
 bgm_Emerald:		equ ((ptr_mus93-MusicIndex)/4)+bgm__First
+bgm_Super:		equ ((ptr_mus94-MusicIndex)/4)+bgm__First
 bgm__Last:		equ ((ptr_musend-MusicIndex-4)/4)+bgm__First
 
 ; Sound effects
 sfx__First:		equ $A0
 sfx_Jump:		equ ((ptr_sndA0-SoundIndex)/4)+sfx__First
 sfx_Lamppost:		equ ((ptr_sndA1-SoundIndex)/4)+sfx__First
-sfx_A2:			equ ((ptr_sndA2-SoundIndex)/4)+sfx__First
+sfx_SuperTransform:	equ ((ptr_sndA2-SoundIndex)/4)+sfx__First
 sfx_Death:		equ ((ptr_sndA3-SoundIndex)/4)+sfx__First
 sfx_Skid:		equ ((ptr_sndA4-SoundIndex)/4)+sfx__First
 sfx_A5:			equ ((ptr_sndA5-SoundIndex)/4)+sfx__First
@@ -584,6 +585,7 @@ ArtTile_Spring_Horizontal:	equ $523
 ArtTile_Spring_Vertical:	equ $533
 ArtTile_Shield:			equ $541
 ArtTile_Invincibility:		equ $55C
+ArtTile_SuperSonicStars:	equ ArtTile_Invincibility	; shares hidden invincibility stars; restored on reversion
 ArtTile_Game_Over:		equ $55E
 ArtTile_Title_Card:		equ $580
 ArtTile_Animal_1:		equ $580
@@ -598,6 +600,7 @@ ArtTile_HUDTimeSecs:		equ ArtTile_HUD+$2C
 ArtTile_HUDRings:		equ ArtTile_HUD+$30
 
 ArtTile_Sonic:			equ $780
+Sonic_Slot_Tiles:		equ 32			; Super frames use up to 31 tiles; ends before spin dust
 ArtTile_Points:			equ $797
 ArtTile_Lamppost:		equ $D800/$20			; ten tiles just before the HUD
 ArtTile_SpinDust:		equ $F400/$20

@@ -46,6 +46,13 @@ Sonic_Main:	; Routine 0
 		move.w	#son_acceleration,(v_sonspeedacc).w	; set Sonic's acceleration
 		move.w	#son_deceleration,(v_sonspeeddec).w	; set Sonic's deceleration
 		move.b	#id_SpinDust,(v_dustobj).w		; prepare Spin Dash dust object
+		clr.b	(v_supersonic).w
+		clr.w	(v_superframe).w
+		clr.w	(v_superpal_frame).w
+		clr.b	(v_superpal_timer).w
+		clr.b	(v_superpal_state).w
+		clr.b	objoff_3D(a0)
+		clr.b	objoff_3F(a0)
 ; ---------------------------------------------------------------------------
 
 ; Obj01_Control:
@@ -80,6 +87,7 @@ Sonic_Control:	; Routine 2
 ; loc_12C7E:
 .ignoremodes:
 		bsr.s	Sonic_Display				; display Sonic sprite and handle power-up expiration
+		bsr.w	Sonic_Super				; update Super Sonic state and ring drain
 		bsr.w	Sonic_RecordPosition			; record Sonic's previous position for the invincibility stars trail
 		bsr.w	Sonic_Water				; handle Sonic while in water (LZ only)
 		move.b	(v_anglebuffer).w,angleright(a0)	; update front collision hot spot
@@ -92,7 +100,8 @@ Sonic_Control:	; Routine 2
 		move.b	obPrevAni(a0),obAnim(a0)		; make sure Sonic is in the correct animation while in a wind tunnel
 
 ; loc_12CA6:
-.nowindtunnel:
+	.nowindtunnel:
+		bsr.w	Sonic_UpdateTransformPose
 		bsr.w	Sonic_Animate				; run Sonic's animation scripts
 		tst.b	(f_playerctrl).w			; is object interactions ignore flag set?
 		bmi.s	.ignoreobjcoll				; if yes, branch
@@ -189,6 +198,9 @@ Sonic_Display:
 		beq.s	.return					; if there is none, branch
 		subq.w	#1,shoetime(a0)				; subtract 1 from time
 		bne.s	.return					; if time remains, branch
+		clr.b	(v_shoes).w				; expire speed shoes
+		tst.b	(v_supersonic).w
+		bne.s	.return					; preserve Super Sonic speed and music
 		move.w	#son_maxspeed,(v_sonspeedmax).w		; restore Sonic's max speed
 		move.w	#son_acceleration,(v_sonspeedacc).w	; restore Sonic's acceleration
 		move.w	#son_deceleration,(v_sonspeeddec).w	; restore Sonic's deceleration
@@ -201,7 +213,6 @@ Sonic_Display:
 		move.w	#son_deceleration/2,(v_sonspeeddec).w	; change Sonic's deceleration (half of regular)
 	.notunderwater:
 	endif
-		move.b	#0,(v_shoes).w				; cancel speed shoes
 		move.w	#bgm_Slowdown,d0			; resume music...
 		jmp	(QueueSound1).l				; ...at normal speed
 ; ===========================================================================
@@ -210,6 +221,27 @@ Sonic_Display:
 .return:
 		rts						; return
 ; End of function Sonic_Display
+
+; Keep the transformation pose in the air, then restore ground movement while
+; the palette fade continues. The grounded state prevents a later jump from
+; restarting the pose before the fade has finished.
+Sonic_UpdateTransformPose:
+		cmpi.b	#1,(v_superpal_state).w
+		bne.s	.return
+		btst	#1,obStatus(a0)
+		beq.s	.landed
+		move.b	#id_Transform,obAnim(a0)
+		rts
+.landed:
+		move.b	#3,(v_superpal_state).w
+		cmpi.b	#id_Transform,obAnim(a0)
+		bne.s	.return
+		move.b	#id_Walk,obAnim(a0)		; the walk script handles standing and running
+		btst	#2,obStatus(a0)
+		beq.s	.return
+		move.b	#id_Roll,obAnim(a0)
+.return:
+		rts
 
 
 ; ===========================================================================
@@ -257,18 +289,7 @@ Sonic_Water:
 		bsr.w	ResumeMusic				; replenish air (music won't resume here, we've only just entered water...)
 		move.b	#id_DrownCount,(v_sonicbubbles).w	; load drown countdown object
 		move.b	#$81,(v_sonicbubbles+obSubtype).w	; prepare subtype so it sets itself to Drown_Countdown
-		move.w	#son_maxspeed/2,(v_sonspeedmax).w	; change Sonic's top speed (half of regular)
-		move.w	#son_acceleration/2,(v_sonspeedacc).w	; change Sonic's acceleration (half or regular)
-		move.w	#son_deceleration/2,(v_sonspeeddec).w	; change Sonic's deceleration (half of regular)
-	if FixBugs
-		; Fix speed shoes for underwater state.
-		tst.b	(v_shoes).w				; does Sonic have speed shoes?
-		beq.s	.noshoes1				; if not, branch
-		move.w	#son_maxspeed,(v_sonspeedmax).w		; initial Sonic's top speed
-		move.w	#son_acceleration,(v_sonspeedacc).w	; initial Sonic's acceleration
-		move.w	#son_deceleration,(v_sonspeeddec).w 	; initial Sonic's deceleration
-	.noshoes1:
-	endif
+		bsr.w	Sonic_ApplySpeedSettings		; apply normal or Super Sonic water speed
 		asr.w	obVelX(a0)				; half X-speed when entering water
 		asr.w	obVelY(a0)				; divide Y-speed by 4 when entering water
 		asr.w	obVelY(a0)				; (can only do one bit shift at a time on RAM)
@@ -284,18 +305,7 @@ Sonic_Water:
 		beq.s	.return					; was Sonic already above water? if yes, nothing to do
 
 		bsr.w	ResumeMusic				; replenish air and resume music if necessary
-		move.w	#son_maxspeed,(v_sonspeedmax).w		; restore Sonic's speed
-		move.w	#son_acceleration,(v_sonspeedacc).w	; restore Sonic's acceleration
-		move.w	#son_deceleration,(v_sonspeeddec).w	; restore Sonic's deceleration
-	if FixBugs
-		; Fix speed shoes for underwater state.
-		tst.b	(v_shoes).w				; does Sonic have speed shoes?
-		beq.s	.noshoes2				; if not, branch
-		move.w	#son_maxspeed*2,(v_sonspeedmax).w	; double Sonic's top speed
-		move.w	#son_acceleration*2,(v_sonspeedacc).w	; double Sonic's acceleration
-		move.w	#son_deceleration,(v_sonspeeddec).w 	; set Sonic's deceleration (same as regular)
-	.noshoes2:
-	endif
+		bsr.w	Sonic_ApplySpeedSettings		; restore normal or Super Sonic speed
 		asl.w	obVelY(a0)				; double Y-speed while exiting water
 		beq.w	.return					; if Sonic's new Y-speed is 0, don't load splash object
 		move.b	#id_Splash,(v_splash).w			; load splash object
@@ -362,6 +372,7 @@ Sonic_MdRoll:	; While Sonic is on the ground and rolling
 
 ; Obj01_MdJump2:
 Sonic_MdJump2:	; While Sonic is in the air and rolling (usually, but not limited to, jumping)
+		bsr.w	Sonic_ToggleSuper			; toggle Super Sonic with a jump-button combo
 		bclr	#0,spindash_flag(a0)		; cancel charging when airborne
 		bsr.w	Sonic_HomingAttack			; trigger a homing dash on a new button press
 		bsr.w	Sonic_JumpHeight			; handle Sonic's jump height based on whether the jump button is still held
@@ -514,6 +525,10 @@ Sonic_ResetScr_Part2:
 
 ; loc_12FC2:
 Sonic_CheckDpadLetGo:
+		tst.b	(v_supersonic).w			; Super Sonic coasts with normal ground friction
+		beq.s	.normalcoast
+		moveq	#son_acceleration,d5
+.normalcoast:
 		move.b	(v_jpadhold2).w,d0			; get held buttons
 		andi.b	#btnL+btnR,d0				; is left or right held?
 		bne.s	Sonic_AngleSpeed			; if yes, branch (don't decrease speed)
@@ -565,7 +580,7 @@ Sonic_WallSpeedAdjust:
 	endif
 		move.b	obAngle(a0),d0				; get Sonic's current angle in relation to the floor
 		addi.b	#$40,d0					; rotate it by 90 degrees
-		bmi.s	.return					; if Sonic is upside down, branch (to prevent potential collision issues with loops)
+		bmi.w	.return					; if Sonic is upside down, branch (to prevent potential collision issues with loops)
 
 .noearlyexit:
 		move.b	#$40,d1					; get angle rotation for wall collision detection
@@ -582,7 +597,11 @@ Sonic_WallSpeedAdjust:
 		bsr.w	Sonic_CalcRoomAhead			; calculate distance to the wall in front of Sonic (if any)
 		move.w	(sp)+,d0				; restore d0
 		tst.w	d1					; has Sonic touched a wall?
-		bpl.s	.return					; if not, branch
+		bmi.s	.hitwall					; inside the wall: resolve collision
+		bgt.w	.return					; there is still room ahead
+		tst.b	(v_supersonic).w			; at zero distance, keep Super Sonic pushing
+		beq.w	.return					; preserve normal Sonic collision behavior
+.hitwall:
 		asl.w	#8,d1					; convert diff to wall into 8.8 fixed point for adjusting velocity
 		addi.b	#$20,d0					; rotate angle by 45 degrees clockwise
 		andi.b	#$C0,d0					; snap angle to nearest multiple of 90 degrees
@@ -794,6 +813,11 @@ Sonic_RollSpeed:
 		asr.w	#1,d5					; ...halved while rolling
 		move.w	(v_sonspeeddec).w,d4			; get Sonic's current deceleration...
 		asr.w	#2,d4					; ...divided by 4 while rolling
+		tst.b	(v_supersonic).w			; Super acceleration must not increase roll friction
+		beq.s	.normalrollfriction
+		moveq	#son_acceleration/2,d5		; match normal passive rolling friction
+		moveq	#son_deceleration/4,d4		; match normal reverse-input braking
+.normalrollfriction:
 
 		tst.b	(f_slidemode).w				; is Sonic on a water slide? (LZ only)
 		bne.w	Sonic_AngledRollSpeed			; if yes, branch (no rolling)
@@ -1239,6 +1263,10 @@ Sonic_Jump:
 		blt.w	.return					; if yes, prevent jumping
 
 		move.w	#son_jumpspeed,d2			; set initial jump force
+		tst.b	(v_supersonic).w
+		beq.s	.checkunderwater
+		move.w	#$800,d2				; Super Sonic jumps higher
+	.checkunderwater:
 		btst	#6,obStatus(a0)				; is Sonic underwater?
 		beq.s	.notunderwater				; if not, continue
 		move.w	#son_jumpspeed-$300,d2			; set underwater jump force
@@ -1827,6 +1855,8 @@ Sonic_ResetOnFloor:
 		bclr	#5,obStatus(a0)				; clear push flag
 		bclr	#1,obStatus(a0)				; clear in-air flag
 		bclr	#7,obStatus(a0)				; allow another homing attack after landing
+		clr.b	objoff_3D(a0)				; reset Super toggle window
+		clr.b	objoff_3F(a0)
 	if FixBugs
 		; This line was placed too late into the routine,
 		; occasionally causing Sonic "sliding" on the floor
@@ -2152,6 +2182,22 @@ Sonic_Loops:
 
 Sonic_Animate:
 		lea	(Ani_Sonic).l,a1			; load Sonic's animation scripts
+		tst.b	(v_supersonic).w
+		bne.s	.superanimations
+		cmpi.l	#Map_SuperSonic,obMap(a0)	; an event deferred the mapping switch
+		bne.s	.normalanimations
+		move.l	#Map_Sonic,obMap(a0)		; switch before selecting a normal frame
+		bra.s	.normalanimations
+	.superanimations:
+		lea	(Ani_SuperSonic).l,a1			; use Sonic 2's Super Sonic animation scripts
+		btst	#0,spindash_flag(a0)		; preserve the charging animation at obstacles
+		bne.s	.normalanimations
+		btst	#2,obStatus(a0)				; a released Spin Dash is rolling, not pushing
+		bne.s	.normalanimations
+		btst	#5,obStatus(a0)				; is Super Sonic pushing against a wall?
+		beq.s	.normalanimations
+		move.b	#id_Push,obAnim(a0)			; select the pushing script explicitly
+	.normalanimations:
 		moveq	#0,d0					; clear d0
 		move.b	obAnim(a0),d0				; get Sonic's currently set animation ID
 		cmp.b	obPrevAni(a0),d0			; does it differ from the previous animation? (i.e. has animation changed?)
@@ -2185,7 +2231,8 @@ Sonic_Animate:
 		moveq	#0,d1					; clear d1
 		move.b	obAniFrame(a0),d1			; load current frame number
 		move.b	1(a1,d1.w),d0				; read sprite number from script
-		bmi.s	.end_FF					; if animation is complete, branch
+		cmpi.b	#$F0,d0				; Super Sonic uses frame IDs $80-$D5
+		bhs.s	.end_FF					; only $F0-$FF are animation commands
 
 ; SAnim_Next:
 .next:
@@ -2230,10 +2277,18 @@ Sonic_Animate:
 
 ; SAnim_WalkRun:
 .walkrunroll:
+		cmpi.b	#$FF,d0					; is this a walk/run animation?
+		bne.s	.timedSpecial
+		tst.b	(v_supersonic).w
+		bne.s	.walkrunSetup				; Super orientation is recalculated every frame
+
+	.timedSpecial:
 		subq.b	#1,obTimeFrame(a0)			; subtract 1 from frame duration
 		bpl.s	.delay					; if time remains, branch
 		addq.b	#1,d0					; is animation walking/running?
 		bne.w	.rolljump				; if not, branch
+
+	.walkrunSetup:
 		moveq	#0,d1					; clear d1 (do not alter flip flags)
 		move.b	obAngle(a0),d0				; get Sonic's angle
 	if FixBugs
@@ -2268,6 +2323,8 @@ Sonic_Animate:
 
 ; loc_13A9C:
 .nomodspeed:
+		tst.b	(v_supersonic).w
+		bne.w	.superwalkrun
 		lea	(SonAni_Run).l,a1			; use running animation
 		cmpi.w	#$600,d2				; is Sonic at running speed?
 		bhs.s	.running				; if yes, branch
@@ -2295,6 +2352,57 @@ Sonic_Animate:
 		rts						; return
 ; ===========================================================================
 
+; Sonic 2 Super Sonic has eight walk frames per orientation and four run
+; orientations. Every fourth frame uses the brighter alternate drawings.
+.superwalkrun:
+		lea	(SupSonAni_Run).l,a1
+		cmpi.w	#$800,d2
+		bhs.s	.superrun
+		lea	(SupSonAni_Walk).l,a1
+		add.b	d0,d0
+		add.b	d0,d0					; orientation offsets 0, 8, $10, $18
+		bra.s	.superselected
+
+.superrun:
+		lsr.b	#1,d0					; orientation offsets 0-3
+
+.superselected:
+		move.b	d0,d3
+		moveq	#0,d1
+		move.b	obAniFrame(a0),d1
+		move.b	1(a1,d1.w),d0
+		cmpi.b	#$FF,d0
+		bne.s	.superframeReady
+		clr.b	obAniFrame(a0)
+		move.b	1(a1),d0
+
+.superframeReady:
+		move.b	d0,obFrame(a0)
+		add.b	d3,obFrame(a0)
+		move.b	(v_framebyte).w,d1
+		andi.b	#3,d1
+		bne.s	.supertimer
+		cmpi.b	#$B5,obFrame(a0)
+		bhs.s	.supertimer
+		addi.b	#$20,obFrame(a0)			; brighter Sonic 2 drawing
+
+.supertimer:
+		subq.b	#1,obTimeFrame(a0)
+		bpl.s	.superreturn
+		neg.w	d2
+		addi.w	#$800,d2
+		bpl.s	.superbelowmax
+		moveq	#0,d2
+
+.superbelowmax:
+		lsr.w	#8,d2
+		move.b	d2,obTimeFrame(a0)
+		addq.b	#1,obAniFrame(a0)
+
+.superreturn:
+		rts
+; ===========================================================================
+
 ; SAnim_RollJump:
 .rolljump:
 		addq.b	#1,d0					; is animation rolling/jumping?
@@ -2305,6 +2413,15 @@ Sonic_Animate:
 
 ; loc_13ADE:
 .nomodspeed2:
+		tst.b	(v_supersonic).w
+		beq.s	.normalrollscripts
+		lea	(SupSonAni_Roll2).l,a1
+		cmpi.w	#$600,d2
+		bhs.s	.rollfast
+		lea	(SupSonAni_Roll).l,a1
+		bra.s	.rollfast
+
+.normalrollscripts:
 		lea	(SonAni_Roll2).l,a1			; use fast rolling animation
 		cmpi.w	#$600,d2				; is Sonic moving fast?
 		bhs.s	.rollfast				; if yes, branch
@@ -2347,6 +2464,10 @@ Sonic_Animate:
 		move.b	d2,obTimeFrame(a0)			; modify frame duration
 
 		lea	(SonAni_Push).l,a1			; load Sonic's animation script for pushing
+		tst.b	(v_supersonic).w
+		beq.s	.normalpush
+		lea	(SupSonAni_Push).l,a1
+	.normalpush:
 
 		move.b	obStatus(a0),d1				; get Sonic's current status flags
 		andi.b	#sprite_xflip,d1			; mask out everything but the X-flip flag
@@ -2359,6 +2480,7 @@ Sonic_Animate:
 ; Animation scripts - Sonic (also includes constants for frame IDs)
 ; SonicAniData:
 		include	"_anim/Sonic.asm"
+		include	"_anim/Super Sonic.asm"
 ; ---------------------------------------------------------------------------
 
 
@@ -2376,6 +2498,12 @@ Sonic_LoadGfx:
 
 		move.b	d0,(v_sonframenum).w			; remember new frame ID
 		lea	(SonicDynPLC).l,a2			; load PLC script
+		move.l	#Art_Sonic,d6				; source normal art in ROM
+		tst.b	(v_supersonic).w
+		beq.s	.gotart
+		lea	(SuperSonicDynPLC).l,a2
+		move.l	#Art_SuperSonic,d6			; source Sonic 2 Super art in ROM
+	.gotart:
 		add.w	d0,d0					; double current frame for word-based indexing
 		adda.w	(a2,d0.w),a2				; find relevant DPLC definition for new frame
 		moveq	#0,d5					; clear DPLC entry counter
@@ -2384,7 +2512,6 @@ Sonic_LoadGfx:
 		bmi.s	.nochange				; if this was an empty entry, nothing to do, branch
 
 		move.w	#ArtTile_Sonic*tile_size,d4	; first destination in VRAM
-		move.l	#Art_Sonic,d6				; source art in ROM
 
 ; SPLC_ReadEntry:
 .readentry:
@@ -2410,6 +2537,423 @@ Sonic_LoadGfx:
 		rts						; return
 ; End of function Sonic_LoadGfx
 ; ===========================================================================
+
+; Subroutine called at the peak of a jump to transform into Super Sonic
+; ---------------------------------------------------------------------------
+; Subroutine to toggle Super Sonic with a buffered A+B or B+C combination
+; ---------------------------------------------------------------------------
+
+Sonic_ToggleSuper:
+		btst	#7,objoff_3F(a0)	; is Super toggle locked until button release?
+		beq.s	.checktimer		; if not, branch
+		move.b	(v_jpadhold2).w,d0
+		andi.b	#btnABC,d0
+		bne.w	.return			; keep lock while buttons are still held
+		clr.b	objoff_3D(a0)
+		clr.b	objoff_3F(a0)
+		rts
+
+.checktimer:
+		tst.b	objoff_3D(a0)
+		beq.s	.checkpress
+		subq.b	#1,objoff_3D(a0)
+		bne.s	.checkpress
+		clr.b	objoff_3F(a0)
+
+.checkpress:
+		move.b	(v_jpadpress2).w,d0
+		andi.b	#btnABC,d0		; was any jump button newly pressed?
+		beq.s	.return			; if not, branch
+		move.b	objoff_3F(a0),d1
+		andi.b	#btnABC,d1
+		or.b	d0,d1			; merge with recent jump-button presses
+		or.b	(v_jpadhold2).w,d1	; allow holding one button and pressing another
+		andi.b	#btnABC,d1
+		move.b	d1,objoff_3F(a0)
+		move.b	#6,objoff_3D(a0)	; keep the combo window short
+		move.b	d1,d2
+		andi.b	#btnA|btnB,d2		; was A+B pressed within the window?
+		cmpi.b	#btnA|btnB,d2
+		beq.s	.toggle
+		move.b	d1,d2
+		andi.b	#btnA|btnC,d2		; was A+C pressed within the window?
+		cmpi.b	#btnA|btnC,d2
+		beq.s	.toggle
+		andi.b	#btnB|btnC,d1		; was B+C pressed within the window?
+		cmpi.b	#btnB|btnC,d1
+		bne.s	.return			; if not, branch
+
+.toggle:
+		clr.b	objoff_3D(a0)
+		move.b	#$80,objoff_3F(a0)
+		bclr	#bitB,(v_jpadpress2).w	; consume the combo this frame
+		bclr	#bitA,(v_jpadpress2).w
+		bclr	#bitC,(v_jpadpress2).w
+		tst.b	(v_supersonic).w	; is Sonic already Super?
+		beq.s	.activate		; if not, branch
+		bra.w	Sonic_RevertToNormal
+
+.activate:
+		bra.w	Sonic_ActivateSuper
+
+.return:
+		rts
+; End of function Sonic_ToggleSuper
+
+; ---------------------------------------------------------------------------
+; Subroutine to transform into Super Sonic
+; ---------------------------------------------------------------------------
+
+Sonic_ActivateSuper:
+		tst.b	(v_supersonic).w	; is Sonic already Super?
+		beq.s	.chk_emeralds		; if not, branch
+		bra.w	.return
+
+.chk_emeralds:
+		cmpi.b	#ss_emeralds_num,(v_emeralds).w	; do we have all six emeralds?
+		bne.w	.return			; if not, branch
+
+.chk_rings:
+		cmpi.w	#50,(v_rings).w		; does Sonic have at least 50 rings?
+		bhs.s	.chk_time		; if yes, branch
+		bra.w	.return
+
+.chk_time:
+		tst.b	(f_timecount).w		; has the act already ended?
+		bne.s	.activate		; if not, branch
+		bra.w	.return
+
+.activate:
+
+		move.b	#1,(v_supersonic).w
+		move.w	#60,(v_superframe).w
+		clr.w	(v_superpal_frame).w
+		move.b	#$F,(v_superpal_timer).w
+		move.b	#1,(v_superpal_state).w
+		move.l	#Map_SuperSonic,obMap(a0)
+		move.b	#id_Transform,obAnim(a0)
+		move.b	#-1,obPrevAni(a0)
+		move.b	#-1,(v_sonframenum).w
+		move.l	#Art_SuperSonicStars,d1
+		move.w	#ArtTile_SuperSonicStars*tile_size,d2
+		move.w	#14*tile_size/2,d3
+		jsr	(QueueDMATransfer).l			; load stars without extending the startup PLC
+		clr.b	(v_shoes).w
+		clr.w	shoetime(a0)
+		; A new song sets its own tempo; keep the drowning song's live tempo.
+		clr.b	(v_snddriver_ram.f_speedup).w
+		clr.b	(v_invinc).w
+		clr.w	invtime(a0)
+		clr.b	(v_starsobj1).w
+		clr.b	(v_starsobj2).w
+		clr.b	(v_starsobj3).w
+		clr.b	(v_starsobj4).w
+		move.b	#id_SuperSonicStars,(v_superstars).w
+		clr.b	objoff_3D(a0)
+		move.b	#$80,objoff_3F(a0)
+		bsr.w	Sonic_ApplySpeedSettings
+		move.w	#sfx_SuperTransform,d0
+		jsr	(QueueSound2).l				; play Sonic 2's transformation effect
+		move.w	#bgm_Super,d0
+		jsr	(QueueSound1).l
+
+.return:
+		rts
+; End of function Sonic_ActivateSuper
+
+; ---------------------------------------------------------------------------
+; Subroutine doing the extra logic for Super Sonic
+; ---------------------------------------------------------------------------
+
+SuperRingDrain = 1				; spend one ring per second while Super Sonic is active
+
+Sonic_Super:
+		tst.b	(v_supersonic).w	; ignore all this code if not Super Sonic
+		beq.w	Sonic_Super_Return	; if not, branch
+	if SuperRingDrain
+		cmpi.b	#1,(v_superpal_state).w	; do not drain rings during the transformation
+		beq.w	Sonic_Super_Return
+		cmpi.b	#3,(v_superpal_state).w	; the palette fade also continues after landing
+		beq.w	Sonic_Super_Return
+		subq.w	#1,(v_superframe).w
+		bpl.w	Sonic_Super_Return	; if time remains, branch
+		move.w	#60,(v_superframe).w	; reset frame counter to 60
+		tst.w	(v_rings).w		; does Sonic have any rings left?
+		beq.s	Sonic_RevertToNormal	; if not, revert
+		subq.w	#1,(v_rings).w
+		move.b	#$81,(f_ringcount).w	; fully redraw rings counter
+		tst.w	(v_rings).w		; revert as soon as the last ring is spent
+		bne.w	Sonic_Super_Return	; if rings remain, branch
+	else
+		bra.w	Sonic_Super_Return	; test mode: keep the ring count
+	endif
+
+; ---------------------------------------------------------------------------
+; Revert Super Sonic when another object ends the level. Preserve that
+; object's a0 while the regular reversion routine operates on Sonic.
+; ---------------------------------------------------------------------------
+
+Sonic_RevertFromEvent:
+		tst.b	(v_supersonic).w
+		beq.s	.return
+		move.l	a0,-(sp)
+		lea	(v_player).w,a0
+		move.l	obMap(a0),-(sp)		; retain the already queued Super frame this frame
+		bsr.s	Sonic_RevertToNormal
+		move.l	(sp)+,obMap(a0)		; change mapping on Sonic's next update
+		movea.l	(sp)+,a0
+
+	.return:
+		rts
+
+Sonic_RevertToNormal:
+		bsr.w	Sonic_ResetSuperState
+		bra.w	Sonic_RefreshMusic
+
+; Reset the form without restarting music (also used by debug death recovery).
+Sonic_ResetSuperState:
+		clr.b	(v_supersonic).w
+		clr.w	(v_superframe).w
+		move.b	#2,(v_superpal_state).w
+		move.b	#3,(v_superpal_timer).w
+		move.w	#$28,(v_superpal_frame).w
+		move.l	#Map_Sonic,obMap(a0)
+		cmpi.b	#id_Transform,obAnim(a0)	; normal Sonic has no transform animation
+		bne.s	.animready
+		move.b	#id_Walk,obAnim(a0)		; select a valid frame while airborne
+		btst	#2,obStatus(a0)			; preserve the rolling pose if needed
+		beq.s	.animready
+		move.b	#id_Roll,obAnim(a0)
+	.animready:
+		move.b	#-1,obPrevAni(a0)
+		move.b	#-1,(v_sonframenum).w
+		clr.b	(v_superstars).w
+		move.l	#Art_InvincibilityStarsRestore,d1
+		move.w	#ArtTile_Invincibility*tile_size,d2
+		move.w	#36*tile_size/2,d3
+		jsr	(QueueDMATransfer).l		; restore all invincibility star tiles
+		tst.b	(v_shield).w
+		beq.s	.noshield
+		tst.b	(v_shieldobj).w
+		bne.s	.noshield
+		move.b	#id_ShieldItem,(v_shieldobj).w
+
+.noshield:
+		clr.b	objoff_3D(a0)
+		move.b	#$80,objoff_3F(a0)
+		bsr.w	Sonic_ApplySpeedSettings
+
+Sonic_Super_Return:
+		rts
+; End of function Sonic_Super
+
+; ---------------------------------------------------------------------------
+; Preserve the music decision while Super/invincibility flags still describe
+; the living player. Do not restart an ordinary song on debug rescue.
+Sonic_SaveDebugDeathMusic:
+		clr.b	(v_debug_deathmusic).w
+		tst.b	(v_supersonic).w
+		bne.s	.restoretrack
+		tst.b	(v_invinc).w
+		bne.s	.restoretrack
+		cmpi.w	#12,(v_air).w
+		bhi.s	.chkshoes
+		btst	#6,obStatus(a0)
+		bne.s	.restoretrack			; rescuing a death during drowning music restores the act
+.chkshoes:
+		tst.b	(v_shoes).w
+		beq.s	.return
+		move.b	#2,(v_debug_deathmusic).w	; preserve the current track; only undo speed shoes tempo
+.return:
+		rts
+.restoretrack:
+		move.b	#1,(v_debug_deathmusic).w
+		rts
+
+; Restore a dead player rescued through debug mode to ordinary Sonic.
+; KillSonic clears Super/invincibility, so use the decision saved before it.
+Sonic_RecoverFromDebugDeath:
+		tst.b	(v_supersonic).w			; drowning can enter death without KillSonic
+		bne.s	.restoretrack
+		tst.b	(v_invinc).w
+		bne.s	.restoretrack
+		cmpi.b	#id_Drown,obAnim(a0)
+		bne.s	.clearpowerups
+.restoretrack:
+		move.b	#1,(v_debug_deathmusic).w
+.clearpowerups:
+		clr.b	(v_invinc).w
+		clr.w	invtime(a0)
+		clr.b	(v_shoes).w
+		clr.w	shoetime(a0)
+		move.w	#30,(v_air).w			; the rescued player is no longer drowning
+		clr.w	flashtime(a0)
+		jsr	(Sonic_ResetSuperState).l		; restore physics/stars without restarting the music
+		moveq	#0,d0
+		move.b	(v_debug_deathmusic).w,d0
+		clr.b	(v_debug_deathmusic).w
+		subq.b	#1,d0
+		bcs.s	.musicready			; ordinary track already plays: leave its position alone
+		bne.s	.normaltempo
+		clr.b	(v_snddriver_ram.f_speedup).w	; the restored act/boss track must start at normal tempo
+		jsr	(Sonic_RefreshMusic).l
+		bra.s	.musicready
+.normaltempo:
+		move.w	#bgm_Slowdown,d0
+		jsr	(QueueSound1).l			; SMPS changes tempo in place, without restarting notes
+.musicready:
+		clr.b	(v_superpal_state).w		; use the normal palette immediately
+		clr.b	(v_superpal_timer).w
+		clr.w	(v_superpal_frame).w
+		jsr	(Sonic_RefreshPalettes).l
+		move.b	#2,obRoutine(a0)
+		move.b	#1,(f_timecount).w		; restart the act timer stopped by death
+		rts
+; ---------------------------------------------------------------------------
+; Subroutine to apply Sonic's current speed settings
+; ---------------------------------------------------------------------------
+
+Sonic_ApplySpeedSettings:
+		tst.b	(v_supersonic).w	; is Sonic super?
+		beq.s	.normal			; if not, branch
+		btst	#6,obStatus(a0)		; is Sonic underwater?
+		beq.s	.superdry		; if not, branch
+		move.w	#$500,(v_sonspeedmax).w
+		move.w	#$18,(v_sonspeedacc).w
+		move.w	#$80,(v_sonspeeddec).w
+		rts
+
+.superdry:
+		move.w	#$A00,(v_sonspeedmax).w
+		move.w	#$30,(v_sonspeedacc).w
+		move.w	#$100,(v_sonspeeddec).w
+		rts
+
+.normal:
+		btst	#6,obStatus(a0)		; is Sonic underwater?
+		beq.s	.normaldry		; if not, branch
+		tst.b	(v_shoes).w		; are speed shoes active?
+		beq.s	.normalwater		; if not, branch
+		move.w	#$600,(v_sonspeedmax).w
+		move.w	#$C,(v_sonspeedacc).w
+		move.w	#son_deceleration,(v_sonspeeddec).w
+		rts
+
+.normalwater:
+		move.w	#$300,(v_sonspeedmax).w
+		move.w	#6,(v_sonspeedacc).w
+		move.w	#$40,(v_sonspeeddec).w
+		rts
+
+.normaldry:
+		tst.b	(v_shoes).w		; are speed shoes active?
+		beq.s	.noshoes		; if not, branch
+		move.w	#$C00,(v_sonspeedmax).w
+		move.w	#$18,(v_sonspeedacc).w
+		move.w	#$80,(v_sonspeeddec).w
+		rts
+
+.noshoes:
+		move.w	#$600,(v_sonspeedmax).w
+		move.w	#$C,(v_sonspeedacc).w
+		move.w	#$80,(v_sonspeeddec).w
+		rts
+; End of function Sonic_ApplySpeedSettings
+
+; ---------------------------------------------------------------------------
+; Subroutine to refresh Sonic's palettes for normal/Super states
+; ---------------------------------------------------------------------------
+
+Sonic_RefreshPalettes:
+		lea	(Pal_Sonic+4).l,a1
+		tst.b	(v_supersonic).w
+		beq.s	.normalpals
+		lea	(Pal_SuperSonic+4).l,a1
+
+.normalpals:
+		lea	(v_palette+$4).w,a2
+		move.l	(a1)+,(a2)+
+		move.l	(a1),(a2)
+
+		cmpi.b	#id_LZ,(v_zone).w
+		beq.s	.loadwater
+		cmpi.w	#(id_LZ<<8)+3,(v_zone).w
+		bne.s	.return
+
+.loadwater:
+		tst.b	(v_supersonic).w
+		beq.s	.normalwater
+		lea	(Pal_SuperSonicWater+4).l,a1
+		bra.s	.copywater
+
+.normalwater:
+		cmpi.b	#id_LZ,(v_zone).w
+		bne.s	.sbz3water
+		lea	(Pal_LZSonWater+4).l,a1
+		bra.s	.copywater
+
+.sbz3water:
+		lea	(Pal_SBZ3SonWat+4).l,a1
+
+.copywater:
+		lea	(v_palette_water+$4).w,a2
+		move.l	(a1)+,(a2)+
+		move.l	(a1),(a2)
+
+.return:
+		rts
+; End of function Sonic_RefreshPalettes
+
+; ---------------------------------------------------------------------------
+; Subroutine to restore the correct music for Sonic's current state
+; ---------------------------------------------------------------------------
+
+Sonic_RefreshMusic:
+		cmpi.w	#$C,(v_air).w		; leave drowning music alone
+		blo.s	.return			; if air is low, branch
+		tst.b	(v_supersonic).w	; does Sonic have Super Sonic music?
+		beq.s	.chkinvincmusic		; if not, branch
+		move.w	#bgm_Super,d0
+		bra.s	.play
+
+.chkinvincmusic:
+		tst.b	(v_invinc).w		; does Sonic have invincibility?
+		beq.s	.chkshoesmusic		; if not, branch
+		move.w	#bgm_Invincible,d0
+		bra.s	.play
+
+.chkshoesmusic:
+		tst.b	(v_shoes).w		; does Sonic have speed shoes?
+		beq.s	.levelmusic		; if not, branch
+		move.w	#bgm_Speedup,d0
+		bra.s	.play
+
+.levelmusic:
+		moveq	#0,d0
+		move.b	(v_zone).w,d0
+		cmpi.w	#(id_LZ<<8)+3,(v_zone).w ; check if level is SBZ3
+		bne.s	.musicselected
+		moveq	#5,d0			; play SBZ music
+
+.musicselected:
+		lea	(MusicList2).l,a1
+		move.b	(a1,d0.w),d0
+		cmpi.w	#id_FZ,(v_zone_act).w	; is level FZ?
+		bne.s	.chkbossmusic		; if not, branch
+		move.w	#bgm_FZ,d0		; FZ keeps its own track during the boss
+		bra.s	.play
+
+.chkbossmusic:
+		tst.b	(f_bossmusic).w		; is boss music active?
+		beq.s	.play			; if not, branch
+		move.w	#bgm_Boss,d0
+
+.play:
+		jsr	(QueueSound1).l
+
+.return:
+		rts
+; End of function Sonic_RefreshMusic
 
 ; Curl into a ball in midair when a jump button is pressed again.
 Sonic_AirRoll:

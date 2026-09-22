@@ -250,6 +250,8 @@ React_Monitor:
 React_Enemy:
 		tst.b	(v_invinc).w				; is Sonic invincible?
 		bne.s	.checkBossHit				; if yes, branch
+		tst.b	(v_supersonic).w			; Super Sonic damages badniks on contact
+		bne.s	.checkBossHit
 		cmpi.b	#id_SpinDash,obAnim(a0)		; treat charging Sonic as a ball
 		beq.s	.checkBossHit
 		cmpi.b	#id_Roll,obAnim(a0)			; is Sonic rolling/jumping?
@@ -340,7 +342,9 @@ React_Caterkiller:
 
 React_ChkHurt:
 		tst.b	(v_invinc).w				; is Sonic invincible?
-		beq.s	.damage					; if not, branch
+		bne.s	.noDamage
+		tst.b	(v_supersonic).w			; is Sonic Super?
+		beq.s	.damage
 
 ; .isflashing:
 .noDamage:
@@ -460,9 +464,22 @@ HurtSonic:
 
 KillSonic:
 		tst.w	(v_debuguse).w				; is debug mode active?
-		bne.s	.return					; if yes, branch
+		bne.w	.return					; if yes, branch
 
+		jsr	(Sonic_SaveDebugDeathMusic).l		; remember music before death clears powerup flags
 		move.b	#0,(v_invinc).w				; remove invincibility
+		clr.b	(v_supersonic).w
+		clr.w	(v_superframe).w
+		clr.w	(v_superpal_frame).w
+		clr.b	(v_superpal_timer).w
+		clr.b	(v_superpal_state).w
+		move.l	#Map_Sonic,obMap(a0)
+		move.b	#-1,(v_sonframenum).w
+		clr.b	(v_superstars).w
+		; The palette copy uses a1/a2. Crushers keep their object pointer in a2,
+		; and the death sound still needs that killing object below.
+		movem.l	a1-a2,-(sp)
+		jsr	(Sonic_RefreshPalettes).l
 		move.b	#6,obRoutine(a0)			; set Sonic to "Sonic_Death" routine
 		jsr	(Sonic_ResetOnFloor).l			; reset airborne state
 		bset	#1,obStatus(a0)				; force airborne flag again

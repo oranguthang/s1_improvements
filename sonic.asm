@@ -4248,10 +4248,12 @@ Map_LWall:	include	"_maps/Wall of Lava.asm"
 ; >>> Various unique objects
 		include	"_incObj/0A LZ Drowning Countdown.asm" ; includes ResumeMusic
 		include	"_incObj/38 Shield and Invincibility.asm"
+		include	"_incObj/8D Super Sonic Stars.asm"
 		include	"_incObj/4A Unused - Special Stage Entry.asm"
 		include	"_incObj/08 LZ Water Splash.asm"
 		include	"_anim/Shield and Invincibility.asm"
 Map_Shield:	include	"_maps/Shield and Invincibility.asm"
+Map_SuperSonicStars:	include	"_maps/Super Sonic Stars.asm"
 		include	"_anim/Special Stage Entry (Unused).asm"
 Map_Vanish:	include	"_maps/Special Stage Entry (Unused).asm"
 		include	"_anim/Water Splash.asm"
@@ -4413,6 +4415,16 @@ Map_Sonic:	include	"_maps/Sonic.asm"
 SonicDynPLC:	include	"_maps/Sonic - Dynamic Gfx Script.asm"
 
 Art_Sonic:	binclude	"artunc/Sonic.unc"
+		even
+Map_SuperSonic:	include	"_maps/Super Sonic.asm"
+
+SuperSonicDynPLC:	include	"_maps/Super Sonic - Dynamic Gfx Script.asm"
+
+Art_SuperSonic:	binclude	"artunc/Super Sonic.unc"
+		even
+Art_SuperSonicStars:	binclude	"artunc/Super Sonic Stars.unc"
+		even
+Art_InvincibilityStarsRestore:	binclude	"artunc/Invincibility Stars Restore.unc"
 		even
 Art_SpinDust:	binclude	"artunc/SpinDust.unc"
 		even

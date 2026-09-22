@@ -180,6 +180,7 @@ DLE_GHZ3_Boss:
 		move.w	#boss_ghz_y-$80,obY(a1)
 
 	.fail:
+		move.b	#1,(f_bossmusic).w			; enter the boss music phase
 		move.w	#bgm_Boss,d0
 		bsr.w	QueueSound1				; play boss music
 		move.b	#1,(f_lockscreen).w			; lock screen
@@ -250,6 +251,7 @@ DLE_LZ3:
 		_move.b	#id_BossLabyrinth,obID(a1)		; load LZ boss object
 
 	.fail:
+		move.b	#1,(f_bossmusic).w			; enter the boss music phase
 		move.w	#bgm_Boss,d0
 		bsr.w	QueueSound1				; play boss music
 		move.b	#1,(f_lockscreen).w			; lock screen
@@ -458,6 +460,7 @@ DLE_MZ3_Boss:
 		move.w	#boss_mz_y+$1C,obY(a1)
 
 	.fail:
+		move.b	#1,(f_bossmusic).w			; enter the boss music phase
 		move.w	#bgm_Boss,d0
 		bsr.w	QueueSound1				; play boss music
 		move.b	#1,(f_lockscreen).w			; lock screen
@@ -530,6 +533,7 @@ DLE_SLZ3_Boss:
 		move.b	#id_BossStarLight,obID(a1)		; load SLZ boss object
 
 	.fail:
+		move.b	#1,(f_bossmusic).w			; enter the boss music phase
 		move.w	#bgm_Boss,d0
 		bsr.w	QueueSound1				; play boss music
 		move.b	#1,(f_lockscreen).w			; lock screen
@@ -624,6 +628,7 @@ DLE_SYZ3_Boss:
 		addq.b	#2,(v_dle_routine).w			; goto DLE_SYZ3_End next
 
 	.fail:
+		move.b	#1,(f_bossmusic).w			; enter the boss music phase
 		move.w	#bgm_Boss,d0
 		bsr.w	QueueSound1				; play boss music
 		move.b	#1,(f_lockscreen).w			; lock screen
@@ -779,6 +784,7 @@ DLE_FZ_Boss:
 		bsr.w	FindFreeObj				; find free OST slot
 		bne.s	.set_boundary				; branch if not found
 		move.b	#id_BossFinal,obID(a1)			; load FZ boss object
+		move.b	#1,(f_bossmusic).w			; FZ uses its own boss track
 		addq.b	#2,(v_dle_routine).w			; goto DLE_FZ_Arena next
 		move.b	#1,(f_lockscreen).w			; lock screen
 

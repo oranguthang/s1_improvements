@@ -43,3 +43,7 @@ Start can skip the SEGA screen while its sound is playing.
 ## Spin Dash
 
 Hold Down on the ground and press an action button to charge. Release Down to launch. Charging retains its animation against solid objects; a rolling launch can break compatible walls and monitors.
+
+## Super Sonic
+
+With all six Chaos Emeralds and enough rings, press A+B, A+C or B+C while airborne and rolling to toggle Super. The default threshold is 50 rings and the drain is one ring per second. Speed shoes do not stack with Super movement. Drowning music has priority over form changes; recovery selects the appropriate active music.

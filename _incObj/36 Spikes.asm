@@ -120,6 +120,8 @@ Spikes_Upright:
 Spikes_Hurt:
 		tst.b	(v_invinc).w				; is Sonic invincible?
 		bne.s	Spikes_Display				; if so, skip getting hurt
+		tst.b	(v_supersonic).w			; Super Sonic ignores spikes
+		bne.s	Spikes_Display
 	if FixBugs
 		; (Proper) Spike Bug Fix
 		; https://info.sonicretro.org/SCHG_How-to:Change_Spike_behavior_in_Sonic_1

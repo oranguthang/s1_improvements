@@ -143,6 +143,7 @@ id_Null:	sonani	SonAni_Null	; $1C
 id_Float3:	sonani	SonAni_Float3	; $1D
 id_Float4:	sonani	SonAni_Float4	; $1E
 id_SpinDash:	sonani	SonAni_SpinDash	; $1F
+id_Transform:	sonani	SonAni_Null	; $20 (Super Sonic only)
 
 ; ---------------------------------------------------------------------------
 ; --- Special animations (walk/run/roll/push) ---

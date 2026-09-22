@@ -37,6 +37,8 @@ Shi_Main:	; Routine 0
 Shi_Shield:	; Routine 2
 		tst.b	(v_invinc).w				; has Sonic gained invincibility after already having a shield?
 		bne.s	.hide					; if yes, hide shield sprite
+		tst.b	(v_supersonic).w			; hide shield while Super
+		bne.s	.hide
 		tst.b	(v_shield).w				; has Sonic lost the shield?
 		beq.s	.delete					; if yes, delete it
 
@@ -57,6 +59,8 @@ Shi_Shield:	; Routine 2
 Shi_Stars:	; Routine 4
 		tst.b	(v_invinc).w				; has invincibility run out?
 		beq.s	Shi_Start_Delete			; if yes, delete stars object
+		tst.b	(v_supersonic).w			; hide invincibility stars while Super
+		bne.s	Shi_Start_Delete
 
 		move.w	(v_trackpos).w,d0			; get index value for tracking data
 		move.b	obAnim(a0),d1				; get stars animation ID (1-4)

@@ -495,6 +495,7 @@ BSYZ_Recover:
 ; loc_194E0
 .playMusic:
 		clr.w	obVelY(a0)				; clear Y velocity
+		clr.b	(f_bossmusic).w			; music returns to the act while camera bounds recover
 		move.w	#bgm_SYZ,d0
 		jsr	(QueueSound1).l				; play SYZ music
 

@@ -287,6 +287,8 @@ ExtraLife:
 Pow_ChkShoes:
 		cmpi.b	#3,d0					; does monitor contain speed shoes?
 		bne.s	Pow_ChkShield				; if not, branch
+		tst.b	(v_supersonic).w			; Super Sonic keeps his own speed and music
+		bne.w	Pow_NoMusic
 
 		move.b	#1,(v_shoes).w				; set speed shoes flag (used for reverting when time ran out)
 		move.w	#20*60,(v_player+shoetime).w		; set time limit for speed shoes to 20 seconds
@@ -319,7 +321,10 @@ Pow_ChkShield:
 		bne.s	Pow_ChkInvinc				; if not, branch
 
 		move.b	#1,(v_shield).w				; give Sonic a shield
+		tst.b	(v_supersonic).w
+		bne.s	.noShieldGfx			; keep the shield for after transformation
 		move.b	#id_ShieldItem,(v_shieldobj).w		; load shield object ($38)
+	.noShieldGfx:
 		move.w	#sfx_Shield,d0				; set shield sound effect
 		jmp	(QueueSound1).l				; play it
 ; ===========================================================================
@@ -327,6 +332,13 @@ Pow_ChkShield:
 Pow_ChkInvinc:
 		cmpi.b	#5,d0					; does monitor contain invincibility?
 		bne.s	Pow_ChkRings				; if not, branch
+		tst.b	(v_supersonic).w			; do not replace Super music with invincibility
+		bne.w	Pow_NoMusic
+
+		move.l	#Art_InvincibilityStarsRestore,d1
+		move.w	#ArtTile_Invincibility*tile_size,d2
+		move.w	#36*tile_size/2,d3
+		jsr	(QueueDMATransfer).l		; refresh stars even after an old save state
 
 		move.b	#1,(v_invinc).w				; make Sonic invincible
 		move.w	#20*60,(v_player+invtime).w		; set time limit for invincibility to 20 seconds
@@ -340,7 +352,7 @@ Pow_ChkInvinc:
 		move.b	#id_ShieldItem,(v_starsobj4).w		; load 4th stars object
 		move.b	#4,(v_starsobj4+obAnim).w		; set longest travel delay
 
-		tst.b	(f_lockscreen).w			; is boss mode on?
+		tst.b	(f_bossmusic).w			; is boss music active?
 		bne.s	Pow_NoMusic				; if yes, don't change music
 	if Revision<>0
 		cmpi.w	#12,(v_air).w				; is Sonic close to drowning? (countdown music playing)

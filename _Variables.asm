@@ -68,6 +68,7 @@ v_starsobj1:		equ	v_objspace+object_size*8	; object variable space for the invin
 v_starsobj2:		equ	v_objspace+object_size*9	; object variable space for the invincibility stars #2 ($40 bytes)
 v_starsobj3:		equ	v_objspace+object_size*10	; object variable space for the invincibility stars #3 ($40 bytes)
 v_starsobj4:		equ	v_objspace+object_size*11	; object variable space for the invincibility stars #4 ($40 bytes)
+v_superstars:		equ	v_starsobj1			; Super Sonic speed trail uses the first stars slot
 
 v_splash:		equ	v_objspace+object_size*12	; object variable space for the water splash ($40 bytes)
 v_sonicbubbles:		equ	v_objspace+object_size*13	; object variable space for the bubbles that come out of Sonic's mouth/drown countdown ($40 bytes)
@@ -148,7 +149,9 @@ v_pcyc_num:		ds.w	1				; palette cycling - current reference number
 v_pcyc_time:		ds.w	1				; palette cycling - time until the next change
 v_random:		ds.l	1				; pseudo random number buffer
 f_pause:		ds.w	1				; flag set to pause the game
-			ds.b	4				; unused
+f_title_fast:		ds.b	1				; debug pause exit skips SONIC TEAM PRESENTS once
+v_debug_deathmusic:	ds.b	1				; debug rescue: 0=keep song, 1=restore act/boss, 2=normal tempo
+			ds.b	2				; unused
 v_vdp_buffer2:		ds.w	1				; VDP instruction buffer
 			ds.b	2				; unused
 f_hblank_pal:		ds.w	1				; flag set to change palette during HBlank (0000 = no; 0001 = change) (previously called f_hbla_pal)
@@ -256,7 +259,7 @@ v_bossstatus:		ds.b	1				; status of boss and prison capsule (01 = boss defeated
 v_trackpos:		ds.w	1				; position tracking reference number
 v_trackbyte:		equ	v_trackpos+1			; low byte for position tracking
 f_lockscreen:		ds.b	1				; flag set to lock screen during bosses
-			ds.b	1				; unused
+f_bossmusic:		ds.b	1				; boss music phase, independent of the camera lock
 v_256loop1:		ds.b	1				; 256x256 level tile which contains a loop (GHZ/SLZ)
 v_256loop2:		ds.b	1				; 256x256 level tile which contains a loop (GHZ/SLZ)
 v_256roll1:		ds.b	1				; 256x256 level tile which contains a roll tunnel (GHZ)
@@ -384,6 +387,7 @@ v_shield:		ds.b	1				; shield status (00 = no; 01 = yes)
 v_invinc:		ds.b	1				; invincibility status (00 = no; 01 = yes)
 v_shoes:		ds.b	1				; speed shoes status (00 = no; 01 = yes)
 v_unused1:		ds.b	1				; an unused fourth player status (Goggles?)
+v_supersonic:		equ v_unused1
 v_lastlamp:		ds.b	2				; number of the last lamppost you hit
 v_lamp_xpos:		ds.w	1				; x-axis for Sonic to respawn at lamppost
 v_lamp_ypos:		ds.w	1				; y-axis for Sonic to respawn at lamppost
@@ -448,7 +452,10 @@ v_fg_scroll_flags_dup:	ds.w	1
 v_bg1_scroll_flags_dup:	ds.w	1
 v_bg2_scroll_flags_dup:	ds.w	1
 v_bg3_scroll_flags_dup:	ds.w	1
-			ds.b	$48				; unused
+v_superpal_frame:	ds.w	1				; byte offset in the Super Sonic palette cycle
+v_superpal_timer:	ds.b	1				; frames until the next palette step
+v_superpal_state:	ds.b	1				; 0=off, 1=transform, 2=revert, 3=transform after landing, $FF=cycle
+			ds.b	$44				; unused
 v_timingandscreenvariables_end:
 
 v_levseldelay:		ds.w	1				; level select - time until change when up/down is held
@@ -469,8 +476,11 @@ v_title_dcount:		ds.w	1				; number of times the d-pad is pressed on title scree
 v_title_ccount:		ds.w	1				; number of times C is pressed on title screen
 			ds.b	2				; unused
 v_unused2:		ds.w	1				; unused
+v_superframe:		equ v_unused2
 v_unused3:		ds.b	1				; unused
+v_superinputtime:	equ v_unused3
 v_unused4:		ds.b	1				; unused
+v_superinputmask:	equ v_unused4
 v_unused5:		ds.b	1				; unused
 v_unused6:		ds.b	1				; unused
 f_demo:			ds.w	1				; demo mode flag (0 = no; 1 = yes; $8001 = ending)

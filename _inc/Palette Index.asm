@@ -37,6 +37,8 @@ palid_SBZ3SonWat:	makePalEntry	Pal_SBZ3SonWat,		v_palette_line_1
 palid_SSResult:		makePalEntry	Pal_SSResult, 		v_palette_line_1
 palid_Continue:		makePalEntry	Pal_Continue, 		v_palette_line_1
 palid_Ending:		makePalEntry	Pal_Ending, 		v_palette_line_1
+palid_SuperSonic:	makePalEntry	Pal_SuperSonic,		v_palette_line_1
+palid_SuperSonicWater:	makePalEntry	Pal_SuperSonicWater,	v_palette_line_1
 	even
 
 
@@ -65,3 +67,13 @@ Pal_SBZ3SonWat:		bincludeEndMarker	"palette/Sonic - SBZ3 Underwater.bin"
 Pal_SSResult:		bincludeEndMarker	"palette/Special Stage Results.bin"
 Pal_Continue:		bincludeEndMarker	"palette/Special Stage Continue Bonus.bin"
 Pal_Ending:		bincludeEndMarker	"palette/Ending.bin"
+
+Pal_SuperSonic:
+		dc.w $0000, $0000, $04AA, $0ACA, $0ECC, $0EEE, $0EEE, $0CC0
+		dc.w $0888, $0444, $08AE, $046A, $000E, $0008, $0004, $00EE
+Pal_SuperSonic_end:
+
+Pal_SuperSonicWater:
+		dc.w $0000, $0000, $0E88, $0EAA, $0EAC, $0ECC, $0EEE, $0AA0
+		dc.w $0888, $0444, $06AA, $0266, $0048, $0024, $0002, $00EE
+Pal_SuperSonicWater_end:

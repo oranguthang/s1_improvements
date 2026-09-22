@@ -372,6 +372,7 @@ BSLZ_Recover:
 ; loc_18BB4:
 .playMusic:
 		clr.w	obVelY(a0)				; stop rising
+		clr.b	(f_bossmusic).w			; music returns to the act while camera bounds recover
 		move.w	#bgm_SLZ,d0
 		jsr	(QueueSound1).l				; play SLZ music
 

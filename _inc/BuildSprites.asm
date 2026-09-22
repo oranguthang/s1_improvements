@@ -102,8 +102,9 @@ BuildSprites:
 		bne.s	.drawFrame				; if yes, branch (assume mappings point to a single sprite piece)
 
 		move.b	obFrame(a0),d1
-		add.b	d1,d1
+		add.w	d1,d1					; preserve bit 8 so mapping frames $80-$FF work
 		adda.w	(a1,d1.w),a1				; get mappings frame address
+		moveq	#0,d1					; discard the high byte of the frame table index
 		move.b	(a1)+,d1				; get number of sprite pieces in frame
 		subq.b	#1,d1					; subtract 1 for dbf
 		bmi.s	.setVisible				; skip rendering if mapping was blank

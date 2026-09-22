@@ -12,13 +12,99 @@ PaletteCycle:
 	endif
 
 	.doCycle:
+		bsr.w	PalCycle_SuperSonic			; update Super Sonic before zone-specific colours
 		moveq	#0,d2					; clear d2 (redundant, not used here)
 		moveq	#0,d0					; clear d0
 		move.b	(v_zone).w,d0				; get zone ID
 		add.w	d0,d0					; double for word-based indexing
-		move.w	PalCycle_Index(pc,d0.w),d0		; find palette routine for current zone
-		jmp	PalCycle_Index(pc,d0.w)			; jump to relevant palette routine
+		lea	(PalCycle_Index).l,a0
+		move.w	(a0,d0.w),d0				; find palette routine for current zone
+		jmp	(a0,d0.w)				; jump to relevant palette routine
 ; End of function PaletteCycle
+
+; ===========================================================================
+; Super Sonic palette transition and steady cycle, ported from Sonic 2.
+; The dry and underwater buffers advance together so entering water does not
+; reset or flash the cycle.
+; ===========================================================================
+
+PalCycle_SuperSonic:
+		move.b	(v_superpal_state).w,d0
+		beq.w	PCSuper_Return
+		bmi.w	PCSuper_Normal
+		cmpi.b	#3,d0					; transformation fade with the ground pose restored
+		beq.w	PCSuper_Transform
+		subq.b	#1,d0
+		bne.w	PCSuper_Revert
+
+; Fade from Sonic's palette to Super Sonic's palette.
+PCSuper_Transform:
+		subq.b	#1,(v_superpal_timer).w
+		bpl.w	PCSuper_Return
+		move.b	#3,(v_superpal_timer).w
+		move.w	(v_superpal_frame).w,d0
+		addq.w	#8,(v_superpal_frame).w
+		cmpi.w	#$30,(v_superpal_frame).w
+		blo.s	.copy
+		move.b	#-1,(v_superpal_state).w
+		cmpi.b	#id_Transform,(v_player+obAnim).w
+		bne.s	.copy					; landing already selected the ground animation
+		move.b	#id_Walk,(v_player+obAnim).w
+		move.b	#-1,(v_player+obPrevAni).w
+
+	.copy:
+		lea	(Pal_SuperSonicCycle).l,a0
+		bra.w	PCSuper_CopyColours
+
+; Fade backwards and restore Sonic 1's exact normal palette at the end.
+PCSuper_Revert:
+		subq.b	#1,(v_superpal_timer).w
+		bpl.w	PCSuper_Return
+		move.b	#3,(v_superpal_timer).w
+		move.w	(v_superpal_frame).w,d0
+		subq.w	#8,(v_superpal_frame).w
+		bcc.s	.copy
+		clr.w	(v_superpal_frame).w
+		clr.b	(v_superpal_state).w
+		jmp	(Sonic_RefreshPalettes).l
+
+	.copy:
+		lea	(Pal_SuperSonicCycle).l,a0
+		bra.w	PCSuper_CopyColours
+
+; Cycle the ten steady Super Sonic palette frames every eight game frames.
+PCSuper_Normal:
+		subq.b	#1,(v_superpal_timer).w
+		bpl.w	PCSuper_Return
+		move.b	#7,(v_superpal_timer).w
+		move.w	(v_superpal_frame).w,d0
+		addq.w	#8,(v_superpal_frame).w
+		cmpi.w	#$78,(v_superpal_frame).w
+		bls.s	.copy
+		move.w	#$30,(v_superpal_frame).w
+
+	.copy:
+		lea	(Pal_SuperSonicCycle).l,a0
+
+PCSuper_CopyColours:
+		lea	(v_palette+$4).w,a1
+		move.l	(a0,d0.w),(a1)+
+		move.l	4(a0,d0.w),(a1)
+
+		cmpi.b	#id_LZ,(v_zone).w
+		bne.s	PCSuper_Return
+		lea	(Pal_SuperSonicCycle_LZWater).l,a0
+		cmpi.b	#act4,(v_act).w
+		bne.s	.copyWater
+		lea	(Pal_SuperSonicCycle_SBZ3Water).l,a0
+
+	.copyWater:
+		lea	(v_palette_water+$4).w,a1
+		move.l	(a0,d0.w),(a1)+
+		move.l	4(a0,d0.w),(a1)
+
+PCSuper_Return:
+		rts
 
 ; ---------------------------------------------------------------------------
 ; Palette cycling routines per Zone
@@ -386,3 +472,14 @@ Pal_SBZCyc7:		binclude	"palette/Cycle - SBZ 7.bin"	; BG very slow yellow/cyan pu
 Pal_SBZCyc8:		binclude	"palette/Cycle - SBZ 8.bin"	; electrocutor pink/purple & act 2 BG pink square
 Pal_SBZCyc9:		binclude	"palette/Cycle - SBZ 9.bin"	; BG multi-colored small blinking lights (act 2 only)
 Pal_SBZCyc_ConveyAct2:	binclude	"palette/Cycle - SBZ 10.bin"	; conveyor belts in act 2 / FZ
+		even
+
+; ---------------------------------------------------------------------------
+; Super Sonic palette cycle data. The underwater variants are generated from
+; the Sonic 1 LZ and SBZ3 colour transforms by import_super_sonic_s2.py.
+; ---------------------------------------------------------------------------
+
+Pal_SuperSonicCycle:	binclude	"palette/Cycle - Super Sonic.bin"
+Pal_SuperSonicCycle_LZWater:	binclude	"palette/Cycle - Super Sonic LZ Underwater.bin"
+Pal_SuperSonicCycle_SBZ3Water:	binclude	"palette/Cycle - Super Sonic SBZ3 Underwater.bin"
+		even

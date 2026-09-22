@@ -97,11 +97,13 @@ Pri_Switch:	; Routine 4
 
 		tst.b	obSolid(a0)				; is Sonic standing on the switch?
 		beq.s	.return					; if not, branch
+		clr.b	(f_lockscreen).w			; boss is over, so restore level music during reversion
+		clr.b	(f_bossmusic).w			; fallback for custom boss/capsule placements
+		jsr	(Sonic_RevertFromEvent).l		; smoothly return Super Sonic to normal colours
 		addq.w	#8,obY(a0)				; move switch down 8px
 		move.b	#$A,obRoutine(a0)			; advance to Pri_Explosion
 		move.w	#1*60,obTimeFrame(a0)			; set time between animal spawns
 		clr.b	(f_timecount).w				; stop time counter
-		clr.b	(f_lockscreen).w			; lock screen position
 		move.b	#1,(f_lockctrl).w			; lock controls
 		move.w	#(btnR<<8),(v_jpadhold2).w		; simulate holding down the right D-Pad button to move Sonic
 		clr.b	obSolid(a0)				; clear capsule's collision flag
