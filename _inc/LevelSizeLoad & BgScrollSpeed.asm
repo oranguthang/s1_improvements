@@ -125,6 +125,13 @@ LevSz_StartLoc:
 
 ; SetScreen: LevSz_SkipStartPos:
 LevSz_InitCameraPositions:
+		clr.w	(v_trackpos).w				; seed position history for early Spin Dashes
+		lea	(v_tracksonic).w,a2
+		moveq	#64-1,d2
+.seedTrack:
+		move.w	d1,(a2)+
+		move.w	d0,(a2)+
+		dbf	d2,.seedTrack
 	; --- Camera X-Position ---
 	.chkXLeft:
 		subi.w	#320/2,d1				; initial camera X-position is Sonic horizontally centered on the screen

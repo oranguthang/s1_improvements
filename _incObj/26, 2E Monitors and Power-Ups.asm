@@ -106,6 +106,8 @@ Mon_Solid:	; Routine 2
 		bmi.s	.dontbreak				; if yes, branch
 		cmpi.b	#id_Roll,obAnim(a1)			; is Sonic rolling?
 		beq.s	.checkpush				; if yes, branch
+		cmpi.b	#id_SpinDash,obAnim(a1)		; is Sonic charging a Spin Dash?
+		beq.s	.checkpush
 
 ; loc_A20A:
 .dontbreak:

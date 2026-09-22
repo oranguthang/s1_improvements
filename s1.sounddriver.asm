@@ -28,6 +28,7 @@ dpcmLoopCounter function sampleRate, pcmLoopCounterBase(sampleRate,301/2) ; 301 
 Go_SoundPriorities:	dc.l SoundPriorities
 ; Go_SoundD0:
 Go_SpecSoundIndex:	dc.l SpecSoundIndex
+Go_ExtSoundIndex:	dc.l ExtSoundIndex
 Go_MusicIndex:		dc.l MusicIndex
 Go_SoundIndex:		dc.l SoundIndex
 ; off_719A0:
@@ -203,6 +204,10 @@ UpdateMusic:
 		jsr	PlaySoundID(pc)
 ; loc_71BC8:
 .nonewsound:
+		tst.b	(v_spindash_sfx_timer).w
+		beq.s	.noSpinDashTimer
+		subq.b	#1,(v_spindash_sfx_timer).w
+.noSpinDashTimer:
 		lea	SMPS_RAM.v_music_dac_track(a6),a5
 		tst.b	SMPS_Track.PlaybackControl(a5)		; is DAC track playing?
 		bpl.s	.dacdone				; branch if not
@@ -704,6 +709,8 @@ PlaySoundID:
 	if FixBugs
 		cmpi.b	#spec__Last,d7				; is this special sfx ($D0-$D0)?
 		bls.w	Sound_PlaySpecial			; branch if yes
+		cmpi.b	#ext__Last,d7
+		bls.w	Sound_PlayMoreSFX
 		cmpi.b	#flg__First,d7				; is this after special sfx but before $E0?
 		blo.w	.locret					; return if yes
 	else
@@ -969,6 +976,33 @@ PSGInitBytes:	; specifically, these configure writes to the PSG port for each ch
 ; Play normal sound effect
 ; ---------------------------------------------------------------------------
 ; Sound_A0toCF:
+Sound_PlayMoreSFX:
+		tst.b	SMPS_RAM.f_1up_playing(a6)
+		bne.w	Sound_PlaySFX.clear_sndprio
+		tst.b	SMPS_RAM.v_fadeout_counter(a6)
+		bne.w	Sound_PlaySFX.clear_sndprio
+		tst.b	SMPS_RAM.f_fadein_flag(a6)
+		bne.w	Sound_PlaySFX.clear_sndprio
+		clr.b	(v_spindash_sfx_flag).w
+		cmpi.b	#sfx_SpinDash,d7
+		bne.s	.loadExtra
+		move.b	(v_spindash_sfx_pitch).w,d0
+		tst.b	(v_spindash_sfx_timer).w
+		bne.s	.timerActive
+		move.b	#-1,d0
+.timerActive:
+		addq.b	#1,d0
+		cmpi.b	#$C,d0
+		bhs.s	.pitchReady
+		move.b	d0,(v_spindash_sfx_pitch).w
+.pitchReady:
+		move.b	#1,(v_spindash_sfx_flag).w
+		move.b	#60,(v_spindash_sfx_timer).w
+.loadExtra:
+		movea.l	(Go_ExtSoundIndex).l,a0
+		subi.b	#ext__First,d7
+		bra.w	Sound_PlaySFX.sfx_common
+
 Sound_PlaySFX:
 		tst.b	SMPS_RAM.f_1up_playing(a6)		; is 1-up playing?
 		bne.w	.clear_sndprio				; exit is it is
@@ -976,6 +1010,7 @@ Sound_PlaySFX:
 		bne.w	.clear_sndprio				; exit if it is
 		tst.b	SMPS_RAM.f_fadein_flag(a6)		; is music being faded in?
 		bne.w	.clear_sndprio				; exit if it is
+		clr.b	(v_spindash_sfx_flag).w
 		cmpi.b	#sfx_Ring,d7				; is ring sound effect played?
 		bne.s	.sfx_notRing				; if not, branch
 		tst.b	SMPS_RAM.v_ring_speaker(a6)		; is the ring sound playing on right speaker?
@@ -995,6 +1030,7 @@ Sound_PlaySFX:
 .sfx_notPush:
 		movea.l	(Go_SoundIndex).l,a0
 		subi.b	#sfx__First,d7				; make it 0-based
+.sfx_common:
 		lsl.w	#2,d7					; convert sfx ID into index
 		movea.l	(a0,d7.w),a3				; sFX data pointer
 		movea.l	a3,a1
@@ -1039,7 +1075,8 @@ Sound_PlaySFX:
 		move.b	d0,(psg_input).l
 ; loc_7226E:
 .sfxoverridedone:
-		movea.l	SFX_SFXChannelRAM(pc,d3.w),a5
+		lea	SFX_SFXChannelRAM(pc),a5
+		movea.l	(a5,d3.w),a5
 		movea.l	a5,a2
 		moveq	#(SMPS_Track.len/4)-1,d0		; $30 bytes
 ; loc_72276:
@@ -1054,6 +1091,12 @@ Sound_PlaySFX:
 		add.l	a3,d0					; relative pointer
 		move.l	d0,SMPS_Track.DataPointer(a5)		; store track pointer
 		move.w	(a1)+,SMPS_Track.Transpose(a5)		; load FM/PSG channel modifier
+		tst.b	(v_spindash_sfx_flag).w
+		beq.s	.noSpinDashPitch
+		moveq	#0,d0
+		move.b	(v_spindash_sfx_pitch).w,d0
+		add.b	d0,SMPS_Track.Transpose(a5)
+.noSpinDashPitch:
 		move.b	#1,SMPS_Track.DurationTimeout(a5)	; set duration of first "note"
 		move.b	d6,SMPS_Track.StackPointer(a5)		; set "gosub" (coord flag $F8) stack init value
 		tst.b	d4					; is this a PSG channel?
@@ -2736,6 +2779,10 @@ SpecSoundIndex:
 ptr_sndD0:	dc.l SoundD0
 ptr_specend
 
+ExtSoundIndex:
+ptr_sndD1:	dc.l SoundD1
+ptr_extend
+
 ; ---------------------------------------------------------------------------
 ; Sound effect data
 ; ---------------------------------------------------------------------------
@@ -2840,6 +2887,9 @@ SoundCF:	include "sound/sfx/SndCF - Signpost.asm"
 ; Special sound effect data
 ; ---------------------------------------------------------------------------
 SoundD0:	include "sound/sfx/SndD0 - Waterfall.asm"
+		even
+
+SoundD1:	include "sound/sfx/SndD1 - Spin Dash Rev.asm"
 		even
 
 ; ---------------------------------------------------------------------------

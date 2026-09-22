@@ -90,6 +90,12 @@ Map_Sonic_internal:	mappingsTable
 	mappingsTableEntry.w MS_Injury
 	mappingsTableEntry.w MS_GetAir
 	mappingsTableEntry.w MS_WaterSlide
+	mappingsTableEntry.w MS_SpinDash
+	mappingsTableEntry.w MS_SpinDash
+	mappingsTableEntry.w MS_SpinDash
+	mappingsTableEntry.w MS_SpinDash
+	mappingsTableEntry.w MS_SpinDash
+	mappingsTableEntry.w MS_SpinDash
 
 MS_Null:	spriteHeader
 MS_Null_End
@@ -614,5 +620,10 @@ MS_WaterSlide:	spriteHeader
 	spritePiece	-$14, -$10, 4, 4, 0, 0, 0, 0, 0	; water slide (LZ)
 	spritePiece	$C, -8, 1, 3, $10, 0, 0, 0, 0
 MS_WaterSlide_End
+
+MS_SpinDash:	spriteHeader
+	spritePiece	-$B, -7, 4, 3, 0, 0, 0, 0, 0
+	spritePiece	-$B, $11, 3, 1, $C, 0, 0, 0, 0
+MS_SpinDash_End
 
 	even

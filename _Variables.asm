@@ -31,9 +31,9 @@ v_spritequeue:		ds.b	spritelayer_num*spritelayer_size ; sprite display queue, in
 
 v_16x16:		ds.b	$1800				; 16x16 tile mappings
 
-v_sgfx_buffer:		ds.b	tile_size*23			; buffered Sonic graphics ($17 cells)
-v_sgfx_buffer_end:
-			ds.b	$20				; unused
+VDP_Command_Buffer:	ds.w	7*$12			; 18 queued VDP commands
+VDP_Command_Buffer_Slot: ds.l	1			; next free DMA queue slot
+			ds.b	$200				; unused after queue
 v_tracksonic:		ds.b	$100				; position tracking data for Sonic
 v_hscrolltablebuffer:	ds.b	$380				; scrolling table data
 v_hscrolltablebuffer_end:
@@ -63,6 +63,7 @@ v_gameovertext1:	equ	v_objspace+object_size*2	; object variable space for the "G
 v_gameovertext2:	equ	v_objspace+object_size*3	; object variable space for the "OVER" in "GAME OVER"/"TIME OVER" text ($40 bytes)
 
 v_shieldobj:		equ	v_objspace+object_size*6	; object variable space for the shield ($40 bytes)
+v_dustobj:		equ	v_objspace+object_size*7	; Spin Dash dust object
 v_starsobj1:		equ	v_objspace+object_size*8	; object variable space for the invincibility stars #1 ($40 bytes)
 v_starsobj2:		equ	v_objspace+object_size*9	; object variable space for the invincibility stars #2 ($40 bytes)
 v_starsobj3:		equ	v_objspace+object_size*10	; object variable space for the invincibility stars #3 ($40 bytes)
@@ -291,7 +292,11 @@ v_ringbonus:		ds.w	1				; ring bonus at the end of an act
 f_endactbonus:		ds.b	1				; time/ring bonus update flag at the end of an act
 v_sonicend:		ds.b	1				; routine counter for Sonic in the ending sequence
 v_lz_deform:		ds.w	1				; LZ deformation offset, in units of $80
-			ds.b	6				; unused
+v_cam_x_delay:		ds.w	1				; horizontal camera delay after a Spin Dash
+v_cam_y_delay:		ds.b	1				; look up/down delay
+v_spindash_sfx_flag:	ds.b	1			; last sound was Spin Dash rev
+v_spindash_sfx_timer:	ds.b	1			; rev pitch timeout
+v_spindash_sfx_pitch:	ds.b	1			; rev pitch
 f_switch:		ds.b	$10				; flags set when Sonic stands on a switch
 v_scroll_block_1_size:	ds.w	1
 v_scroll_block_2_size:	ds.w	1				; unused

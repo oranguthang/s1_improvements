@@ -39,3 +39,7 @@ An airborne action can dash toward a valid forward target. Homing targets the up
 ## Startup
 
 Start can skip the SEGA screen while its sound is playing.
+
+## Spin Dash
+
+Hold Down on the ground and press an action button to charge. Release Down to launch. Charging retains its animation against solid objects; a rolling launch can break compatible walls and monitors.

@@ -159,6 +159,7 @@ Spring_LR:	; Routine 8
 ; ---------------------------------------------------------------------------
 
 Spring_AniLR:	; Routine $A
+		clr.w	(v_cam_x_delay).w			; clear delayed camera after spring launch
 		lea	(Ani_Spring).l,a1			; animation script will advance routine...
 		bra.w	AnimateSprite				; ...to "Spring_ResetLR" once it's finished
 ; ===========================================================================

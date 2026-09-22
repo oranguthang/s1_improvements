@@ -45,6 +45,7 @@ Sonic_Main:	; Routine 0
 		move.w	#son_maxspeed,(v_sonspeedmax).w		; set Sonic's top speed
 		move.w	#son_acceleration,(v_sonspeedacc).w	; set Sonic's acceleration
 		move.w	#son_deceleration,(v_sonspeeddec).w	; set Sonic's deceleration
+		move.b	#id_SpinDust,(v_dustobj).w		; prepare Spin Dash dust object
 ; ---------------------------------------------------------------------------
 
 ; Obj01_Control:
@@ -316,6 +317,7 @@ Sonic_Water:
 
 ; Obj01_MdNormal:
 Sonic_MdNormal:	; While Sonic is on the ground and not rolling
+		bsr.w	Sonic_SpinDash				; start or update Spin Dash charge
 		bsr.w	Sonic_Jump				; check if we need to jump
 		bsr.w	Sonic_SlopeResistWalk			; handle resistance from running up slopes
 		bsr.w	Sonic_Move				; handle Sonic's left/right movement
@@ -329,6 +331,7 @@ Sonic_MdNormal:	; While Sonic is on the ground and not rolling
 
 ; Obj01_MdJump:
 Sonic_MdJump:	; While Sonic is in the air but not rolling
+		bclr	#0,spindash_flag(a0)		; cancel charging when airborne
 		bsr.w	Sonic_AirRoll				; allow a second button press to curl in midair
 		bsr.w	Sonic_JumpHeight			; handle Sonic's jump height based on whether the jump button is still held
 		bsr.w	Sonic_JumpDirection			; handle midair direction adjustments while jumping
@@ -359,6 +362,7 @@ Sonic_MdRoll:	; While Sonic is on the ground and rolling
 
 ; Obj01_MdJump2:
 Sonic_MdJump2:	; While Sonic is in the air and rolling (usually, but not limited to, jumping)
+		bclr	#0,spindash_flag(a0)		; cancel charging when airborne
 		bsr.w	Sonic_HomingAttack			; trigger a homing dash on a new button press
 		bsr.w	Sonic_JumpHeight			; handle Sonic's jump height based on whether the jump button is still held
 		bsr.w	Sonic_JumpDirection			; handle midair direction adjustments while jumping
@@ -469,6 +473,10 @@ Sonic_LookUp:
 		btst	#bitUp,(v_jpadhold2).w			; is up being held?
 		beq.s	Sonic_Duck				; if not, check for ducking instead
 		move.b	#id_LookUp,obAnim(a0)			; use "looking up" animation
+		addq.b	#1,(v_cam_y_delay).w
+		cmpi.b	#120,(v_cam_y_delay).w
+		blo.s	Sonic_ResetScr_Part2
+		move.b	#120,(v_cam_y_delay).w
 		cmpi.w	#$C8,(v_lookshift).w			; has camera already fully moved up?
 		beq.s	Sonic_CheckDpadLetGo			; if yes, don't move it up further
 		addq.w	#2,(v_lookshift).w			; move camera up further
@@ -480,6 +488,10 @@ Sonic_Duck:
 		btst	#bitDn,(v_jpadhold2).w			; is down being held?
 		beq.s	Sonic_ResetScr				; if not, branch
 		move.b	#id_Duck,obAnim(a0)			; use "ducking" animation
+		addq.b	#1,(v_cam_y_delay).w
+		cmpi.b	#120,(v_cam_y_delay).w
+		blo.s	Sonic_ResetScr_Part2
+		move.b	#120,(v_cam_y_delay).w
 		cmpi.w	#8,(v_lookshift).w			; has camera already fully moved down?
 		beq.s	Sonic_CheckDpadLetGo			; if yes, branch
 		subq.w	#2,(v_lookshift).w			; move camera down further
@@ -488,6 +500,8 @@ Sonic_Duck:
 
 ; Obj01_ResetScr:
 Sonic_ResetScr:
+		clr.b	(v_cam_y_delay).w
+Sonic_ResetScr_Part2:
 		cmpi.w	#$60,(v_lookshift).w			; is screen in its default position?
 		beq.s	Sonic_CheckDpadLetGo			; if yes, branch
 		bcc.s	.resetdown				; does camera need to go back down? if yes, branch
@@ -2364,33 +2378,32 @@ Sonic_LoadGfx:
 		lea	(SonicDynPLC).l,a2			; load PLC script
 		add.w	d0,d0					; double current frame for word-based indexing
 		adda.w	(a2,d0.w),a2				; find relevant DPLC definition for new frame
-		moveq	#0,d1					; clear d1
-		move.b	(a2)+,d1				; read "number of entries" value
-		subq.b	#1,d1					; subtract by 1 for first iteration
+		moveq	#0,d5					; clear DPLC entry counter
+		move.b	(a2)+,d5				; read number of DPLC entries
+		subq.w	#1,d5
 		bmi.s	.nochange				; if this was an empty entry, nothing to do, branch
 
-		lea	(v_sgfx_buffer).w,a3			; load Sonic's graphics transfer buffer
-		move.b	#1,(f_sonframechg).w			; set flag for VBlank to update Sonic graphics via DMA
+		move.w	#ArtTile_Sonic*tile_size,d4	; first destination in VRAM
+		move.l	#Art_Sonic,d6				; source art in ROM
 
 ; SPLC_ReadEntry:
 .readentry:
-		moveq	#0,d2					; clear d2
-		move.b	(a2)+,d2				; read next byte of DPLC entry
-		move.w	d2,d0					; copy to d0
-		lsr.b	#4,d0					; shift out lower nybble, upper nybble is number of tiles
-		lsl.w	#8,d2					; shift value into upper byte of word
-		move.b	(a2)+,d2				; read next byte of DPLC entry
-		lsl.w	#5,d2					; multiply by $20 (tile_size)
-		lea	(Art_Sonic).l,a1			; load Sonic's uncompressed graphics
-		adda.l	d2,a1					; add offset for current DPLC entry
-
-; SPLC_LoadTile:
-.loadtile:
-		movem.l	(a1)+,d2-d6/a4-a6			; copy a full tile's worth of data to 8 different registers
-		movem.l	d2-d6/a4-a6,(a3)			; write them to Sonic's graphics transfer buffer
-		lea	tile_size(a3),a3			; go to next tile
-		dbf	d0,.loadtile				; repeat for number of tiles
-		dbf	d1,.readentry				; repeat for number of entries
+		moveq	#0,d1
+		move.b	(a2)+,d1
+		lsl.w	#8,d1
+		move.b	(a2)+,d1
+		move.w	d1,d3
+		lsr.w	#8,d3
+		andi.w	#$F0,d3
+		addi.w	#$10,d3				; transfer size in words
+		andi.w	#$FFF,d1
+		lsl.l	#5,d1
+		add.l	d6,d1					; source address in ROM
+		move.w	d4,d2					; destination address in VRAM
+		add.w	d3,d4
+		add.w	d3,d4
+		jsr	(QueueDMATransfer).l
+		dbf	d5,.readentry
 
 ; locret_13C96:
 .nochange:
@@ -2522,6 +2535,12 @@ Sonic_HomingTargetY:
 ; Pan the camera ahead when Sonic moves quickly, then ease back to center.
 Sonic_PanCamera:
 		move.w	(v_camera_pan).w,d1
+		tst.b	spindash_flag(a0)			; pan toward the charging direction
+		beq.s	.readSpeed
+		btst	#0,obStatus(a0)
+		bne.s	.panLeft
+		bra.s	.panRight
+.readSpeed:
 		move.w	obInertia(a0),d0
 		btst	#1,obStatus(a0)				; use horizontal velocity in the air
 		beq.s	.speedReady

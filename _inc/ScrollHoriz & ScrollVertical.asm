@@ -32,7 +32,23 @@ ScrollHoriz:
 
 ; ScrollHoriz2:
 MoveScreenHoriz:
+		move.w	(v_cam_x_delay).w,d1		; remaining Spin Dash camera delay
+		beq.s	.normal
+		subi.w	#$100,d1
+		move.w	d1,(v_cam_x_delay).w
+		moveq	#0,d1
+		move.b	(v_cam_x_delay).w,d1		; high byte counts past positions
+		lsl.b	#2,d1
+		addq.b	#4,d1
+		move.w	(v_trackpos).w,d0
+		sub.b	d1,d0
+		lea	(v_tracksonic).w,a1
+		move.w	(a1,d0.w),d0
+		andi.w	#$3FFF,d0
+		bra.s	.positionReady
+.normal:
 		move.w	(v_player+obX).w,d0			; get Sonic's current X-position
+.positionReady:
 		sub.w	(v_screenposx).w,d0			; d0 = Sonic's distance from left edge of screen
 		sub.w	(v_camera_pan).w,d0			; offset the focus ahead of Sonic
 		addi.w	#16,d0					; retain the original 16px camera dead zone

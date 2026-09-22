@@ -412,6 +412,7 @@ GameInit:
 .clearRAM:	move.l	d7,(a6)+				; clear RAM
 		dbf	d6,.clearRAM				; loop until done
 
+		jsr	(InitDMAQueue).l			; initialize queued VRAM transfers
 		bsr.w	VDPSetupGame				; initialize (proper) VDP registers
 		bsr.w	DACDriverLoad				; initialize Z80 DAC driver
 		bsr.w	JoypadInit				; initialize controller ports
@@ -833,11 +834,7 @@ VBlank_Levels:
 		writeVRAM	v_hscrolltablebuffer,vram_hscroll ; transfer H-scroll buffer table to actual H-scroll VRAM
 		writeVRAM	v_spritetablebuffer,vram_sprites  ; transfer sprite buffer table to actual sprites VRAM
 
-		tst.b	(f_sonframechg).w			; has Sonic's sprite changed?
-		beq.s	.nochg					; if not, branch
-		writeVRAM	v_sgfx_buffer,ArtTile_Sonic*tile_size ; load new Sonic gfx
-		move.b	#0,(f_sonframechg).w			; clear Sonic gfx update flag
-	.nochg:
+		jsr	(ProcessDMAQueue).l			; transfer queued Sonic and dust graphics
 
 		startZ80					; restart Z80
 
@@ -894,11 +891,7 @@ VBlank_SpecialStage:
 
 		bsr.w	PalCycle_SS				; advance special stage palette cycle and animate bird/fish graphics
 
-		tst.b	(f_sonframechg).w			; has Sonic's sprite changed?
-		beq.s	.nochg					; if not, branch
-		writeVRAM	v_sgfx_buffer,ArtTile_Sonic*tile_size ; load new Sonic gfx
-		move.b	#0,(f_sonframechg).w			; clear Sonic gfx update flag
-	.nochg:
+		jsr	(ProcessDMAQueue).l
 
 		tst.w	(v_generictimer).w			; is generic timer set?
 		beq.w	.end					; if not, branch
@@ -931,11 +924,7 @@ VBlank_Ending:
 		writeVRAM	v_hscrolltablebuffer,vram_hscroll ; transfer H-scroll buffer table to actual H-scroll VRAM
 		writeVRAM	v_spritetablebuffer,vram_sprites  ; transfer sprite buffer table to actual sprites VRAM
 
-		tst.b	(f_sonframechg).w			; has Sonic's sprite changed?
-		beq.s	.nochg					; if not, branch
-		writeVRAM	v_sgfx_buffer,ArtTile_Sonic*tile_size ; load new Sonic gfx
-		move.b	#0,(f_sonframechg).w			; clear Sonic gfx update flag
-	.nochg:
+		jsr	(ProcessDMAQueue).l
 
 		startZ80					; restart Z80
 
@@ -989,11 +978,7 @@ VBlank_Continue:
 		writeVRAM	v_hscrolltablebuffer,vram_hscroll ; transfer H-scroll buffer table to actual H-scroll VRAM
 		startZ80					; restart Z80
 
-		tst.b	(f_sonframechg).w			; has Sonic's sprite changed?
-		beq.s	.nochg					; if not, branch
-		writeVRAM	v_sgfx_buffer,ArtTile_Sonic*tile_size ; load new Sonic gfx
-		move.b	#0,(f_sonframechg).w			; clear Sonic gfx update flag
-	.nochg:
+		jsr	(ProcessDMAQueue).l
 
 		tst.w	(v_generictimer).w			; is generic timer set?
 		beq.w	.end					; if not, branch
@@ -1187,6 +1172,7 @@ VDPSetupArray:
 		dc.w vreg_winxpos|0				; window horizontal position
 		dc.w vreg_winypos|0				; window vertical position
 VDPSetupArray_End:
+		include	"_inc/DMA-Queue.asm"
 
 
 ; ===========================================================================
@@ -1217,6 +1203,7 @@ ClearScreen:
 		clearRAM v_hscrolltablebuffer,v_hscrolltablebuffer_end_padded+4 ; clear H-Scroll table buffer
 	endif
 
+		ResetDMAQueue
 		rts						; return
 ; End of function ClearScreen
 
@@ -4253,6 +4240,8 @@ Map_LWall:	include	"_maps/Wall of Lava.asm"
 ; ===========================================================================
 ; >>> Main Sonic player object
 		include	"_incObj/01 Sonic.asm"
+		include	"_incObj/sub SpinDash.asm"
+		include	"_incObj/05 Spindash Dust.asm"
 
 
 ; ===========================================================================
@@ -4424,6 +4413,8 @@ Map_Sonic:	include	"_maps/Sonic.asm"
 SonicDynPLC:	include	"_maps/Sonic - Dynamic Gfx Script.asm"
 
 Art_Sonic:	binclude	"artunc/Sonic.unc"
+		even
+Art_SpinDust:	binclude	"artunc/SpinDust.unc"
 		even
 
 ; ---------------------------------------------------------------------------
