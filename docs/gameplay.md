@@ -11,3 +11,7 @@ Scattered rings use underwater gravity and flashing near expiry. Their lifetime 
 ## Momentum
 
 Movement can preserve speed above the normal running cap. Input acceleration and braking still apply.
+
+## Rolling jumps
+
+Directional steering remains available after jumping from a roll.

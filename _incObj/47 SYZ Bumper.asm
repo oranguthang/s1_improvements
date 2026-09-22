@@ -43,7 +43,6 @@ Bump_Hit:	; Routine 2
 		move.w	d0,obVelY(a1)				; bounce Sonic away vertically
 
 		bset	#1,obStatus(a1)				; set Sonic to airborne
-		bclr	#4,obStatus(a1)				; clear roll-jump flag
 		bclr	#5,obStatus(a1)				; clear pushing flag
 		clr.b	jumping(a1)				; clear jumping flag
 

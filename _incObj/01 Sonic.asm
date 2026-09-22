@@ -947,9 +947,6 @@ Sonic_JumpDirection:
 		move.w	(v_sonspeedacc).w,d5			; get Sonic's current acceleration...
 		asl.w	#1,d5					; ...doubled
 
-		btst	#4,obStatus(a0)				; is Roll-Jump flag set?
-		bne.s	Sonic_RollJumpLock			; if yes, prevent midair direction change
-
 		move.w	obVelX(a0),d0				; get Sonic's current X-velocity
 		btst	#bitL,(v_jpadhold2).w			; is left being held?
 		beq.s	.notleft				; if not, branch
@@ -1255,7 +1252,7 @@ Sonic_Jump:
 	endif
 
 		btst	#2,obStatus(a0)				; is Sonic already in a ball state?
-		bne.s	.rolljump				; if so, branch
+		bne.s	.return				; keep ball state while jumping from a roll
 		move.b	#sonic_roll_height,obHeight(a0)		; set height to rolling size
 		move.b	#sonic_roll_width,obWidth(a0)		; set width to rolling size
 		move.b	#id_Roll,obAnim(a0)			; use "jumping" animation
@@ -1268,9 +1265,6 @@ Sonic_Jump:
 ; ===========================================================================
 
 ; loc_13490:
-.rolljump:
-		bset	#4,obStatus(a0)				; set Roll-Jump flag
-		rts						; return
 ; End of function Sonic_Jump
 
 
@@ -1813,17 +1807,8 @@ Sonic_FloorRight:
 ; ---------------------------------------------------------------------------
 
 Sonic_ResetOnFloor:
-		btst	#4,obStatus(a0)				; is Sonic roll-jumping?
-		beq.s	.notrolljump				; if not, skip
-		nop						; unknown removed code
-		nop						; (some extra feature of the roll-jump lock?)
-		nop						; (we will never know...)
-
-; loc_137AE:
-.notrolljump:
 		bclr	#5,obStatus(a0)				; clear push flag
 		bclr	#1,obStatus(a0)				; clear in-air flag
-		bclr	#4,obStatus(a0)				; clear roll-jump flag
 	if FixBugs
 		; This line was placed too late into the routine,
 		; occasionally causing Sonic "sliding" on the floor

@@ -410,7 +410,6 @@ LZWindTunnels:
 		bset	#1,obStatus(a1)				; set Sonic's in-air flag
 	if FixBugs
 		; Knuckles in Sonic 2 added this.
-		bclr	#4,obStatus(a1)				; clear roll-jump flag
 	endif
 
 	.chkUp:
