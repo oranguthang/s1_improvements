@@ -17,7 +17,7 @@ Revision = 1
 ; 	| If 2, build the hacked version from Sonic Mega Collection, dubbed REVXB,
 ;	|       which (sloppily) fixes the infamous "spike bug" -- not recommended
 
-FixBugs = 0
+FixBugs = 1
 ;	| If 1, enables various bugfixes across the game and sound driver
 ;	|       (see also the "_Fixed Binary Files" folder, and FixMusicAndSFXDataBugs)
 
