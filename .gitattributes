@@ -1,7 +1,43 @@
-*.asm		text
-*.txt		text
-*.xml		text
-*.cs		text
-*.cpp		text
-*.ini		text
-*.bin		binary
+# Keep text normalized in Git and use the project's CRLF working-tree format.
+* text=auto eol=crlf
+
+# Source files and editor projects are text, even when Git's heuristic is unsure.
+*.asm text
+*.bat text
+*.cpp text
+*.cs text
+*.ini text
+*.json text
+*.lst text
+*.md text
+*.sep text
+*.txt text
+*.xml text
+
+# Lua entry points have Unix shebangs.
+*.lua text eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+*.toml text eol=lf
+Makefile text eol=lf
+
+# ROM data, compressed assets, images, audio, and bundled tools are binary.
+*.bin binary
+*.dpcm binary
+*.eni binary
+*.exe binary
+*.kos binary
+*.kosm binary
+*.zip binary
+*.png binary
+*.bmp binary
+*.dll binary
+*.msg binary
+*.nem binary
+*.pcm binary
+*.srm binary
+*.pcx binary
+*.unc binary
+*.wav binary
+build_tools/*/asl binary
+build_tools/*/p2bin binary

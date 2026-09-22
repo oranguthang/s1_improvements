@@ -21,6 +21,8 @@ sonic.p
 # Built ROMs.
 s1built.bin
 s1built.prev.bin
+s1built.debug.bin
+s1built.debug.prev.bin
 
 # Automatically-generated (D)PCM data.
 sound/dac/dpcm/generated/*.inc
@@ -29,3 +31,15 @@ sound/dac/dpcm/generated/hashes.lua
 sound/dac/pcm/generated/*.inc
 sound/dac/pcm/generated/*.pcm
 sound/dac/pcm/generated/hashes.lua
+
+tmp/
+__pycache__
+
+# Local emulator SRAM and Python development output.
+*.srm
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+/build/
+/dist/
