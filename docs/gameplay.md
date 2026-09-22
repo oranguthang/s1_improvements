@@ -27,3 +27,7 @@ Lampposts save the ring count for a checkpoint restart.
 ## Extended camera
 
 The horizontal camera looks farther ahead as Sonic runs. Demo exits preserve the final camera position through the fade.
+
+## Air Roll
+
+Press an action button while airborne to curl into a ball when no higher-priority move consumes that input.

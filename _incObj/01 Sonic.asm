@@ -329,6 +329,7 @@ Sonic_MdNormal:	; While Sonic is on the ground and not rolling
 
 ; Obj01_MdJump:
 Sonic_MdJump:	; While Sonic is in the air but not rolling
+		bsr.w	Sonic_AirRoll				; allow a second button press to curl in midair
 		bsr.w	Sonic_JumpHeight			; handle Sonic's jump height based on whether the jump button is still held
 		bsr.w	Sonic_JumpDirection			; handle midair direction adjustments while jumping
 		bsr.w	Sonic_LevelBound			; make sure Sonic stays within level bounds and handle bottomless pits
@@ -2394,6 +2395,21 @@ Sonic_LoadGfx:
 		rts						; return
 ; End of function Sonic_LoadGfx
 ; ===========================================================================
+
+; Curl into a ball in midair when a jump button is pressed again.
+Sonic_AirRoll:
+		moveq	#btnABC,d0
+		and.b	(v_jpadpress2).w,d0
+		beq.s	.return
+		btst	#2,obStatus(a0)
+		bne.s	.return
+		move.b	#id_Roll,obAnim(a0)
+		bset	#2,obStatus(a0)
+		move.b	#sonic_roll_height,obHeight(a0)
+		move.b	#sonic_roll_width,obWidth(a0)
+		addq.w	#sonic_height-sonic_roll_height,obY(a0)
+.return:
+		rts
 
 ; Pan the camera ahead when Sonic moves quickly, then ease back to center.
 Sonic_PanCamera:
