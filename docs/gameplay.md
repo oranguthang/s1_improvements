@@ -19,3 +19,7 @@ Directional steering remains available after jumping from a roll.
 ## Score tally
 
 Press an action button during act or Special Stage results to finish counting the remaining bonus immediately.
+
+## Checkpoints
+
+Lampposts save the ring count for a checkpoint restart.

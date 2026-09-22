@@ -184,11 +184,8 @@ Lamp_LoadInfo:
 		move.w	(v_lamp_xpos).w,(v_player+obX).w	; x-position
 		move.w	(v_lamp_ypos).w,(v_player+obY).w	; y-position
 
-		; Rings are reloaded here, but then immediately reset back to 0
-		move.w	(v_lamp_rings).w,(v_rings).w		; (useless) rings
-		move.b	(v_lamp_lives).w,(v_lifecount).w	; (useless) extra life flag on 100/200 rings
-		clr.w	(v_rings).w				; reset rings to 0
-		clr.b	(v_lifecount).w				; reset flags for extra life on rings
+		move.w	(v_lamp_rings).w,(v_rings).w		; restore rings saved at the lamppost
+		move.b	(v_lamp_lives).w,(v_lifecount).w	; restore extra life flags
 
 		move.l	(v_lamp_time).w,(v_time).w		; time
 		move.b	#60-1,(v_timecent).w			; set centiseconds part to a second
