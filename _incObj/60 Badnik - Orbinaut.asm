@@ -26,7 +26,7 @@ Orb_Main:	; Routine 0
 		move.w	#ArtTile_SBZ_Orbinaut,obGfx(a0)		; SBZ-specific art tile
 		cmpi.b	#id_SBZ,(v_zone).w			; check if level is SBZ
 		beq.s	.artTile				; if yes, branch
-		move.w	#ArtTile_SLZ_Orbinaut|Tile_Pal2,obGfx(a0) ; SLZ-specific art tile and palette line
+		move.w	#ArtTile_SLZ_Orbinaut,obGfx(a0)		; SLZ-specific art tile, shared red palette
 	.artTile:
 		cmpi.b	#id_LZ,(v_zone).w			; check if level is LZ
 		bne.s	.continueSetup				; if not, branch

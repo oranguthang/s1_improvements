@@ -3,11 +3,11 @@
   <Images>
     <ImageFromMappings id="spikeball">
       <ArtFile filename="../../artnem/Enemy Orbinaut.nem"/>
-      <MapFile type="ASM" filename="../../_maps/Orbinaut.asm" frame="3" startpal="1" />
+      <MapFile type="ASM" filename="../../_maps/Orbinaut.asm" frame="3" startpal="0" />
     </ImageFromMappings>
     <ImageFromMappings id="body">
       <ArtFile filename="../../artnem/Enemy Orbinaut.nem"/>
-      <MapFile type="ASM" filename="../../_maps/Orbinaut.asm" frame="0" startpal="1" />
+      <MapFile type="ASM" filename="../../_maps/Orbinaut.asm" frame="0" startpal="0" />
     </ImageFromMappings>
   </Images>
   <DefaultImage>

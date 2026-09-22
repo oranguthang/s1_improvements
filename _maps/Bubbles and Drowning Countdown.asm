@@ -27,45 +27,45 @@ Map_Bub_internal:	mappingsTable
 	mappingsTableEntry.w	.blank
 
 .bubble1:	spriteHeader
-	spritePiece	-4, -4, 1, 1, 0, 0, 0, 0, 0	; bubbles, increasing in size
+	spritePiece	-4, -4, 1, 1, 0, 0, 0, 1, 0	; bubbles, increasing in size
 .bubble1_End
 
 .bubble2:	spriteHeader
-	spritePiece	-4, -4, 1, 1, 1, 0, 0, 0, 0
+	spritePiece	-4, -4, 1, 1, 1, 0, 0, 1, 0
 .bubble2_End
 
 .bubble3:	spriteHeader
-	spritePiece	-4, -4, 1, 1, 2, 0, 0, 0, 0
+	spritePiece	-4, -4, 1, 1, 2, 0, 0, 1, 0
 .bubble3_End
 
 .bubble4:	spriteHeader
-	spritePiece	-8, -8, 2, 2, 3, 0, 0, 0, 0
+	spritePiece	-8, -8, 2, 2, 3, 0, 0, 1, 0
 .bubble4_End
 
 .bubble5:	spriteHeader
-	spritePiece	-8, -8, 2, 2, 7, 0, 0, 0, 0
+	spritePiece	-8, -8, 2, 2, 7, 0, 0, 1, 0
 .bubble5_End
 
 .bubble6:	spriteHeader
-	spritePiece	-$C, -$C, 3, 3, $B, 0, 0, 0, 0
+	spritePiece	-$C, -$C, 3, 3, $B, 0, 0, 1, 0
 .bubble6_End
 
 .bubblefull:	spriteHeader
-	spritePiece	-$10, -$10, 4, 4, $14, 0, 0, 0, 0
+	spritePiece	-$10, -$10, 4, 4, $14, 0, 0, 1, 0
 .bubblefull_End
 
 .burst1:	spriteHeader
-	spritePiece	-$10, -$10, 2, 2, $24, 0, 0, 0, 0 ; large bubble bursting
-	spritePiece	0, -$10, 2, 2, $24, 1, 0, 0, 0
-	spritePiece	-$10, 0, 2, 2, $24, 0, 1, 0, 0
-	spritePiece	0, 0, 2, 2, $24, 1, 1, 0, 0
+	spritePiece	-$10, -$10, 2, 2, $24, 0, 0, 1, 0 ; large bubble bursting
+	spritePiece	0, -$10, 2, 2, $24, 1, 0, 1, 0
+	spritePiece	-$10, 0, 2, 2, $24, 0, 1, 1, 0
+	spritePiece	0, 0, 2, 2, $24, 1, 1, 1, 0
 .burst1_End
 
 .burst2:	spriteHeader
-	spritePiece	-$10, -$10, 2, 2, $28, 0, 0, 0, 0
-	spritePiece	0, -$10, 2, 2, $28, 1, 0, 0, 0
-	spritePiece	-$10, 0, 2, 2, $28, 0, 1, 0, 0
-	spritePiece	0, 0, 2, 2, $28, 1, 1, 0, 0
+	spritePiece	-$10, -$10, 2, 2, $28, 0, 0, 1, 0
+	spritePiece	0, -$10, 2, 2, $28, 1, 0, 1, 0
+	spritePiece	-$10, 0, 2, 2, $28, 0, 1, 1, 0
+	spritePiece	0, 0, 2, 2, $28, 1, 1, 1, 0
 .burst2_End
 
 .zero_sm:	spriteHeader
@@ -109,15 +109,15 @@ Map_Bub_internal:	mappingsTable
 .one_End
 
 .bubmaker1:	spriteHeader
-	spritePiece	-8, -8, 2, 2, $68, 0, 0, 0, 0
+	spritePiece	-8, -8, 2, 2, $68, 0, 0, 1, 0
 .bubmaker1_End
 
 .bubmaker2:	spriteHeader
-	spritePiece	-8, -8, 2, 2, $6C, 0, 0, 0, 0
+	spritePiece	-8, -8, 2, 2, $6C, 0, 0, 1, 0
 .bubmaker2_End
 
 .bubmaker3:	spriteHeader
-	spritePiece	-8, -8, 2, 2, $70, 0, 0, 0, 0
+	spritePiece	-8, -8, 2, 2, $70, 0, 0, 1, 0
 .bubmaker3_End
 
 .blank:	spriteHeader

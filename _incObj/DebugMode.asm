@@ -494,7 +494,7 @@ __LABEL__:	label	*
 		dbug	Map_Fire,	id_LavaMaker,		0,	0,	ArtTile_SLZ_Fireball
 		dbug	Map_Scen,	id_Scenery,		0,	0,	ArtTile_SLZ_Fireball_Launcher|Tile_Pal3
 		dbug	Map_Bomb,	id_Bomb,		0,	0,	ArtTile_Bomb
-		dbug	Map_Orb,	id_Orbinaut,		0,	0,	ArtTile_SLZ_Orbinaut|Tile_Pal2
+		dbug	Map_Orb,	id_Orbinaut,		0,	0,	ArtTile_SLZ_Orbinaut
 		dbug	Map_Lamp,	id_Lamppost,		1,	0,	ArtTile_Lamppost
 .SLZ_end:
 

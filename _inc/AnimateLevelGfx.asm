@@ -209,6 +209,13 @@ AniArt_SBZ:
 AniArt_SBZ_Pollution:
 		.size:	= 12					; number of tiles per frame
 
+		; SBZ2 Eggman uses tiles $448-$45F for his jump. Stop the smoke
+		; animation before his art is queued so it cannot overwrite them.
+		cmpi.b	#1,(v_act).w			; Scrap Brain act 2?
+		bne.s	.check_smokePuff1		; keep animating in other acts
+		cmpi.b	#4,(v_dle_routine).w		; Eggman graphics queued?
+		bhs.w	.return				; preserve Eggman tiles
+
 .check_smokePuff1:
 		tst.b	(v_lani2_frame).w			; check primary smokepuff timer
 		beq.s	.smokePuff1				; branch if counter hit 0

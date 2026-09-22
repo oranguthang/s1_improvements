@@ -61,7 +61,7 @@ Newt_Action_ChkDistance:
 
 		tst.b	obSubtype(a0)				; is this a green, missile-firing Newtron? (subtype 1)
 		beq.s	.return					; if not, branch
-		move.w	#ArtTile_Newtron|Tile_Pal2,obGfx(a0)	; use alternate palette line
+		move.w	#ArtTile_Newtron|Tile_Pal2,obGfx(a0)	; use remapped art with alternate palette line
 		move.b	#8,ob2ndRout(a0)			; advance to Newt_Action_GreenNewtron instead
 		move.b	#4,obAnim(a0)				; use ".fires" animation
 

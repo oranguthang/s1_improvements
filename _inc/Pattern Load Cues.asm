@@ -157,7 +157,7 @@ PLC_LZ2:	plcheader
 		plcm	Nem_LzPlatfm,	ArtTile_LZ_Rising_Platform	; rising platform
 		plcm	Nem_Orbinaut,	ArtTile_LZ_Orbinaut		; orbinaut enemy
 		plcm	Nem_Jaws,	ArtTile_Jaws			; jaws enemy
-		plcm	Nem_LzSwitch,	ArtTile_Button			; switch
+		plcm	Nem_LzSwitch,	ArtTile_Button		; grey LZ switch body and pedestal
 		plcm	Nem_Cork,	ArtTile_LZ_Cork			; cork block
 		plcm	Nem_Spikes,	ArtTile_Spikes			; spikes
 		plcm	Nem_HSpring,	ArtTile_Spring_Horizontal	; horizontal spring
@@ -265,7 +265,7 @@ PLC_SBZ2:	plcheader
 		plcm	Nem_TrapDoor,	ArtTile_SBZ_Trap_Door		; trapdoor
 		plcm	Nem_SbzFloor,	ArtTile_SBZ_Collapsing_Floor+4	; collapsing floor
 		plcm	Nem_SpinPform,	ArtTile_SBZ_Spinning_Platform	; small spinning platform
-		plcm	Nem_LzSwitch,	ArtTile_Button			; switch
+		plcm	Nem_LzSwitch,	ArtTile_Button		; grey SBZ switch body and pedestal
 		plcm	Nem_Spikes,	ArtTile_Spikes			; spikes
 		plcm	Nem_HSpring,	ArtTile_Spring_Horizontal	; horizontal spring
 		plcm	Nem_VSpring,	ArtTile_Spring_Vertical		; vertical spring
