@@ -138,7 +138,7 @@ v_pfade_size:		ds.b	1				; palette fading - number of colours
 
 v_misc_variables:
 v_vblank_0e_counter:	ds.b	1				; tracks how many times vertical interrupts routine 0E occurred (pretty much unused because routine 0E is unused)
-			ds.b	1				; unused
+v_palmuscounter:	ds.b	1				; keeps music at the correct tempo in PAL regions
 v_vblank_routine:	ds.b	1				; VBlank - routine counter (previously called v_vbla_routine)
 			ds.b	1				; unused
 v_spritecount:		ds.b	1				; number of sprites on-screen

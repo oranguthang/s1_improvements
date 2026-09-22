@@ -2020,6 +2020,10 @@ Tit_LoadText:
 		bsr.w	QueueSound2				; play title screen music
 		move.b	#0,(f_debugmode).w			; disable debug mode (cheat remains active though)
 		move.w	#376,(v_generictimer).w			; run title screen for 376 frames (6 seconds plus some change)
+		btst	#6,(v_megadrive).w			; is this a PAL Mega Drive?
+		beq.s	.titleTimerReady
+		subi.w	#60,(v_generictimer).w		; compensate for the lower PAL frame rate
+.titleTimerReady:
 
 	if FixBugs
 		; Fix the Press Start Button text

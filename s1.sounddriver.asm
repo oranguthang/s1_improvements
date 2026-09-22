@@ -269,6 +269,13 @@ UpdateMusic:
 ; loc_71C44:
 DoStartZ80:
 		startZ80
+		btst	#6,(v_megadrive).w			; is this a PAL Mega Drive?
+		beq.s	.return				; if not, return
+		subq.b	#1,(v_palmuscounter).w		; count PAL frames
+		bhi.s	.return
+		move.b	#6,(v_palmuscounter).w		; add one music update every six frames
+		bra.w	UpdateMusic
+.return:
 		rts
 ; End of function UpdateMusic
 ; ===========================================================================
