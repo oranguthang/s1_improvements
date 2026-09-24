@@ -39,6 +39,7 @@ palid_Continue:		makePalEntry	Pal_Continue, 		v_palette_line_1
 palid_Ending:		makePalEntry	Pal_Ending, 		v_palette_line_1
 palid_SuperSonic:	makePalEntry	Pal_SuperSonic,		v_palette_line_1
 palid_SuperSonicWater:	makePalEntry	Pal_SuperSonicWater,	v_palette_line_1
+palid_SuperSonicSBZ3Water:	makePalEntry	Pal_SuperSonicSBZ3Water,	v_palette_line_1
 	even
 
 
@@ -74,6 +75,10 @@ Pal_SuperSonic:
 Pal_SuperSonic_end:
 
 Pal_SuperSonicWater:
-		dc.w $0000, $0000, $0E88, $0EAA, $0EAC, $0ECC, $0EEE, $0AA0
+		dc.w $0000, $0000, $0842, $0A64, $0C86, $0EA8, $0EEE, $0AAA
 		dc.w $0888, $0444, $06AA, $0266, $0048, $0024, $0002, $00EE
 Pal_SuperSonicWater_end:
+Pal_SuperSonicSBZ3Water:
+		dc.w $0000, $0000, $0A46, $0C68, $0E8A, $0EAC, $0ECE, $0CAC
+		dc.w $0868, $0646, $0CAE, $086C, $060C, $0426, $0004, $00EE
+Pal_SuperSonicSBZ3Water_end:

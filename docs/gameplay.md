@@ -47,3 +47,7 @@ Hold Down on the ground and press an action button to charge. Release Down to la
 ## Super Sonic
 
 With all six Chaos Emeralds and enough rings, press A+B, A+C or B+C while airborne and rolling to toggle Super. The default threshold is 50 rings and the drain is one ring per second. Speed shoes do not stack with Super movement. Drowning music has priority over form changes; recovery selects the appropriate active music.
+
+## Underwater Super Sonic
+
+Labyrinth uses a subdued blue-grey cycle. Scrap Brain Act 3 uses a related pink-grey cycle. Both use ten steady-cycle entries, with a restrained pulse in the darker fur shades. Water crossings and reversion restore the correct zone palette.

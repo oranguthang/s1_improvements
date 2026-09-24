@@ -13,6 +13,13 @@ ResumeMusic:
 		bne.s	.notSBZ					; if not, branch
 		move.w	#bgm_SBZ,d0				; play SBZ music instead
 	.notSBZ:
+		tst.b	(v_supersonic).w			; restore Super Sonic music after the air bubble
+		beq.s	.notSuper
+		move.w	#bgm_Super,d0
+	if Revision<>0
+		bra.s	.playselected				; skip the invincibility/boss checks (REV00 falls through)
+	endif
+	.notSuper:
 
 	if Revision<>0
 		tst.b	(v_invinc).w				; is Sonic invincible?
@@ -22,8 +29,8 @@ ResumeMusic:
 		tst.b	(f_bossmusic).w			; is boss music active?
 		beq.s	.playselected				; if not, branch
 		move.w	#bgm_Boss,d0				; play boss music instead
-	.playselected:
 	endif
+	.playselected:
 
 		jsr	(QueueSound1).l				; play selected music
 

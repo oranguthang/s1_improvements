@@ -169,10 +169,13 @@ Sonic_Display:
 		beq.s	.chkshoes				; if no time remains, branch
 		subq.w	#1,invtime(a0)				; subtract 1 from time
 		bne.s	.chkshoes				; if time remains, branch
-		tst.b	(f_lockscreen).w			; is a boss fight active?
-		bne.s	.removeinvincible			; if yes, don't change music
 		cmpi.w	#12,(v_air).w				; is drowning countdown active?
-		blo.s	.removeinvincible			; if yes, don't change music
+		bls.s	.removeinvincible			; if yes, don't change music
+		move.w	#bgm_FZ,d0				; FZ keeps its own track during the boss
+		cmpi.w	#id_FZ,(v_zone_act).w			; is level FZ?
+		beq.s	.playmusic				; if yes, branch
+		tst.b	(f_bossmusic).w			; is boss music active?
+		bne.s	.removeinvincible			; if yes, don't change music
 
 		moveq	#0,d0					; clear d0
 		move.b	(v_zone).w,d0				; get current zone ID
@@ -184,6 +187,7 @@ Sonic_Display:
 .music:
 		lea	(MusicList2).l,a1			; load music list for post-invincibility
 		move.b	(a1,d0.w),d0				; get entry for current zone
+.playmusic:
 		jsr	(QueueSound1).l				; resume normal level music
 
 ; Obj01_RmvInvin:
@@ -2654,8 +2658,7 @@ Sonic_ActivateSuper:
 		bsr.w	Sonic_ApplySpeedSettings
 		move.w	#sfx_SuperTransform,d0
 		jsr	(QueueSound2).l				; play Sonic 2's transformation effect
-		move.w	#bgm_Super,d0
-		jsr	(QueueSound1).l
+		bsr.w	Sonic_RefreshMusic		; keep drowning music while air is low
 
 .return:
 		rts
@@ -2883,12 +2886,18 @@ Sonic_RefreshPalettes:
 .loadwater:
 		tst.b	(v_supersonic).w
 		beq.s	.normalwater
+		cmpi.b	#act4,(v_act).w		; SBZ3 has its own water tint
+		beq.s	.superSbz3Water
 		lea	(Pal_SuperSonicWater+4).l,a1
 		bra.s	.copywater
 
+.superSbz3Water:
+		lea	(Pal_SuperSonicSBZ3Water+4).l,a1
+		bra.s	.copywater
+
 .normalwater:
-		cmpi.b	#id_LZ,(v_zone).w
-		bne.s	.sbz3water
+		cmpi.w	#id_LZ_act4,(v_zone_act).w	; SBZ3 is Labyrinth act 4 internally
+		beq.s	.sbz3water
 		lea	(Pal_LZSonWater+4).l,a1
 		bra.s	.copywater
 
@@ -2909,8 +2918,8 @@ Sonic_RefreshPalettes:
 ; ---------------------------------------------------------------------------
 
 Sonic_RefreshMusic:
-		cmpi.w	#$C,(v_air).w		; leave drowning music alone
-		blo.s	.return			; if air is low, branch
+		cmpi.w	#12,(v_air).w		; drowning countdown starts at 12 seconds
+		bls.s	.return			; keep its music through Super toggles
 		tst.b	(v_supersonic).w	; does Sonic have Super Sonic music?
 		beq.s	.chkinvincmusic		; if not, branch
 		move.w	#bgm_Super,d0
