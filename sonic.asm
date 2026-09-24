@@ -2966,26 +2966,91 @@ Level_DelayLoop:
 		bsr.w	PalFadeIn_Alt				; fade-in main palette
 ; ---------------------------------------------------------------------------
 
-		; level has faded in, make title cards move and enter main loop
+		; The level has faded in. Send the cards away immediately and
+		; let normal play begin while their shared VRAM is replaced.
 		tst.w	(f_demo).w				; is an ending sequence demo running?
-		bmi.s	Level_ClrCardArt			; if yes, load explosion and animal graphics now
-		addq.b	#2,(v_ttlcardname+obRoutine).w		; make title card move (name)
-		addq.b	#4,(v_ttlcardzone+obRoutine).w		; make title card move ("ZONE")
-		addq.b	#4,(v_ttlcardact+obRoutine).w		; make title card move ("ACT")
-		addq.b	#4,(v_ttlcardoval+obRoutine).w		; make title card move (blue oval)
-		bra.s	Level_StartGame
-; ===========================================================================
+		bmi.w	Level_ClrCardArt			; if yes, there are no title cards
+		beq.s	Level_StartCards			; normal play is responsive as cards leave
+		move.b	#$81,(f_playerctrl).w
+Level_StartCards:
+		clr.w	(v_ttlcardname+obTimeFrame).w	; skip the title card's one-second hold
+		clr.w	(v_ttlcardzone+obTimeFrame).w
+		clr.w	(v_ttlcardact+obTimeFrame).w
+		clr.w	(v_ttlcardoval+obTimeFrame).w
+		addq.b	#2,(v_ttlcardname+obRoutine).w	; make title card move (name)
+		addq.b	#4,(v_ttlcardzone+obRoutine).w	; make title card move ("ZONE")
+		addq.b	#4,(v_ttlcardact+obRoutine).w	; make title card move ("ACT")
+		addq.b	#4,(v_ttlcardoval+obRoutine).w	; make title card move (blue oval)
+
+Level_WaitCardsOut:
+		bsr.w	Level_IntroFrame			; move cards and keep normal play responsive
+		lea	(v_titlecard).w,a0			; wait until every card is gone
+		moveq	#4-1,d1
+Level_CheckCardsOut:
+		cmpi.b	#id_TitleCard,obID(a0)
+		beq.s	Level_WaitCardsOut
+		lea	object_size(a0),a0
+		dbf	d1,Level_CheckCardsOut
 
 Level_ClrCardArt:
-		; This portion is only for the credits demos to loads explosions
-		; and animal graphics right now, as normally they get loaded by
-		; the title cards (which aren't loaded for credits demos).
+		; Title cards and animal/explosion art share VRAM. Queue replacements
+		; only after the cards are entirely off screen. Credits demos have no cards.
 		moveq	#plcid_Explode,d0			; load explosion graphics
 		jsr	(AddPLC).l				; queue PLC
 		moveq	#0,d0					; clear d0
 		move.b	(v_zone).w,d0				; get current Zone ID
 		addi.w	#plcid_GHZAnimals,d0			; add offset to animal patterns (+$15)
 		jsr	(AddPLC).l				; load animal patterns
+		tst.w	(f_demo).w				; credits demos keep their original timing
+		bmi.w	Level_StartGame
+
+Level_WaitCardArt:
+		tst.w	(f_demo).w				; recorded demos remain still until their art is ready
+		bne.s	Level_WaitDemoArt
+		bsr.w	Level_IntroFrame			; keep moving while VBlank loads nine tiles
+		bra.s	Level_CheckCardArt
+Level_WaitDemoArt:
+		move.b	#id_VBlank_TitleCards,(v_vblank_routine).w
+		bsr.w	WaitForVBlank
+		bsr.w	RunPLC
+Level_CheckCardArt:
+		tst.l	(v_plc_buffer).w			; has all replacement art been loaded?
+		bne.s	Level_WaitCardArt
+		tst.w	(v_plc_patternsleft).w
+		bne.s	Level_WaitCardArt
+		tst.w	(f_demo).w				; release recorded demo controls only now
+		beq.s	Level_IntroDone
+		clr.b	(f_playerctrl).w
+Level_IntroDone:
+		bra.w	Level_StartGame
+
+; Update the level during card exit and art loading. The title-card VBlank
+; routine decompresses nine tiles per frame instead of the gameplay routine's three.
+Level_IntroFrame:
+		move.b	#id_VBlank_TitleCards,(v_vblank_routine).w
+		bsr.w	WaitForVBlank
+		tst.w	(f_demo).w				; don't advance recorded demos before their main loop
+		bne.s	Level_IntroObjects
+		addq.w	#1,(v_framecount).w
+		bsr.w	LZWaterFeatures
+Level_IntroObjects:
+		jsr	(ExecuteObjects).l			; animate the title cards and visible objects
+		tst.w	(f_demo).w
+		bne.s	Level_IntroSprites
+		bsr.w	DeformLayers				; follow Sonic while normal play is active
+Level_IntroSprites:
+		jsr	(BuildSprites).l
+		tst.w	(f_demo).w
+		bne.s	Level_IntroPLC
+		jsr	(ObjPosLoad).l
+		bsr.w	PaletteCycle
+		bsr.w	OscillateNumDo
+		bsr.w	SynchroAnimate
+		bsr.w	SignpostArtLoad
+Level_IntroPLC:
+		bsr.w	RunPLC					; start the next queued art cue
+		rts
+; ===========================================================================
 
 Level_StartGame:
 		bclr	#7,(v_gamemode).w			; subtract $80 from mode to end pre-level stuff

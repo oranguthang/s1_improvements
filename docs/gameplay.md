@@ -51,3 +51,7 @@ With all six Chaos Emeralds and enough rings, press A+B, A+C or B+C while airbor
 ## Underwater Super Sonic
 
 Labyrinth uses a subdued blue-grey cycle. Scrap Brain Act 3 uses a related pink-grey cycle. Both use ten steady-cycle entries, with a restrained pulse in the darker fur shades. Water crossings and reversion restore the correct zone palette.
+
+## Act entry
+
+Title cards begin moving after the level fade. Control resumes as they move away, with level and animal graphics loaded through the entry sequence.
