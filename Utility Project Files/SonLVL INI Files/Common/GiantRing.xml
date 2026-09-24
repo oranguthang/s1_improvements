@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ObjDef xmlns="http://www.sonicretro.org" Name="Giant ring" Image="ring" DefaultSubtype="01">
+  <Images>
+    <ImageFromMappings id="ring">
+      <ArtFile filename="../../artunc/Giant Ring.unc" compression="Uncompressed" />
+      <MapFile type="ASM" filename="../../_maps/Giant Ring.asm" frame="0" startpal="1" />
+    </ImageFromMappings>
+  </Images>
+  <Subtypes>
+    <Subtype id="00" name="Act exit (50 rings)" image="ring" />
+    <Subtype id="01" name="Free ring 1 (return to act)" image="ring" />
+    <Subtype id="02" name="Free ring 2 (return to act)" image="ring" />
+  </Subtypes>
+</ObjDef>

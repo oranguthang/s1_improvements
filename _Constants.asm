@@ -617,8 +617,8 @@ ArtTile_Eggman_Trap_Floor:	equ $518
 ArtTile_Eggman_Exhaust:		equ ArtTile_Eggman+$12A
 
 ; End of Level
-ArtTile_Giant_Ring:		equ $400
-ArtTile_Giant_Ring_Flash:	equ $462
+ArtTile_Giant_Ring:		equ ArtTile_Explosion	; shares explosion art while the ring is on screen
+ArtTile_Giant_Ring_Flash:	equ ArtTile_Giant_Ring	; flash replaces ring art after collection
 ArtTile_Prison_Capsule:		equ $49D
 ArtTile_Hidden_Points:		equ $4B6
 ArtTile_Warp:			equ $541

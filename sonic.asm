@@ -835,7 +835,19 @@ VBlank_Levels:
 		writeVRAM	v_spritetablebuffer,vram_sprites  ; transfer sprite buffer table to actual sprites VRAM
 
 		jsr	(ProcessDMAQueue).l			; transfer queued Sonic and dust graphics
+		bsr.w	VBlank_LoadRingFlash			; transfer all 84 flash tiles before displaying them
 
+		btst	#0,(v_gfxringslotstate).w	; the flash may still be using these tiles
+		bne.s	.noExplosionRestore
+		tst.b	(v_gfxexplosionrestore).w	; did a giant ring release the explosion slot?
+		beq.s	.noExplosionRestore
+		clr.b	(v_gfxexplosionrestore).w
+		move.l	#Art_ExplosionRestore,d1
+		move.w	#ArtTile_Explosion*tile_size,d2
+		move.w	#Art_ExplosionRestore_size/2,d3
+		jsr	(QueueDMATransfer).l
+		jsr	(ProcessDMAQueue).l			; queue is empty, so the restore cannot be dropped
+	.noExplosionRestore:
 		startZ80					; restart Z80
 
 		movem.l	(v_screenposx).w,d0-d7			; copy everything from v_screenposx to v_bg3screenposy...
@@ -873,6 +885,20 @@ VBlank_UpdateScreen:
 	.end:
 		rts						; return
 ; End of function VBlank_UpdateScreen
+
+; Transfer prepared flash art as one DMA after the regular queue is emptied.
+; This keeps VBlank and HBlank running while the ring changes into the flash.
+VBlank_LoadRingFlash:
+		btst	#2,(v_gfxringslotstate).w
+		beq.s	.return
+		bclr	#2,(v_gfxringslotstate).w
+		move.l	#Art_BigFlash,d1
+		move.w	#ArtTile_Giant_Ring*tile_size,d2
+		move.w	#Art_BigFlash_size/2,d3
+		jsr	(QueueDMATransfer).l
+		jsr	(ProcessDMAQueue).l
+	.return:
+		rts
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -925,6 +951,7 @@ VBlank_Ending:
 		writeVRAM	v_spritetablebuffer,vram_sprites  ; transfer sprite buffer table to actual sprites VRAM
 
 		jsr	(ProcessDMAQueue).l
+		bsr.w	VBlank_LoadRingFlash			; rings can be entered while title cards leave
 
 		startZ80					; restart Z80
 
@@ -1418,10 +1445,32 @@ RunPLC:
 ; (Note: Process"D"PLC is an old misnomer!)
 ; ---------------------------------------------------------------------------
 
+; Pause a PLC section only while its next tiles would enter the shared
+; explosion/ring VRAM slot. The queued title-card explosion art can still
+; be loading when a mid-level ring appears.
+ProcessPLC_CheckRingSlot:
+		moveq	#0,d0
+		tst.b	(v_gfxringslotstate).w
+		beq.s	.free
+		move.w	(v_plc_buffer_dest).w,d0
+		cmpi.w	#(ArtTile_Explosion+96)*tile_size,d0
+		bhs.s	.free
+		cmpi.w	#(ArtTile_Explosion-8)*tile_size,d0
+		blo.s	.free
+		moveq	#1,d0
+		rts
+	.free:
+		moveq	#0,d0
+		rts
+; ---------------------------------------------------------------------------
+
 ; sub_1642: ProcessDPLC_9Tiles:
 ProcessPLC_9Tiles:
 		tst.w	(v_plc_patternsleft).w			; is a section counter set (is art being decompressed)?
 		beq.w	ProcessPLC_Return			; if not, branch (nothing to decompress)
+		bsr.s	ProcessPLC_CheckRingSlot
+		tst.b	d0
+		bne.w	ProcessPLC_Return			; keep PLC art out of the ring/flash slot
 
 		move.w	#9,(v_plc_framepatternsleft).w		; set tile counter to 9 (number of tiles to decompress in a frame)
 		moveq	#0,d0					; clear d0
@@ -1434,6 +1483,9 @@ ProcessPLC_9Tiles:
 ProcessPLC_3Tiles:
 		tst.w	(v_plc_patternsleft).w			; is a section counter set (is art being decompressed)?
 		beq.s	ProcessPLC_Return			; if not, branch (nothing to decompress)
+		bsr.s	ProcessPLC_CheckRingSlot
+		tst.b	d0
+		bne.s	ProcessPLC_Return			; keep PLC art out of the ring/flash slot
 
 		move.w	#3,(v_plc_framepatternsleft).w		; set tile counter to 3 (number of tiles to decompress in a frame)
 		moveq	#0,d0					; clear d0
@@ -2248,7 +2300,8 @@ LevSel_Credits:
 
 LevSel_Level_SS:
 		add.w	d0,d0					; double selected line for word-based indexing
-		move.w	LevSel_Ptrs(pc,d0.w),d0			; find relevant level pointer from table
+		lea	(LevSel_Ptrs).l,a1			; table beyond PC-relative range
+		move.w	(a1,d0.w),d0			; find relevant level pointer
 		bmi.w	LevelSelect				; if it's an invalid entry, branch back to main loop
 		cmpi.w	#id_SS<<8,d0				; check if selected level Special Stage (0700 is used as dummy value)
 		bne.s	LevSel_Level				; if not, branch
@@ -2277,6 +2330,8 @@ PlayLevel:
 		move.l	d0,(v_time).w				; clear time
 		move.l	d0,(v_score).w				; clear score
 		move.b	d0,(v_lastspecial).w			; clear special stage number
+		move.w	d0,(v_midring_act).w			; reset free giant rings for a new game
+		move.b	d0,(v_midring_flags).w
 		move.b	d0,(v_emeralds).w			; clear emeralds
 		move.l	d0,(v_emldlist).w			; clear emeralds
 		move.l	d0,(v_emldlist+4).w			; clear emeralds
@@ -2737,6 +2792,12 @@ Level_NoPLC:
 		bsr.w	AddPLC					; (these can be overwritten by stuff like the sign post art)
 
 Level_ClrRam:
+		move.w	(v_zone_act).w,d0			; free ring flags belong to one act
+		cmp.w	(v_midring_act).w,d0
+		beq.s	Level_KeepMidRingFlags
+		move.w	d0,(v_midring_act).w
+		clr.b	(v_midring_flags).w
+Level_KeepMidRingFlags:
 		clearRAM v_objspace				; clear object RAM
 		clearRAM v_misc_variables			; clear various miscellaneous RAM
 		clearRAM v_levelvariables			; clear level variables RAM (camera position, etc.)
@@ -3335,6 +3396,7 @@ GM_Special:		; white fade-out from previous game mode
 		bsr.w	PalCycle_SS				; initialize palette cycle and background for fade-in
 		clr.w	(v_ssangle).w				; set stage angle to "upright"
 		move.w	#ss_rotatespeed,(v_ssrotate).w		; set initial stage rotation speed ($40, see object 09)
+		clr.b	(v_snddriver_ram.f_speedup).w	; speed shoes must not affect Special Stage music
 		move.w	#bgm_SS,d0				; play special stage BG music
 		bsr.w	QueueSound1				; play it
 
@@ -5117,6 +5179,9 @@ Level_EndUnk:	dc.l 0
 ; ---------------------------------------------------------------------------
 Art_BigRing:	binclude	"artunc/Giant Ring.unc"
 Art_BigRing_size:	equ	*-Art_BigRing
+		align	$20000			; flash DMA must not cross a 128 KiB ROM boundary
+Art_BigFlash:	binclude	"artunc/Giant Ring Flash.unc"
+Art_BigFlash_size:	equ	*-Art_BigFlash
 		even
 
 ; ---------------------------------------------------------------------------
@@ -5309,6 +5374,11 @@ ObjPos_Null:	dc.b $FF, $FF, 0, 0, 0,	0
 ; ---------------------------------------------------------------------------
 
 SoundDriver:	include "s1.sounddriver.asm"
+		even
+
+; Uncompressed copy for immediate DMA restoration after a giant ring leaves VRAM.
+Art_ExplosionRestore:	binclude "artunc/Explosion Restore.unc"
+Art_ExplosionRestore_size:	equ *-Art_ExplosionRestore
 		even
 
 ; ---------------------------------------------------------------------------

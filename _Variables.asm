@@ -276,7 +276,8 @@ v_lani4_frame:		ds.b	1				; level graphics animation 4 - current frame
 v_lani4_time:		ds.b	1				; level graphics animation 4 - time until next frame
 v_lani5_frame:		ds.b	1				; level graphics animation 5 - current frame
 v_lani5_time:		ds.b	1				; level graphics animation 5 - time until next frame
-			ds.b	2				; unused
+v_gfxexplosionrestore:	ds.b	1				; restore explosion art on the next VBlank
+v_gfxringslotstate:	ds.b	1				; bit 0: flash; bit 1: ring; bit 2: flash DMA pending
 v_gfxbigring:		ds.w	1				; settings for giant ring graphics loading
 f_conveyrev:		ds.b	1				; flag set to reverse conveyor belts in LZ/SBZ
 v_obj63:		ds.b	6				; flags set if conveyor group is loaded for LZ (object 63) and SBZ (object 6F)
@@ -346,7 +347,7 @@ v_systemstack:							; system stack start
 ; --- RAM beyond this point is only cleared on a cold boot ---
 
 v_crossresetram:
-			ds.b	2				; unused
+v_midring_act:		ds.w	1				; act whose free giant rings have been used
 f_restart:		ds.w	1				; restart level flag
 v_framecount:		ds.w	1				; frame counter (adds 1 every frame)
 v_framebyte:		equ	v_framecount+1			; low byte for frame counter
@@ -366,7 +367,7 @@ v_lives:		ds.b	1				; number of lives
 v_air:			ds.w	1				; air remaining while underwater
 v_airbyte:		equ	v_air+1				; low byte for air
 v_lastspecial:		ds.b	1				; last special stage number
-			ds.b	1				; unused
+v_midring_flags:	ds.b	1				; collected free giant rings in current act
 v_continues:		ds.b	1				; number of continues
 			ds.b	1				; unused
 f_timeover:		ds.b	1				; time over flag

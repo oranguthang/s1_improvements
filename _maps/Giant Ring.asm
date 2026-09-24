@@ -32,10 +32,13 @@ Map_GRing_internal:	mappingsTable
 .gring_angled1_End
 
 .gring_side:	spriteHeader
-	spritePiece	-$C, -$20, 2, 4, $52, 0, 0, 0, 0 ; ring perpendicular
+	spritePiece	-$C, -$20, 1, 4, $52, 0, 0, 0, 0 ; first column of the side view
+	spritePiece	-$4, -$20, 1, 2, $56, 0, 0, 0, 0 ; second column has three identical tiles
+	spritePiece	-$4, -$10, 1, 1, $57, 0, 0, 0, 0
+	spritePiece	-$4, -$08, 1, 1, $57, 0, 0, 0, 0
 	spritePiece	4, -$20, 1, 4, $52, 1, 0, 0, 0
-	spritePiece	-$C, 0, 2, 4, $5A, 0, 0, 0, 0
-	spritePiece	4, 0, 1, 4, $5A, 1, 0, 0, 0
+	spritePiece	-$C, 0, 2, 4, $58, 0, 0, 0, 0
+	spritePiece	4, 0, 1, 4, $58, 1, 0, 0, 0
 .gring_side_End
 
 .gring_angled2:	spriteHeader

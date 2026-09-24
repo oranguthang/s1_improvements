@@ -578,32 +578,33 @@ AniArt_MZMagma:	dc.w	.magma_0123-AniArt_MZMagma		; 0 1 2 3
 ; Animated pattern routine - load uncompressed Giant Ring patterns
 ; The graphics are loaded incrementally at 14 tiles per frame.
 ; This gets triggered from GRing_Okay by setting v_gfxbigring to:
-; Art_BigRing_size = 98 tiles * tile_size = $C40
+; Art_BigRing_size = 96 tiles * tile_size = $C00
 ; ---------------------------------------------------------------------------
 
 AniArt_GiantRing:
+		btst	#0,(v_gfxringslotstate).w	; keep ring DMA away from the flash
+		bne.s	.return
 		tst.w	(v_gfxbigring).w			; are giant ring graphics set to be loaded?
-		bne.s	.loadTiles				; if so, get to work
-		rts						; nothing to do
-; ---------------------------------------------------------------------------
+		beq.s	.return
 
-	.loadTiles:
-		.size:	= 14					; number of tiles to load per frame
-
-		subi.w	#.size*tile_size,(v_gfxbigring).w	; count-down the 14 tiles we're going to load now
-		lea	(Art_BigRing).l,a1			; load uncompressed giant ring patterns
-		moveq	#0,d0					; clear d0
-		move.w	(v_gfxbigring).w,d0			; load current tile offset for giant ring patterns
-		lea	(a1,d0.w),a1				; jump to appropriate tile in patterns
-
-		; Turn VRAM address into VDP command
-		addi.w	#ArtTile_Giant_Ring*tile_size,d0	; advance to starting VRAM address of giant ring
-		lsl.l	#2,d0					; push upper address bits into upper word
-		lsr.w	#2,d0					; send rest back
-		ori.w	#$4000,d0				; set VDP mode bits (VRAM write mode)
-		swap	d0					; align for VDP in order
-		move.l	d0,4(a6)				; send VDP command (write to VRAM at address contained in v_gfxbigring)
-
-		move.w	#.size-1,d1				; number of 8x8 tiles
-		bra.w	LoadTiles				; transfer tiles to VRAM
+		moveq	#14,d0					; normally load 14 tiles per frame
+		cmpi.w	#14*tile_size,(v_gfxbigring).w
+		bhi.s	.fullChunk
+		moveq	#12,d0					; final chunk has only 12 tiles
+	.fullChunk:
+		move.w	d0,d3
+		lsl.w	#4,d3					; DMA length: 16 words per tile
+		add.w	d0,d0
+		lsl.w	#4,d0					; bytes in this chunk
+		sub.w	d0,(v_gfxbigring).w		; count down remaining bytes
+		moveq	#0,d0
+		move.w	(v_gfxbigring).w,d0		; offset of this chunk within the art
+		move.l	#Art_BigRing,d1
+		add.l	d0,d1					; source address in ROM
+		move.w	#ArtTile_Giant_Ring*tile_size,d2
+		add.w	d0,d2					; destination address in VRAM
+		jsr	(QueueDMATransfer).l
+		jsr	(ProcessDMAQueue).l			; DMA now, before another object can restore this slot
+	.return:
+		rts
 ; End of function AniArt_GiantRing

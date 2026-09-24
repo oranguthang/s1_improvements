@@ -206,7 +206,10 @@ Lamp_LoadInfo:
 
 		cmpi.b	#id_LZ,(v_zone).w			; is this Labyrinth Zone?
 		bne.s	.notlabyrinth				; if not, branch
-		move.w	(v_lamp_wtrpos).w,(v_waterpos2).w 	; water height
+		move.w	(v_lamp_wtrpos).w,d0		; saved water height
+		move.w	d0,(v_waterpos1).w		; displayed water height
+		move.w	d0,(v_waterpos2).w		; actual water height
+		move.w	d0,(v_waterpos3).w		; target until the dynamic event runs
 		move.b	(v_lamp_wtrrout).w,(v_wtr_routine).w	; routine counter for water
 		move.b	(v_lamp_wtrstat).w,(f_wtr_state).w 	; water direction
 	.notlabyrinth:
@@ -215,6 +218,8 @@ Lamp_LoadInfo:
 		; had bit 7 set. However, not only is this not used anywhere in the game, it's also not possible
 		; because bit 7 is cleared through an ANDI $7F when lampposts are loaded. Perhaps this once was
 		; used to prevent backtracking before bosses by manually setting that bit through code.
+		tst.b	(v_midring_flags).w			; temporary ring checkpoint must allow backtracking
+		bne.s	.return
 		tst.b	(v_lastlamp).w				; was last hit lamppost ID $80 or above?
 		bpl.s	.return					; if not, branch
 		move.w	(v_lamp_xpos).w,d0			; get stored X-position

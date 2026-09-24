@@ -296,7 +296,6 @@ PLC_Boss_end:
 PLC_Signpost:	plcheader
 		plcm	Nem_SignPost,	ArtTile_Signpost		; signpost
 		plcm	Nem_Bonus,	ArtTile_Hidden_Points		; hidden bonus points
-		plcm	Nem_BigFlash,	ArtTile_Giant_Ring_Flash	; giant ring flash effect
 PLC_Signpost_end:
 
 ; ---------------------------------------------------------------------------
