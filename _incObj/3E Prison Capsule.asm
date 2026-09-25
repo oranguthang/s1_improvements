@@ -73,6 +73,15 @@ Pri_BodyMain:	; Routine 2
 ; ---------------------------------------------------------------------------
 
 .openCapsule:
+		cmpi.b	#2,obFrame(a0)			; has the capsule already opened?
+		beq.s	.checkStanding			; clear the stale push only once
+		bclr	#5,obStatus(a0)				; stop marking the capsule as pushed
+		bclr	#5,(v_player+obStatus).w		; clear Sonic's pushing flag
+		cmpi.b	#id_Push,(v_player+obAnim).w	; is the pushing animation still active?
+		bne.s	.checkStanding			; if not, keep the current animation
+		move.b	#id_Walk,(v_player+obAnim).w	; resume walking after the capsule opens
+
+	.checkStanding:
 		tst.b	obSolid(a0)				; was Sonic standing on the capsule as it opened
 		beq.s	.showOpened				; if not, branch
 		clr.b	obSolid(a0)				; clear capsule's collision flag
