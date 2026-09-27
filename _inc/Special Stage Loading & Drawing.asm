@@ -150,16 +150,41 @@ SS_ShowLayout:
 ; SS_AniWallsRings:
 SS_AnimateBlocks:
 	; --- Rotate square walls ---
-		lea	(v_ss_spritesettings+8+5-1).l,a1	; load sprite settings array, skip blank and target frame ID (word, +5-1)
+		; Only the current rotation is resident at ArtTile_SS_Wall. When it changes,
+		; one ROM DMA is queued for the next VBlank, together with this frame's sprites.
+		; Must preserve d5 and a2 (BuildSprites state used by SS_ShowLayout).
 		moveq	#0,d0					; clear d0
 		move.b	(v_ssangle).w,d0			; get current rotation angle
 		lsr.b	#2,d0					; divide by 4 (walls are snapped to multiples of 4 degrees)
 		andi.w	#$F,d0					; limit to 16 rotations
-		moveq	#id_SS_WallGreen_8-1,d1			; rotate all wall blocks (id_SS_WallGreen_8 = last one = $24)
+		cmp.b	(v_ssangleprev).w,d0			; is this rotation already in VRAM?
+		beq.s	.wallsReady				; if yes, branch
+		movea.w	(VDP_Command_Buffer_Slot).w,a1
+		cmpa.w	#VDP_Command_Buffer_Slot,a1		; is the DMA queue full?
+		beq.s	.wallsReady				; if yes, keep old art and frame, retry next frame
+		move.b	d0,(v_ssangleprev).w			; remember queued rotation
+
+		move.l	#Art_SSWalls,d1				; rotation 0 is the 3x3 straight block at the start
+		move.w	#9*tile_size/2,d3			; 9 tiles
+		tst.w	d0					; is this the straight rotation?
+		beq.s	.setWallFrame				; if yes, use frame 0
+		lsl.w	#4,d0					; 16 tiles per angled rotation...
+		subq.w	#16-9,d0				; ...after the 9-tile straight block
+		lsl.w	#5,d0					; multiply by tile_size
+		add.l	d0,d1					; d1 = source of this rotation
+		move.w	#16*tile_size/2,d3			; 16 tiles
+		moveq	#1,d0					; use the 4x4 angled frame
+	.setWallFrame:
+		lea	(v_ss_spritesettings+8+5-1).l,a1	; load sprite settings array, skip blank and target frame ID (word, +5-1)
+		moveq	#id_SS_WallGreen_8-1,d2			; rotate all wall blocks (id_SS_WallGreen_8 = last one = $24)
 	.rotateWalls:
-		move.w	d0,(a1)					; set new frame ID to rotated one
+		move.w	d0,(a1)					; set new frame ID (0 = straight, 1 = angled)
 		addq.w	#8,a1					; advance to next wall sprite setting
-		dbf	d1,.rotateWalls				; loop until all walls have been rotated
+		dbf	d2,.rotateWalls				; loop until all walls have been rotated
+		move.w	#ArtTile_SS_Wall*tile_size,d2		; destination
+		jsr	(QueueDMATransfer).l			; trashes d0-d3 and a1 only
+
+	.wallsReady:
 
 	; --- Animate rings (8 frames) ---
 		lea	(v_ss_spritesettings+5).l,a1		; load sprite settings array, target frame ID (byte, +5)

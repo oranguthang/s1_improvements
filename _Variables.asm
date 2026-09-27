@@ -273,7 +273,8 @@ v_opl_screen:		ds.w	1				; ObjPosLoad - screen variable
 v_opl_data:		ds.b	$10				; ObjPosLoad - data buffer
 v_ssangle:		ds.w	1				; Special Stage angle
 v_ssrotate:		ds.w	1				; Special Stage rotation speed
-			ds.b	$C				; unused
+v_ssangleprev:		ds.b	1				; Special Stage wall rotation frame currently queued to VRAM ($FF = none)
+			ds.b	$B				; unused
 v_btnpushtime1:		ds.w	1				; button push duration - in level
 v_btnpushtime2:		ds.w	1				; button push duration - in demo
 v_palchgspeed:		ds.w	1				; palette fade/transition speed (0 is fastest)

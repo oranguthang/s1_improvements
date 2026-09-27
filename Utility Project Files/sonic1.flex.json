@@ -4094,8 +4094,8 @@
                                 }
                             ],
                             "art": {
-                                "path": "../artnem/Special Walls.nem",
-                                "compression": "Nemesis",
+                                "path": "../artunc/Special Walls.unc",
+                                "compression": "Uncompressed",
                                 "offset": 0
                             },
                             "mappings": {

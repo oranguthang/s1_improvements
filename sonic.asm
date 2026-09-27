@@ -3091,6 +3091,7 @@ GM_Special:		; white fade-out from previous game mode
 		move.b	#id_SonicSpecial,(v_player).w		; load special stage Sonic object
 		bsr.w	PalCycle_SS				; initialize palette cycle and background for fade-in
 		clr.w	(v_ssangle).w				; set stage angle to "upright"
+		move.b	#-1,(v_ssangleprev).w			; no wall rotation in VRAM yet; the first SS_ShowLayout queues it
 		move.w	#ss_rotatespeed,(v_ssrotate).w		; set initial stage rotation speed ($40, see object 09)
 		clr.b	(v_snddriver_ram.f_speedup).w	; speed shoes must not affect Special Stage music
 		move.w	#bgm_SS,d0				; play special stage BG music
@@ -4276,8 +4277,6 @@ KosM_Goggle:	binclude	"artkosm/Unused - Goggles.kosm" ; unused goggles
 ; ---------------------------------------------------------------------------
 Map_SSWalls:	include	"_maps/SS Walls.asm"
 
-KosM_SSWalls:	binclude	"artkosm/Special Walls.kosm" ; special stage walls
-		even
 Eni_SSBg1:	binclude	"tilemaps/SS Background 1.eni" ; special stage background (mappings)
 		even
 KosM_SSBgFish:	binclude	"artkosm/Special Birds & Fish.kosm" ; special stage birds and fish background
@@ -5181,6 +5180,18 @@ SoundDriver:	include "s1.sounddriver.asm"
 Art_ExplosionRestore:	binclude "artunc/Explosion Restore.unc"
 Art_ExplosionRestore_size:	equ *-Art_ExplosionRestore
 		even
+
+; Keep the raw wall DMA sheet after the Sega PCM so it does not force the PCM
+; into the next 64kB bank and add empty ROM padding.
+Art_SSWalls:	binclude	"artunc/Special Walls.unc" ; special stage walls, all 16 rotations (DMA source)
+Art_SSWalls_End:
+		even
+	if (Art_SSWalls_End-Art_SSWalls)<>(9+15*16)*tile_size
+		error "artunc/Special Walls.unc must hold 9 straight + 15*16 angled tiles"
+	endif
+	if (MOMPASS>1)&&((Art_SSWalls>>17)<>((Art_SSWalls_End-1)>>17))
+		error "Art_SSWalls crosses a 128kB boundary; SS wall DMA would be corrupted. Move or align it."
+	endif
 
 ; ---------------------------------------------------------------------------
 

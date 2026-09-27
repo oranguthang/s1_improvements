@@ -43,3 +43,7 @@ Level resources use moduled Kosinski in `artkosm/`. Add a `plcm` entry and a VRA
 ## Collision queue
 
 Collidable objects are queued during object execution. Keep the existing count bounds and reset the queue each frame. Sonic reactions consume this queue instead of scanning all object slots.
+
+## Special Stage wall art
+
+Rotated wall graphics are streamed from `artunc/Special Walls.unc`. The source sheet and the DMA slot must match the wall mapping frame dimensions.

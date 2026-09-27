@@ -323,7 +323,6 @@ PLC_WarpRev0_end:
 PLC_SpecialStage:	plcheader
 		plcm	KosM_SSBgCloud,	ArtTile_SS_Background_Clouds	; bubble and cloud background
 		plcm	KosM_SSBgFish,	ArtTile_SS_Background_Fish	; bird and fish background
-		plcm	KosM_SSWalls,	ArtTile_SS_Wall			; walls
 		plcm	KosM_Bumper,	ArtTile_SS_Bumper		; bumper
 		plcm	KosM_SSGOAL,	ArtTile_SS_Goal			; GOAL block
 		plcm	KosM_SSUpDown,	ArtTile_SS_Up_Down		; UP and DOWN blocks
