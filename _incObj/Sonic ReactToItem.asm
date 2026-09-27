@@ -41,10 +41,39 @@ ReactToItem:
 		move.w	#sonic_react_width*2,d4			; d4 = Sonic's hitbox width
 		add.w	d5,d5					; d5 = Sonic's hitbox height
 
+		; Only check the level objects queued by ExecuteObjects (see there).
+		; The queue is in RAM order, so the first object hit is still the same.
+		lea	(v_colqueue).w,a3			; load collision response queue
+		tst.b	(f_colqueue_fullscan).w			; has a full scan been requested?
+		bne.s	.fullScan				; if yes, branch
+		move.w	(v_colqueue_ptr).w,d6			; get end of queue
+		sub.w	a3,d6					; get queue size in bytes
+		cmpi.w	#colqueue_entries*2,d6			; is the queue valid?
+		bls.s	.useQueue				; if yes, branch
+
+	; Fallback: rebuild the queue from the entire level object RAM space,
+	; which checks exactly the same objects as the original loop did.
+	.fullScan:
+		movea.l	a3,a2					; write from start of queue
 		lea	(v_lvlobjspace).w,a1			; set object RAM start address
-		move.w	#(v_lvlobjend-v_lvlobjspace)/object_size-1,d6 ; iterate through the entire level object RAM space
+		moveq	#(v_lvlobjend-v_lvlobjspace)/object_size-1,d6 ; iterate through the entire level object RAM space
+	.scanObject:
+		tst.b	obColType(a1)				; does the object have a collision type?
+		beq.s	.scanNext				; if not, branch
+		move.w	a1,(a2)+				; queue object
+	.scanNext:
+		lea	object_size(a1),a1			; next object RAM
+		dbf	d6,.scanObject				; repeat for all level objects
+		move.w	a2,d6					; get end of queue
+		sub.w	a3,d6					; get queue size in bytes
+
+	.useQueue:
+		lsr.w	#1,d6					; get number of queued objects
+		subq.w	#1,d6					; subtract 1 for dbf
+		bcs.s	React_NoCollision			; if the queue is empty, branch
 ; .loop:
 React_LoopObjects:
+		movea.w	(a3)+,a1				; get next queued object
 		; Sonic 2 onwards removed this, allowing objects that do not set the
 		; 'object visible flag' to process their collision.
 		tst.b	obRender(a1)				; is object on screen? (sprite rendered)
@@ -53,9 +82,9 @@ React_LoopObjects:
 		bne.s	React_CheckHitboxOverlap		; if non-zero (i.e. not col_none), check for collision
 ; .next:
 React_CheckNext:
-		lea	object_size(a1),a1			; next object RAM
-		dbf	d6,React_LoopObjects			; repeat $5F more times
+		dbf	d6,React_LoopObjects			; repeat for all queued objects
 
+React_NoCollision:
 		moveq	#0,d0					; no collision was processed
 		rts						; return
 

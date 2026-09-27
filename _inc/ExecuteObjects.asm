@@ -1,18 +1,54 @@
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Object code execution subroutine
-; 
+;
+; The reserved objects (Sonic first) run before the collision response queue
+; is reset, so Sonic's ReactToItem still sees the queue built on the previous
+; frame. Every level object that still has a non-zero obColType after its own
+; code ran is then appended to v_colqueue in RAM order. ReactToItem keeps doing
+; the original render flag and obColType checks on each entry.
+;
 ; output:
 ;	d7.l = OST index of last object (must not be changed by any object)
 ;	a0 = address of OST of last object
 ; ---------------------------------------------------------------------------
 
+	; Each level object slot is executed (and thus queued) at most once per pass.
+	if colqueue_entries<>(v_lvlobjend-v_lvlobjspace)/object_size
+		fatal "v_colqueue must hold one entry per level object slot."
+	endif
+
 ExecuteObjects:
 		lea	(v_objspace).w,a0			; set address for object RAM
-		moveq	#(v_objspace_end-v_objspace)/object_size-1,d7 ; $80 objects - 1
+		moveq	#(v_lvlobjspace-v_objspace)/object_size-1,d7 ; run the 32 reserved objects first
 		moveq	#0,d0					; clear d0
 		cmpi.b	#6,(v_player+obRoutine).w		; is Sonic dying?
 		bhs.w	.sonic_dead				; if yes, branch to alternate logic
+		bsr.s	.run_object				; execute reserved objects (Sonic reacts using last frame's queue)
+
+		move.w	#v_colqueue,(v_colqueue_ptr).w		; reset collision response queue
+		clr.b	(f_colqueue_fullscan).w			; clear full scan request
+		moveq	#(v_lvlobjend-v_lvlobjspace)/object_size-1,d7 ; run the 96 level objects
+
+.run_level_object:
+		move.b	(a0),d0					; load object ID from RAM
+		beq.s	.next_level_object			; if ID is 0, this is an empty object slot, branch
+		add.w	d0,d0					; quadruple for...
+		add.w	d0,d0					; ...long-based indexing
+		movea.l	Obj_Index-4(pc,d0.w),a1			; find relevant object pointer (minus -4 because entries skip ID 00)
+		jsr	(a1)					; run the object's code
+		moveq	#0,d0					; clear d0 for next loop
+		tst.b	obColType(a0)				; can the object interact with Sonic?
+		beq.s	.next_level_object			; if not, branch
+		movea.w	(v_colqueue_ptr).w,a1			; get next free queue entry
+		move.w	a0,(a1)+				; queue object
+		move.w	a1,(v_colqueue_ptr).w			; set next free queue entry
+
+	.next_level_object:
+		lea	object_size(a0),a0			; increase a0 to go to next object entry ($40 bytes)
+		dbf	d7,.run_level_object			; loop until all objects have been executed
+		rts						; return
+; ===========================================================================
 
 ; loc_D348:
 .run_object:
@@ -36,8 +72,8 @@ ExecuteObjects:
 
 ; loc_D362:
 .sonic_dead:
-		moveq	#(v_lvlobjspace-v_objspace)/object_size-1,d7 ; run first 32 objects normally (reserved objects like Sonic)
-		bsr.s	.run_object				; execute those objects and return here
+		bsr.s	.run_object				; run first 32 objects normally (reserved objects like Sonic)
+		clr.w	(v_colqueue_ptr).w			; frozen objects are not queued, so invalidate the queue (forces a full scan)
 
 		moveq	#(v_lvlobjend-v_lvlobjspace)/object_size-1,d7 ; run the remaining 96 objects in display-only mode
 ; loc_D368:

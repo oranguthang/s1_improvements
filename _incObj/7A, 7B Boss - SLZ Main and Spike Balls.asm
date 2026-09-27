@@ -907,6 +907,9 @@ BossSpikeball_Loop:
 		ori.b	#sprite_cam_field,obRender(a1)	; set render mode to camera playfield mode
 		bset	#sprite_rendered_bit,obRender(a1) ; set to display immediately
 		move.b	#24/2,obActWid(a1)		; set object radius for off-screen hiding purposes
+		; The shrapnel is harmful right away, but FindFreeObj may have put it in a slot
+		; that ExecuteObjects already passed, so it wouldn't be in the collision queue.
+		st.b	(f_colqueue_fullscan).w		; make ReactToItem check all objects on the next frame
 
 ; loc_1909A:
 .loop:

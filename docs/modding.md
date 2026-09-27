@@ -39,3 +39,7 @@ Placed rings use four-byte S3K records in `objpos/Rings/`: X word and Y word, so
 ## Graphics and DMA
 
 Level resources use moduled Kosinski in `artkosm/`. Add a `plcm` entry and a VRAM tile constant when adding graphics. The bounded PLC/DMA queues must retain their capacity and residency checks. Do not display mappings until their graphics are resident. Keep both SonLVL INIs and object definitions consistent with compression changes.
+
+## Collision queue
+
+Collidable objects are queued during object execution. Keep the existing count bounds and reset the queue each frame. Sonic reactions consume this queue instead of scanning all object slots.

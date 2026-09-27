@@ -57,7 +57,13 @@ Art_Buffer_End:
 
 VDP_Command_Buffer:	ds.w	7*$12			; 18 queued VDP commands
 VDP_Command_Buffer_Slot: ds.l	1			; next free DMA queue slot
-			ds.b	$200				; unused after queue
+colqueue_entries:	equ	96				; one entry per level object slot (checked in ExecuteObjects)
+v_colqueue_ptr:		ds.w	1				; next free v_colqueue entry (outside the queue = ReactToItem does a full scan)
+f_colqueue_fullscan:	ds.b	1				; flag set to make ReactToItem do a full scan instead of using the queue
+			ds.b	1				; unused
+v_colqueue:		ds.w	colqueue_entries		; collision response queue: level objects with obColType set, in RAM order
+v_colqueue_end:
+			ds.b	$200-4-colqueue_entries*2	; unused after queues
 v_tracksonic:		ds.b	$100				; position tracking data for Sonic
 v_hscrolltablebuffer:	ds.b	$380				; scrolling table data
 v_hscrolltablebuffer_end:
