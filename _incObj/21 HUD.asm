@@ -1,6 +1,11 @@
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Object 21 - SCORE, TIME, RINGS
+;
+; The object only decides the flashing frame (obFrame) at its usual point in
+; ExecuteObjects. It is no longer queued with DisplaySprite; instead BuildHUD
+; (see BuildSprites) draws it directly as the very first sprites of the frame,
+; which is where its priority 0 queue entry used to be drawn from.
 ; ---------------------------------------------------------------------------
 
 HUD:
@@ -38,7 +43,7 @@ HUD_Flash:	; Routine 2
 		tst.w	(v_rings).w				; do you have any rings?
 		beq.s	.norings				; if not, branch
 		clr.b	obFrame(a0)				; make all counters yellow
-		jmp	(DisplaySprite).l			; display HUD
+		rts						; BuildHUD draws the HUD
 ; ===========================================================================
 
 .norings:
@@ -53,7 +58,7 @@ HUD_Flash:	; Routine 2
 
 .display:
 		move.b	d0,obFrame(a0)				; set new HUD frame ID
-		jmp	(DisplaySprite).l			; display HUD
+		rts						; BuildHUD draws the HUD
 ; ===========================================================================
 
 Map_HUD:	include	"_maps/HUD.asm"

@@ -24,6 +24,10 @@ BuildSprites:
 		lea	(v_spritetablebuffer).w,a2
 		moveq	#0,d5					; d5 will be used as counter for total rendered sprites
 
+		cmpi.b	#id_HUD,(v_hud).w			; is the HUD object loaded?
+		bne.s	.noHud					; if not, branch
+		bsr.w	BuildHUD				; draw HUD directly to sprite buffer (was the first priority 0 entry)
+.noHud:
 		lea	(v_spritequeue).w,a4
 		moveq	#spritelayer_num-1,d7
 .priorityLoop:
@@ -146,6 +150,25 @@ BuildSprites:
 		move.b	#0,-5(a2)				; unlink penultimate sprite
 		rts
 ; End of function BuildSprites
+
+; ---------------------------------------------------------------------------
+; Sonic 2 style HUD renderer. Draws the frame the HUD object selected this
+; frame at the same screen position and art tile it used as an object.
+; ---------------------------------------------------------------------------
+
+BuildHUD:
+		moveq	#0,d1
+		move.b	(v_hud+obFrame).w,d1			; get HUD frame chosen by the HUD object (0-3)
+		add.w	d1,d1					; double it for word-based indexing
+		lea	(Map_HUD).l,a1				; set mappings location
+		adda.w	(a1,d1.w),a1				; get current HUD frame
+		move.b	(a1)+,d1				; get number of sprite pieces (HUD frames are never blank)
+		subq.b	#1,d1					; make it 0-based for dbf
+		move.w	#$80+$88,d2				; set Y pos (same as HUD_Main's obScreenY)
+		move.w	#$80+$10,d3				; set X pos (same as HUD_Main's obX)
+		movea.w	#ArtTile_HUD,a3				; set art tile (prio flag is set from mappings themselves)
+		bra.w	BuildSpr_Normal				; draw HUD directly to sprite buffer
+; End of function BuildHUD
 
 
 ; ===========================================================================
