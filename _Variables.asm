@@ -48,6 +48,8 @@ v_titlesonic:		equ	v_objspace+object_size*1	; object variable space for Sonic in
 v_pressstart:		equ	v_objspace+object_size*2	; object variable space for the "PRESS START BUTTON" text ($40 bytes)
 v_titletm:		equ	v_objspace+object_size*3	; object variable space for the trademark symbol ($40 bytes)
 v_ttlsonichide:		equ	v_objspace+object_size*4	; object variable space for hiding part of Sonic ($40 bytes)
+v_title_emblembuf:	equ	v_objspace+object_size*$40	; title emblem Enigma buffer in unused object slots (cleared after use)
+v_title_emblembuf_end:	equ	v_title_emblembuf+40*28*2	; full-screen emblem tilemap ($8C0 bytes, slots $40-$62)
 
 ; Level objects
 v_player:		equ	v_objspace+object_size*0	; object variable space for Sonic ($40 bytes)

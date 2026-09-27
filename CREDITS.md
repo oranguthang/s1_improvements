@@ -7,3 +7,7 @@ Modifications are maintained by oranguthang. Included third-party tools retain t
 ## Player and palette resources
 
 Super Sonic player art, mappings, dynamic graphics, transformation effects and dry palette originate from the [Sonic 2 disassembly](https://github.com/sonicretro/s2disasm). Game-specific underwater cycles and shared-resource palette remaps adapt these assets for Sonic 1.
+
+## Title resources
+
+The independent title resources follow [Make an Alternative Title Screen](https://info.sonicretro.org/SCHG_How-to:Make_an_Alternative_Title_Screen). The source archive is retained with the resource inputs for repeatable extraction.

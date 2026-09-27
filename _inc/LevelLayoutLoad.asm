@@ -88,6 +88,10 @@ LevelLayoutLoad:
 ; "LevelLayoutLoad2" is run twice for (once for the FG and BG layouts each)
 LevelLayoutLoad2:
 		move.w	(v_zone_act).w,d0			; get current zone and act
+		cmpi.b	#id_Title,(v_gamemode).w		; is this the title screen? (v_zone_act stays GHZ1 there)
+		bne.s	.notTitle				; if not, branch
+		move.w	#id_Title_Layout,d0			; use the title row (separate title FG and BG layouts)
+	.notTitle:
 		lsl.b	#6,d0
 		lsr.w	#5,d0
 		move.w	d0,d2

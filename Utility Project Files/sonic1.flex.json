@@ -3551,6 +3551,34 @@
                 },
                 {
                     "format": "Sonic 1.js",
+                    "name": "Press Start",
+                    "palettes": [
+                        {
+                            "path": "../palette/Title Screen.bin",
+                            "length": 3
+                        }
+                    ],
+                    "art": {
+                        "path": "../artnem/Title Screen PSB.nem",
+                        "compression": "Nemesis",
+                        "offset": 0
+                    },
+                    "mappings": {
+                        "path": "../_maps/Press Start and TM.asm",
+                        "label": ""
+                    },
+                    "dplcs": {
+                        "enabled": false,
+                        "path": "../",
+                        "label": ""
+                    },
+                    "expanded": true,
+                    "config": {
+                        "mapMacros": true
+                    }
+                },
+                {
+                    "format": "Sonic 1.js",
                     "name": "TM Symbol",
                     "palettes": [
                         {

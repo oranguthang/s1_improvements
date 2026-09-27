@@ -22,6 +22,10 @@ LevelSizeLoad:
 		add.w	d0,d0					; multiply by 2
 		add.w	d1,d0					; multiply to x3 (d0 = index in LevelSizeArray for current zone and act)
 		lea	LevelSizeArray(pc,d0.w),a0		; load level boundaries
+		cmpi.b	#id_Title,(v_gamemode).w
+		bne.s	.levelBounds
+		lea	TitleLevelSize(pc),a0			; title never inherits edited GHZ1 bounds
+.levelBounds:
 
 		move.w	(a0)+,d0				; (unused) load first entry in level size array
 		move.w	d0,(v_unused11).w			; write to unused variable (this is always $0004)
@@ -53,6 +57,9 @@ LevelSizeLoad:
 ; ---------------------------------------------------------------------------
 LevelSizeArray:
 		include	"_inc/LevelSizeArray.asm"
+
+TitleLevelSize:
+		lvlsize	0, $24BF, 0, $300			; preserve the existing title scroll range
 
 ; ---------------------------------------------------------------------------
 ; Ending start location array

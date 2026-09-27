@@ -2005,6 +2005,10 @@ GM_Title:		; fading out from previous game mode
 		lea	(Nem_TitleTM).l,a0			; load "TM" patterns
 		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
 
+		locVRAM	ArtTile_Title_PressStart*tile_size	; set target VRAM location for "PRESS START BUTTON" patterns
+		lea	(Nem_TitlePSB).l,a0			; load "PRESS START BUTTON" patterns
+		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
+
 		lea	(vdp_data_port).l,a6			; load VDP data transfer port
 		locVRAM	ArtTile_Level_Select_Font*tile_size,4(a6) ; set target VRAM location for level select font
 		lea	(Art_Text).l,a5				; load uncompressed level select font
@@ -2023,15 +2027,15 @@ Tit_LoadText:
 		bsr.w	DeformLayers				; initialize background deformation before fade-in (redundant here)
 
 		lea	(v_16x16).w,a1				; set target buffer for blocks mappings
-		lea	(Blk16_GHZ).l,a0			; load GHZ 16x16 blocks mappings
+		lea	(Blk16_Title).l,a0			; load title background 16x16 blocks mappings
 		move.w	#ArtTile_Level,d0			; set to target VRAM address $0000
 		bsr.w	EniDec					; decompress Enigma-compressed blocks mappings to buffer
 
-		lea	(Blk256_GHZ).l,a0			; load GHZ 256x256 mappings
+		lea	(Blk256_Title).l,a0			; load title background 256x256 mappings
 		lea	(v_256x256).l,a1			; set target buffer for chunks mappings
 		bsr.w	KosDec					; decompress Kosinski-compressed chunks mappings to buffer
 
-		bsr.w	LevelLayoutLoad				; load level layout for the background
+		bsr.w	LevelLayoutLoad				; load title FG/BG layouts (titlefg.bin/titlebg.bin, see LevelLayoutLoad2)
 		bsr.w	PaletteFadeOut				; fade-out "SONIC TEAM PRESENTS" screen
 ; ---------------------------------------------------------------------------
 
@@ -2046,20 +2050,21 @@ Tit_LoadText:
 		move.w	#$4000+(vram_bg-vram_fg),d2		; =$6000 (VRAM write command $4000 + nametable start address relative to vram_fg)
 		bsr.w	DrawChunks				; draw initial background layer
 
-		lea	(v_ram_start).l,a1			; set start of RAM to be used as decompression buffer (this overwrites unused chunk RAM)
+		; The original code decompressed into v_ram_start, overwriting the start of the
+		; title background's chunks while the background still scrolls. Use unused
+		; object slots instead and clear them before any objects run.
+		lea	(v_title_emblembuf).l,a1		; set decompression buffer
 		lea	(Eni_Title).l,a0			; load title screen emblem mappings
-		move.w	#ArtTile_Level,d0			; =$0000 (emblem mappings are themselves set up with a +$2000 offset per tile)
+		move.w	#ArtTile_Title_Foreground,d0		; emblem mappings are relative to the emblem art
 		bsr.w	EniDec					; decompress Enigma-compressed emblem mappings to buffer
-	if FixBugs
-		; Fix title screen position
+		; The 40x28 emblem tilemap covers the whole screen and already includes
+		; the fixed title screen position
 		; https://info.sonicretro.org/SCHG_How-to:Fix_the_Title_Screen_position_in_Sonic_1
-		copyTilemap v_ram_start,vram_fg+$208,34,22	; transfer decompressed patterns from RAM buffer to VRAM (correctly centered)
-	else
-		copyTilemap v_ram_start,vram_fg+$206,34,22	; transfer decompressed patterns from RAM buffer to VRAM (off-center)
-	endif
+		copyTilemap v_title_emblembuf,vram_fg,40,28	; transfer decompressed patterns from RAM buffer to VRAM
+		clearRAM v_title_emblembuf,v_title_emblembuf_end	; leave the borrowed object slots empty
 
 		locVRAM	ArtTile_Level*tile_size			; set target VRAM location for level patterns
-		lea	(Nem_GHZ_1st).l,a0			; load first half of GHZ patterns
+		lea	(Nem_Title).l,a0			; load title background patterns
 		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
 
 		moveq	#palid_Title,d0				; load title screen palette...
@@ -4530,6 +4535,8 @@ Nem_TitleSonic:	binclude	"artnem/Title Screen Sonic.nem"
 		even
 Nem_TitleTM:	binclude	"artnem/Title Screen TM.nem"
 		even
+Nem_TitlePSB:	binclude	"artnem/Title Screen PSB.nem" ; "PRESS START BUTTON" (separate from the emblem)
+		even
 Eni_JapNames:	binclude	"tilemaps/Hidden Japanese Credits.eni" ; Japanese credits (mappings)
 		even
 Nem_JapNames:	binclude	"artnem/Hidden Japanese Credits.nem"
@@ -4885,6 +4892,14 @@ Nem_GHZ_2nd:	binclude	"artnem/8x8 - GHZ2.nem" ; GHZ secondary patterns
 Blk256_GHZ:	binclude	"map256/GHZ.kos"
 		even
 
+; Title screen background (separate copies, editable without affecting GHZ)
+Blk16_Title:	binclude	"map16/Title.eni"
+		even
+Nem_Title:	binclude	"artnem/8x8 - Title.nem" ; title background patterns
+		even
+Blk256_Title:	binclude	"map256/Title.kos"
+		even
+
 Blk16_LZ:	binclude	"map16/LZ.eni"
 		even
 Nem_LZ:		binclude	"artnem/8x8 - LZ.nem" ; LZ primary patterns
@@ -5087,7 +5102,8 @@ Level_Index:
 		dc.w Level_End-Level_Index, Level_GHZbg-Level_Index, Level_EndUnk-Level_Index
 		dc.w Level_End-Level_Index, Level_GHZbg-Level_Index, Level_EndUnk-Level_Index
 		dc.w Level_EndUnk-Level_Index, Level_EndUnk-Level_Index, Level_EndUnk-Level_Index
-		dc.w Level_EndUnk-Level_Index, Level_EndUnk-Level_Index, Level_EndUnk-Level_Index
+		; Ending act 4 slot (id_Title_Layout) - title screen only, see LevelLayoutLoad2
+		dc.w Level_TitleFG-Level_Index, Level_TitleBG-Level_Index, Level_EndUnk-Level_Index
 
 Level_GHZ1:	binclude	"levels/ghz1.bin"
 		even
@@ -5174,6 +5190,10 @@ Level_SBZ4Unk:	dc.l 0
 Level_End:	binclude	"levels/ending.bin"
 		even
 Level_EndUnk:	dc.l 0
+Level_TitleFG:	binclude	"levels/titlefg.bin"	; title screen FG (empty 1x1 layout; never drawn, the emblem is a tilemap)
+		even
+Level_TitleBG:	binclude	"levels/titlebg.bin"	; title screen BG
+		even
 
 ; ---------------------------------------------------------------------------
 ; Uncompressed graphics - Giant Rings

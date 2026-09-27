@@ -90,12 +90,16 @@ PSB_Main:	; Routine 0
 	endif
 		move.w	#$80+$B0,obScreenY(a0)			; set Y-position
 		move.l	#Map_PSB,obMap(a0)			; set mappings
-		move.w	#ArtTile_Title_Foreground,obGfx(a0)	; set art tile (PSB tiles are inside the foreground emblem's graphics)
+		move.w	#ArtTile_Title_PressStart,obGfx(a0)	; set art tile (separate "PRESS START BUTTON" graphics)
 
 		cmpi.b	#2,obFrame(a0)				; is object "PRESS START"?
-		blo.s	PSB_PrsStart				; if yes, branch
+		bhs.s	.notPressStart				; if not, branch
+		addi.w	#$40,obX(a0)				; "PRESS START BUTTON" mappings are centred on the object
+		bra.s	PSB_PrsStart				; animate
+	.notPressStart:
 
 		; Object is either TM or masking sprites
+		move.w	#ArtTile_Title_Foreground,obGfx(a0)	; masking sprites keep their original art tile
 		addq.b	#2,obRoutine(a0)			; advance to PSB_Exit (static)
 		cmpi.b	#3,obFrame(a0)				; is the object "TM"?
 		bne.s	PSB_Exit				; if not, branch (object is masking sprites)

@@ -176,6 +176,7 @@ id_FZ:			equ (id_SBZ<<8)+act3			; $0502 (real SBZ3)
 
 id_EndZ_good:		equ (id_EndZ<<8)+act1			; $0600 (good ending, all emeralds)
 id_EndZ_bad:		equ (id_EndZ<<8)+act2			; $0601 (bad ending, not all emeralds)
+id_Title_Layout:	equ (id_EndZ<<8)+act4			; $0603 (Level_Index row for the title screen FG/BG layouts only)
 
 ; Special Stage
 ss_emeralds_num:	equ 6					; total number of Chaos Emeralds and Special Stages
@@ -632,11 +633,31 @@ ArtTile_Signpost:		equ $680
 ArtTile_Sega_Tiles:		equ $000
 
 ; Title Screen
+; Tile counts of the title graphics; update these when the art changes.
+; The title graphics are packed one after another from these counts.
+Title_Background_Tiles:		equ $106			; artnem/8x8 - Title.nem (at least $106, see below)
+Title_Foreground_Tiles:		equ $F0				; artnem/Title Screen Foreground.nem (emblem only)
+Title_Sonic_Tiles:		equ $20D			; artnem/Title Screen Sonic.nem
+Title_PSB_Tiles:		equ $12				; artnem/Title Screen PSB.nem ("PRESS START BUTTON")
+Title_TM_Tiles:			equ 2				; artnem/Title Screen TM.nem
+
 ArtTile_Title_Japanese_Text:	equ $000
-ArtTile_Title_Foreground:	equ $200
-ArtTile_Title_Sonic:		equ $300
-ArtTile_Title_Trademark:	equ $510
+ArtTile_Title_Foreground:	equ Title_Background_Tiles	; Title Screen.eni (40x28) is relative to this tile
+ArtTile_Title_Sonic:		equ ArtTile_Title_Foreground+Title_Foreground_Tiles
+ArtTile_Title_PressStart:	equ ArtTile_Title_Sonic+Title_Sonic_Tiles
+ArtTile_Title_Trademark:	equ ArtTile_Title_PressStart+Title_PSB_Tiles
 ArtTile_Level_Select_Font:	equ $680
+
+	; The emblem, big Sonic, "PRESS START" and "TM" load while the "SONIC TEAM
+	; PRESENTS" screen still shows its font ($60 tiles at ArtTile_Sonic_Team_Font
+	; = $A6, so up to $105); the background art is loaded last, at $0000, once
+	; that screen has faded out. The guide's minimum of $105 is one tile short.
+	if Title_Background_Tiles<$106
+		error "Title_Background_Tiles must be at least $106 to keep the emblem clear of the SONIC TEAM PRESENTS font"
+	endif
+	if ArtTile_Title_Trademark+Title_TM_Tiles>ArtTile_Level_Select_Font
+		error "Title graphics overlap the level select font"
+	endif
 
 ; Continue Screen
 ArtTile_Continue_Sonic:		equ $500

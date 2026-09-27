@@ -1,19 +1,28 @@
 ; ---------------------------------------------------------------------------
 ; Sprite mappings - "PRESS START BUTTON" and "TM" from title screen
+;
+; Each frame uses different art (see PSB_Main), so an editor shows only some
+; frames correctly per art file (Flex2 entries in sonic1.flex.json):
+;	.psb		- artnem/Title Screen PSB.nem ("Press Start")
+;	.spritemask	- artnem/Title Screen Foreground.nem ("Press Start & Masking")
+;	.tm		- artnem/Title Screen TM.nem ("TM Symbol")
 ; ---------------------------------------------------------------------------
 Map_PSB_internal:	mappingsTable
-	mappingsTableEntry.w	.psb+1	; This is a nasty hack to render the sprite invisible by pointing at a random 00 byte.
+	mappingsTableEntry.w	.blank	; "PRESS START BUTTON" flash-off frame
 	mappingsTableEntry.w	.psb
 	mappingsTableEntry.w	.spritemask
 	mappingsTableEntry.w	.tm
 
+.blank:	spriteHeader
+.blank_End
+
+; Tiles are relative to ArtTile_Title_PressStart; centred on the object (PSB_Main adds $40 to X)
 .psb:	spriteHeader
-	spritePiece	0, 0, 4, 1, $F0, 0, 0, 0, 0	; "PRESS START BUTTON"
-	spritePiece	$20, 0, 1, 1, $F3, 0, 0, 0, 0
-	spritePiece	$30, 0, 1, 1, $F3, 0, 0, 0, 0
-	spritePiece	$38, 0, 4, 1, $F4, 0, 0, 0, 0
-	spritePiece	$60, 0, 3, 1, $F8, 0, 0, 0, 0
-	spritePiece	$78, 0, 3, 1, $FB, 0, 0, 0, 0
+	spritePiece	-$40, 0, 4, 1, 0, 0, 0, 0, 0	; "PRESS START BUTTON"
+	spritePiece	-$20, 0, 4, 1, 4, 0, 0, 0, 0
+	spritePiece	0, 0, 4, 1, 8, 0, 0, 0, 0
+	spritePiece	$20, 0, 4, 1, $C, 0, 0, 0, 0
+	spritePiece	$40, 0, 2, 1, $10, 0, 0, 0, 0
 .psb_End
 
 .spritemask:	spriteHeader
