@@ -3,9 +3,9 @@
 ;
 ; Each frame uses different art (see PSB_Main), so an editor shows only some
 ; frames correctly per art file (Flex2 entries in sonic1.flex.json):
-;	.psb		- artnem/Title Screen PSB.nem ("Press Start")
-;	.spritemask	- artnem/Title Screen Foreground.nem ("Press Start & Masking")
-;	.tm		- artnem/Title Screen TM.nem ("TM Symbol")
+;	.psb		- artkosm/Title Screen PSB.kosm ("Press Start")
+;	.spritemask	- artkosm/Title Screen Foreground.kosm ("Press Start & Masking")
+;	.tm		- artkosm/Title Screen TM.kosm ("TM Symbol")
 ; ---------------------------------------------------------------------------
 Map_PSB_internal:	mappingsTable
 	mappingsTableEntry.w	.blank	; "PRESS START BUTTON" flash-off frame

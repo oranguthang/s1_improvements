@@ -783,7 +783,6 @@ VBlank_SegaPCM:
 VBlank_Title:
 		bsr.w	VBlank_StandardTransfers		; do standard screen transfers
 		bsr.w	LoadTilesAsYouMove_BGOnly		; update background tiles as title screen scrolls
-		bsr.w	ProcessPLC_9Tiles			; decompress up to 9 Nemesis-compressed tiles
 
 		tst.w	(v_generictimer).w			; is generic timer set?
 		beq.w	.end					; if not, branch
@@ -877,7 +876,6 @@ VBlank_UpdateScreen:
 		bsr.w	LoadTilesAsYouMove			; update level tiles while screen is moving
 		jsr	(AnimateLevelGfx).l			; updated animated tiles
 		jsr	(HUD_Update).l				; update HUD data
-		bsr.w	ProcessPLC_3Tiles			; decompress up to 3 Nemesis-compressed tiles (instead of the usual 9)
 
 		tst.w	(v_generictimer).w			; is generic timer set?
 		beq.w	.end					; if not, branch
@@ -963,7 +961,6 @@ VBlank_Ending:
 		bsr.w	LoadTilesAsYouMove			; update rendered
 		jsr	(AnimateLevelGfx).l			; animate uncompressed level graphics (e.g. MZ lava)
 		jsr	(HUD_Update).l				; update HUD numbers
-		bsr.w	ProcessPLC_9Tiles			; decompress up to 9 Nemesis-compressed tiles
 		rts						; return
 
 ; ===========================================================================
@@ -987,7 +984,7 @@ VBlank_Unused0E:
 VBlank_PaletteFade:
 		bsr.w	VBlank_StandardTransfers		; do standard screen transfers
 		move.w	(v_hblank_hreg).w,(a5)			; write HBlank trigger scan line for water palette swap to VDP
-		bra.w	ProcessPLC_9Tiles			; decompress up to 9 Nemesis-compressed tiles
+	rts						; queued art is decompressed outside VBlank
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -1036,6 +1033,7 @@ VBlank_StandardTransfers:
 		writeVRAM	v_hscrolltablebuffer,vram_hscroll ; transfer H-scroll buffer table to actual H-scroll VRAM
 
 		startZ80					; restart Z80
+		jsr	(ProcessDMAQueue).l			; title and palette-fade PLC DMA
 		rts						; return
 ; End of function VBlank_StandardTransfers
 ; End of VBlank (as a whole)
@@ -1231,6 +1229,7 @@ ClearScreen:
 	endif
 
 		ResetDMAQueue
+		clr.b	(v_plc_dma_pending).w		; no queued DMA owns Art_Buffer now
 		clr.b	(v_draw_rings).w
 		rts						; return
 ; End of function ClearScreen
@@ -1298,303 +1297,10 @@ Tilemap_Cell:
 ; End of function TilemapToVRAM
 
 ; ===========================================================================
-; >>> Nemesis decompression algorithm, primarily (but not exclusively) used for PLCs
-	include	"_inc/Decompression/Nemesis Decompression.asm"
-
-; ---------------------------------------------------------------------------
-; Subroutine to add entries from a given Pattern Load Cue list ID to the
-; PLC decompression queue (decompressed later during VBlank)
-; ---------------------------------------------------------------------------
-; ARGUMENTS
-; d0 = index of PLC list
-; ---------------------------------------------------------------------------
-; NOTICE: This subroutine does not check for buffer overruns. The programmer
-;         (or hacker) is responsible for making sure that no more than
-;         16 load requests are copied into the buffer.
-;         _________DO NOT PUT MORE THAN 16 LOAD REQUESTS IN A LIST!__________
-;         (or if you change the size of Plc_Buffer, the limit becomes (Plc_Buffer_Only_End-Plc_Buffer)/plc_slot_size)
-; ---------------------------------------------------------------------------
-
-; LoadPLC:
-AddPLC:
-		movem.l	a1-a2,-(sp)				; store register data
-		lea	(ArtLoadCues).l,a1			; load PLC list address
-		add.w	d0,d0					; double for word-based indexing
-		move.w	(a1,d0.w),d0				; load correct relative add address
-		lea	(a1,d0.w),a1				; add and load actual address of list
-		lea	(v_plc_buffer).w,a2			; load PLC process list
-
-.findspace:
-		tst.l	(a2)					; is this slot taken?
-		beq.s	.copytoRAM				; if not, branch
-		addq.w	#plc_slot_size,a2			; advance to next slot
-		bra.s	.findspace				; recheck
-; ===========================================================================
-
-.copytoRAM:
-		move.w	(a1)+,d0				; load size of list
-		bmi.s	.return					; if there is no list, branch
-
-.loop:
-		move.l	(a1)+,(a2)+				; copy Nemesis art address
-		move.w	(a1)+,(a2)+				; copy VRAM location to dump to
-		dbf	d0,.loop				; repeat for all entries
-
-.return:
-		movem.l	(sp)+,a1-a2				; restore register data
-		rts						; return
-; End of function AddPLC
-
-; ===========================================================================
-; ---------------------------------------------------------------------------
-; Identical to AddPLC, but also stops the current PLC process, and loads
-; a brand new queue. (The same 16th entry warning as above applies!)
-; ---------------------------------------------------------------------------
-
-; LoadPLC2:
-NewPLC:
-		movem.l	a1-a2,-(sp)				; store register data
-		lea	(ArtLoadCues).l,a1			; load PLC list address
-		add.w	d0,d0					; double for word-based indexing
-		move.w	(a1,d0.w),d0				; load correct relative add address
-		lea	(a1,d0.w),a1				; add and load actual address of list
-		bsr.s	ClearPLC				; clear the current PLC entries first
-		lea	(v_plc_buffer).w,a2			; load PLC process list
-		move.w	(a1)+,d0				; load size of list
-		bmi.s	.return					; if there is no list, branch
-
-.loop:
-		move.l	(a1)+,(a2)+				; copy Nemesis art address
-		move.w	(a1)+,(a2)+				; copy VRAM location to dump to
-		dbf	d0,.loop				; repeat for all entries
-
-.return:
-		movem.l	(sp)+,a1-a2				; restore register data
-		rts						; return
-; End of function NewPLC
-
-; ===========================================================================
-; ---------------------------------------------------------------------------
-; Subroutine to clear the pattern load cues
-; Clear the pattern load queue ($FFF680 - $FFF700)
-; ---------------------------------------------------------------------------
-
-ClearPLC:
-		lea	(v_plc_buffer).w,a2			; load PLC process list
-		moveq	#(v_plc_buffer_end-v_plc_buffer)/4-1,d0	; set size of list
-
-.loop:
-		clr.l	(a2)+					; clear PLC process list
-		dbf	d0,.loop				; repeat until entire list is cleared
-		rts						; return
-; End of function ClearPLC
-
-; ===========================================================================
-; ---------------------------------------------------------------------------
-; Subroutine to	check the PLC buffer and begin decompression if it contains
-; anything. ProcessPLC handles the actual decompression during VBlank
-; ---------------------------------------------------------------------------
-
-RunPLC:
-		tst.l	(v_plc_buffer).w			; are there any PLC entries left to process?
-		beq.s	.return					; if not, branch
-		tst.w	(v_plc_patternsleft).w			; is a section counter already set (is art already being decompressed)?
-		bne.s	.return					; if so, branch
-
-		movea.l	(v_plc_buffer).w,a0			; load address of first entry's art
-		lea	(NemPCD_WriteRowToVDP).l,a3		; load address of dumping routine to use (VDP variant)
-		lea	(v_ngfx_buffer).w,a1			; load RLE huffman buffer
-		move.w	(a0)+,d2				; load number of sections to decompress (Each section is $20 bytes)
-		bpl.s	.skipXor				; if this data doesn't use XOR variant, branch
-		adda.w	#NemPCD_WriteRowToVDP_XOR-NemPCD_WriteRowToVDP,a3 ; advance to XOR variant
-; loc_160E:
-.skipXor:
-		andi.w	#$7FFF,d2				; clear XOR flag
-
-	if FixBugs=0
-		; Relocated to bugfix below
-		move.w	d2,(v_plc_patternsleft).w		; save section counter
-	endif
-		bsr.w	NemDec_BuildCodeTable			; decompress the huffman tree RLE table
-		move.b	(a0)+,d5				; load lookup field
-		asl.w	#8,d5					; ''
-		move.b	(a0)+,d5				; ''
-		moveq	#$10,d6					; prepare bit shift counter (shifting up to a word in size)
-		moveq	#0,d0					; clear d0
-		move.l	a0,(v_plc_buffer).w			; store current entry address
-		move.l	a3,(v_plc_ptrnemcode).w			; store dumping routine (XOR/Non-XOR)
-		move.l	d0,(v_plc_repeatcount).w		; clear RLE dump counter
-		move.l	d0,(v_plc_paletteindex).w		; clear RLE dump nybble
-		move.l	d0,(v_plc_previousrow).w		; clear previous XOR dump
-		move.l	d5,(v_plc_dataword).w			; store lookup field
-		move.l	d6,(v_plc_shiftvalue).w			; store bit shift counter
-	if FixBugs
-		; Fix a race condition with Pattern Load Cues
-		; https://info.sonicretro.org/SCHG_How-to:Fix_a_race_condition_with_Pattern_Load_Cues
-		move.w	d2,(v_plc_patternsleft).w		; save section counter
-	endif
-
-.return:
-		rts						; return
-; End of function RunPLC
-
-; ===========================================================================
-; ---------------------------------------------------------------------------
-; Subroutine to decompress and dump a specified number of Nemesis-compressed
-; PLC tiles from the PLC process list to VRAM. These are called from VBlank,
-; probably done to smooth out level loading because of how slow Nemesis is.
-; (Note: Process"D"PLC is an old misnomer!)
-; ---------------------------------------------------------------------------
-
-; Pause a PLC section only while its next tiles would enter the shared
-; explosion/ring VRAM slot. The queued title-card explosion art can still
-; be loading when a mid-level ring appears.
-ProcessPLC_CheckRingSlot:
-		moveq	#0,d0
-		tst.b	(v_gfxringslotstate).w
-		beq.s	.free
-		move.w	(v_plc_buffer_dest).w,d0
-		cmpi.w	#(ArtTile_Explosion+96)*tile_size,d0
-		bhs.s	.free
-		cmpi.w	#(ArtTile_Explosion-8)*tile_size,d0
-		blo.s	.free
-		moveq	#1,d0
-		rts
-	.free:
-		moveq	#0,d0
-		rts
-; ---------------------------------------------------------------------------
-
-; sub_1642: ProcessDPLC_9Tiles:
-ProcessPLC_9Tiles:
-		tst.w	(v_plc_patternsleft).w			; is a section counter set (is art being decompressed)?
-		beq.w	ProcessPLC_Return			; if not, branch (nothing to decompress)
-		bsr.s	ProcessPLC_CheckRingSlot
-		tst.b	d0
-		bne.w	ProcessPLC_Return			; keep PLC art out of the ring/flash slot
-
-		move.w	#9,(v_plc_framepatternsleft).w		; set tile counter to 9 (number of tiles to decompress in a frame)
-		moveq	#0,d0					; clear d0
-		move.w	(v_plc_buffer_dest).w,d0		; load VRAM address for this frame
-		addi.w	#9*tile_size,(v_plc_buffer_dest).w	; increase address for next frame
-		bra.s	ProcessPLC				; continue
-; ===========================================================================
-
-; sub_165E: ProcessDPLC2: ProcessPLC_3Tiles:
-ProcessPLC_3Tiles:
-		tst.w	(v_plc_patternsleft).w			; is a section counter set (is art being decompressed)?
-		beq.s	ProcessPLC_Return			; if not, branch (nothing to decompress)
-		bsr.s	ProcessPLC_CheckRingSlot
-		tst.b	d0
-		bne.s	ProcessPLC_Return			; keep PLC art out of the ring/flash slot
-
-		move.w	#3,(v_plc_framepatternsleft).w		; set tile counter to 3 (number of tiles to decompress in a frame)
-		moveq	#0,d0					; clear d0
-		move.w	(v_plc_buffer_dest).w,d0		; load VRAM address for this frame
-		addi.w	#3*tile_size,(v_plc_buffer_dest).w	; increase address for next frame
-		; fall-through to ProcessPLC...
-; ---------------------------------------------------------------------------
-
-; loc_1676: ProcessPLC:
-ProcessPLC:
-		lea	(vdp_control_port).l,a4			; load VDP control port address
-		lsl.l	#2,d0					; get address MSB bits and send to LSB of long-word
-		lsr.w	#2,d0					; send rest back
-		ori.w	#$4000,d0				; set mode bits
-		swap	d0					; align for VDP port
-		move.l	d0,(a4)					; set VDP address/mode
-		subq.w	#4,a4					; move a4 down to VDP data port
-		movea.l	(v_plc_buffer).w,a0			; load current entry address
-		movea.l	(v_plc_ptrnemcode).w,a3			; load dumping routine to use (XOR/Non-XOR)
-		move.l	(v_plc_repeatcount).w,d0		; load RLE dump counter
-		move.l	(v_plc_paletteindex).w,d1		; load RLE dump nybble
-		move.l	(v_plc_previousrow).w,d2		; load previous XOR dump
-		move.l	(v_plc_dataword).w,d5			; load lookup field
-		move.l	(v_plc_shiftvalue).w,d6			; load bit shift counter
-		lea	(v_ngfx_buffer).w,a1			; load RLE huffman buffer
-
-; loc_16AA:
-.loop:
-		movea.w	#8,a5					; set size of data to decompress (20 bytes, 1 tile)
-		bsr.w	NemPCD_NewRow				; continue the decompression
-		subq.w	#1,(v_plc_patternsleft).w		; decrease section count by 1
-		beq.s	ProcessPLC_ShiftCue			; if decompression is finished, branch
-		subq.w	#1,(v_plc_framepatternsleft).w		; decrease tile counter
-		bne.s	.loop					; if still running, branch to decompress another tile
-
-		move.l	a0,(v_plc_buffer).w			; store current entry address
-		move.l	a3,(v_plc_ptrnemcode).w			; store dumping routine to use (XOR/Non-XOR)
-		move.l	d0,(v_plc_repeatcount).w		; store RLE dump counter
-		move.l	d1,(v_plc_paletteindex).w		; store RLE dump nybble
-		move.l	d2,(v_plc_previousrow).w		; store previous XOR dump
-		move.l	d5,(v_plc_dataword).w			; store lookup field
-		move.l	d6,(v_plc_shiftvalue).w			; store bit shift counter
-
-ProcessPLC_Return:
-		rts						; return
-; ===========================================================================
-
-; loc_16DC:
-ProcessPLC_ShiftCue:
-		lea	(v_plc_buffer).w,a0			; load PLC process list
-		moveq	#(v_plc_buffer_only_end-v_plc_buffer-plc_slot_size)/4-1,d0 ; set size of list
-
-; loc_16E2:
-.loop:
-		move.l	plc_slot_size(a0),(a0)+			; shift contents of PLC buffer up 6 bytes
-		dbf	d0,.loop				; repeat til done
-
-	if FixBugs
-		; The above code does not properly 'pop' the 16th PLC entry.
-		; Because of this, occupying the 16th slot will cause it to
-		; be repeatedly decompressed infinitely.
-		; Granted, this could be considered more of an optimisation
-		; than a bug: treating the 16th entry as a dummy that
-		; should never be occupied makes this code unnecessary.
-		; Still, the overhead of this code is minimal.
-		if (v_plc_buffer_only_end-v_plc_buffer-plc_slot_size)&2
-			move.w	plc_slot_size(a0),(a0)
-		endif
-		clr.l	(v_plc_buffer_only_end-plc_slot_size).w
-	endif
-
-		rts						; return
-; End of function ProcessPLC
-
-; ===========================================================================
-; ---------------------------------------------------------------------------
-; Like AddPLC, but instead of adding entries to a queue to be processed later,
-; this will decompress and transfer all entries of the given PLC ID's list
-; immediately, blocking until it is done. Does not use or affect the queue.
-; ---------------------------------------------------------------------------
-
-QuickPLC:
-		lea	(ArtLoadCues).l,a1			; load PLC list address
-		add.w	d0,d0					; double for word-based indexing
-		move.w	(a1,d0.w),d0				; load correct relative add address
-		lea	(a1,d0.w),a1				; add and load actual address of list
-		move.w	(a1)+,d1				; load size of list
-
-.loop:
-		movea.l	(a1)+,a0				; load Nemesis art address
-		moveq	#0,d0					; clear d0
-		move.w	(a1)+,d0				; load VRAM dump address
-		lsl.l	#2,d0					; get address MSB bits and send to LSB of long-word
-		lsr.w	#2,d0					; send rest back
-		ori.w	#$4000,d0				; set mode bits
-		swap	d0					; align for VDP port
-		move.l	d0,(vdp_control_port).l			; set VDP address/mode
-		bsr.w	NemDec					; decompress the entire entry
-		dbf	d1,.loop				; repeat for all entries in the list
-		rts						; return
-; End of function QuickPLC
-
-; ===========================================================================
-; >>> Other decompression algorithms
-	include	"_inc/Decompression/Enigma Decompression.asm"
-	include	"_inc/Decompression/Kosinski Decompression.asm"
-
-
+; >>> Moduled Kosinski PLC and other decompression algorithms
+    include "_inc/Moduled PLC.asm"
+    include "_inc/Decompression/Enigma Decompression.asm"
+    include "_inc/Decompression/Kosinski Decompression.asm"
 ; ===========================================================================
 ; >>> Palette logic routines
 	include	"_inc/PaletteCycle.asm"
@@ -1870,9 +1576,8 @@ GM_Sega:
 		disable_display					; disable screen output
 		bsr.w	ClearScreen				; wipe the screen
 
-		locVRAM	ArtTile_Sega_Tiles*tile_size		; set target VRAM location for Sega logo patterns
-		lea	(Nem_SegaLogo).l,a0			; load Sega logo patterns
-		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
+		moveq	#plcid_Sega,d0				; load Sega logo patterns
+		bsr.w	QuickPLC				; decompress PLC list now and return once done
 
 		lea	(v_ram_start).l,a1			; set start of RAM to be used as decompression buffer
 		lea	(Eni_SegaLogo).l,a0			; load Sega logo mappings
@@ -1961,14 +1666,12 @@ GM_Title:		; fading out from previous game mode
 		clr.b	(f_wtr_state).w				; clear water state
 		bsr.w	ClearScreen				; wipe the screen
 		clearRAM v_objspace				; clear object RAM
+		clearRAM v_palette_fading			; black fade buffer for either title entry path
+		tst.b	(f_title_fast).w
+		bne.w	Tit_LoadForeground			; debug pause returns directly to the title
 
-		locVRAM	ArtTile_Title_Japanese_Text*tile_size	; set target VRAM location for hidden Japanese credits
-		lea	(Nem_JapNames).l,a0			; load hidden Japanese credits
-		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
-
-		locVRAM	ArtTile_Sonic_Team_Font*tile_size	; set target VRAM location for "SONIC TEAM PRESENTS" font
-		lea	(Nem_CreditText).l,a0			; load STP font (same as the credits font)
-		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
+		moveq	#plcid_TitleSonicTeam,d0		; load hidden Japanese credits and STP font
+		bsr.w	QuickPLC				; decompress PLC list now and return once done
 
 		lea	(v_ram_start).l,a1			; set start of RAM to be used as decompression buffer
 		lea	(Eni_JapNames).l,a0			; load mappings for hidden Japanese credits
@@ -1992,23 +1695,11 @@ GM_Title:		; fading out from previous game mode
 ; ---------------------------------------------------------------------------
 
 		; load main title screen patterns while "SONIC TEAM PRESENTS" screen is shown
+Tit_LoadForeground:
 		disable_ints					; display is frozen during the STP screen
 
-		locVRAM	ArtTile_Title_Foreground*tile_size	; set target VRAM location title screen foreground emblem
-		lea	(Nem_TitleFg).l,a0			; load title screen foreground emblem patterns
-		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
-
-		locVRAM	ArtTile_Title_Sonic*tile_size		; set target VRAM location big Sonic object
-		lea	(Nem_TitleSonic).l,a0			; load big Sonic title screen patterns
-		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
-
-		locVRAM	ArtTile_Title_Trademark*tile_size	; set target VRAM location for "TM" patterns
-		lea	(Nem_TitleTM).l,a0			; load "TM" patterns
-		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
-
-		locVRAM	ArtTile_Title_PressStart*tile_size	; set target VRAM location for "PRESS START BUTTON" patterns
-		lea	(Nem_TitlePSB).l,a0			; load "PRESS START BUTTON" patterns
-		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
+		moveq	#plcid_TitleForeground,d0		; load emblem, big Sonic, "TM" and "PRESS START BUTTON"
+		bsr.w	QuickPLC				; decompress PLC list now and return once done
 
 		lea	(vdp_data_port).l,a6			; load VDP data transfer port
 		locVRAM	ArtTile_Level_Select_Font*tile_size,4(a6) ; set target VRAM location for level select font
@@ -2063,9 +1754,8 @@ Tit_SonicTeamFaded:
 		copyTilemap v_title_emblembuf,vram_fg,40,28	; transfer decompressed patterns from RAM buffer to VRAM
 		clearRAM v_title_emblembuf,v_title_emblembuf_end	; leave the borrowed object slots empty
 
-		locVRAM	ArtTile_Level*tile_size			; set target VRAM location for level patterns
-		lea	(Nem_Title).l,a0			; load title background patterns
-		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
+		moveq	#plcid_TitleBackground,d0		; load title background patterns
+		bsr.w	QuickPLC				; decompress PLC list now and return once done
 
 		moveq	#palid_Title,d0				; load title screen palette...
 		bsr.w	PalLoad_Fade				; ...to fade-in buffer
@@ -2777,9 +2467,8 @@ Level_NoMusicFade:
 		bmi.s	Level_ClrRam				; if yes, don't load title screen or main level patterns
 
 		disable_ints					; disable interrupts
-		locVRAM	ArtTile_Title_Card*tile_size		; set VRAM target location for title cards
-		lea	(Nem_TitleCard).l,a0			; load title card patterns
-		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
+		moveq	#plcid_TitleCard,d0			; load title card patterns
+		bsr.w	QuickPLC				; decompress PLC list now and return once done
 		enable_ints					; enable interrupts again
 
 		moveq	#0,d0					; clear d0
@@ -3507,9 +3196,8 @@ SS_FinLoop_NoBrighten:
 		move.w	#vreg_planesize|%000001,(a6)		; 64-cell hscroll size
 		bsr.w	ClearScreen				; wipe screen
 
-		locVRAM	ArtTile_Title_Card*tile_size		; set VRAM location for title card font
-		lea	(Nem_TitleCard).l,a0			; load title card patterns
-		bsr.w	NemDec					; decompress Nemesis-compressed graphics directly to VRAM
+		moveq	#plcid_TitleCard,d0			; load title card patterns
+		bsr.w	QuickPLC				; decompress PLC list now and return once done
 
 		jsr	(Hud_Base).l				; load basic HUD graphics
 		enable_ints					; enable interrupts
@@ -3593,17 +3281,8 @@ GM_Continue:
 
 		clearRAM v_objspace				; clear object RAM
 
-		locVRAM	ArtTile_Title_Card*tile_size		; set VRAM location for title card patterns
-		lea	(Nem_TitleCard).l,a0			; load title card patterns
-		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
-
-		locVRAM	ArtTile_Continue_Sonic*tile_size	; set VRAM location for Sonic on the continue screen
-		lea	(Nem_ContSonic).l,a0			; load Sonic patterns
-		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
-
-		locVRAM	ArtTile_Mini_Sonic*tile_size		; set VRAM location for the mini Sonic icons
-		lea	(Nem_MiniSonic).l,a0			; load mini Sonic icons
-		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
+		moveq	#plcid_Continue,d0			; load title card font, Sonic and mini Sonic icons
+		bsr.w	QuickPLC				; decompress PLC list now and return once done
 
 		moveq	#10,d1					; draw continue screen countdown to start with digits 10
 		jsr	(ContScrCounter).l			; initialize countdown
@@ -3975,9 +3654,8 @@ GM_Credits:
 
 		clearRAM v_objspace				; clear object RAM
 
-		locVRAM	ArtTile_Credits_Font*tile_size		; set target VRAM location for credits font
-		lea	(Nem_CreditText).l,a0			; load credits font
-		bsr.w	NemDec					; decompress Nemesis-compressed patterns directly to VRAM
+		moveq	#plcid_Credits,d0			; load credits font
+		bsr.w	QuickPLC				; decompress PLC list now and return once done
 
 		clearRAM v_palette_fading			; set palette fade-in buffer to all-black
 		moveq	#palid_Sonic,d0				; load Sonic's palette...
@@ -4500,7 +4178,7 @@ Art_LivesNums:	binclude "artunc/Lives Counter Numbers.unc" ; 8x8 pixel numbers o
 ; >> END OF PRIMARY INCLUDES - Everything below this point is art includes <<
 ; ---------------------------------------------------------------------------
 
-		; Nem_SegaLogo has a bunch of padding before it that differs between revisions:
+		; KosM_SegaLogo has a bunch of padding before it that differs between revisions:
 		; - in rev00, it starts at $1DC00, which amounts to $EE bytes
 		; - in rev01/rev02, it starts at $1E700, which amounts to $48E bytes
 		; From a technical standpoint, this padding serves no purpose.
@@ -4516,12 +4194,12 @@ Art_LivesNums:	binclude "artunc/Lives Counter Numbers.unc" ; 8x8 pixel numbers o
 ; Compressed graphics and mappings - Sega screen
 ; ---------------------------------------------------------------------------
 	if Revision=0
-Nem_SegaLogo:	binclude	"artnem/Sega Logo (REV00).nem" ; large Sega logo
+KosM_SegaLogo:	binclude	"artkosm/Sega Logo (REV00).kosm" ; large Sega logo
 		even
 Eni_SegaLogo:	binclude	"tilemaps/Sega Logo (REV00).eni" ; large Sega logo (mappings)
 		even
 	else
-Nem_SegaLogo:	binclude	"artnem/Sega Logo (REV01).nem" ; large Sega logo
+KosM_SegaLogo:	binclude	"artkosm/Sega Logo (REV01).kosm" ; large Sega logo
 		even
 Eni_SegaLogo:	binclude	"tilemaps/Sega Logo (REV01).eni" ; large Sega logo (mappings)
 		even
@@ -4532,17 +4210,17 @@ Eni_SegaLogo:	binclude	"tilemaps/Sega Logo (REV01).eni" ; large Sega logo (mappi
 ; ---------------------------------------------------------------------------
 Eni_Title:	binclude	"tilemaps/Title Screen.eni" ; title screen foreground (mappings)
 		even
-Nem_TitleFg:	binclude	"artnem/Title Screen Foreground.nem"
+KosM_TitleFg:	binclude	"artkosm/Title Screen Foreground.kosm"
 		even
-Nem_TitleSonic:	binclude	"artnem/Title Screen Sonic.nem"
+KosM_TitleSonic:	binclude	"artkosm/Title Screen Sonic.kosm"
 		even
-Nem_TitleTM:	binclude	"artnem/Title Screen TM.nem"
+KosM_TitleTM:	binclude	"artkosm/Title Screen TM.kosm"
 		even
-Nem_TitlePSB:	binclude	"artnem/Title Screen PSB.nem" ; "PRESS START BUTTON" (separate from the emblem)
+KosM_TitlePSB:	binclude	"artkosm/Title Screen PSB.kosm" ; "PRESS START BUTTON" (separate from the emblem)
 		even
 Eni_JapNames:	binclude	"tilemaps/Hidden Japanese Credits.eni" ; Japanese credits (mappings)
 		even
-Nem_JapNames:	binclude	"artnem/Hidden Japanese Credits.nem"
+KosM_JapNames:	binclude	"artkosm/Hidden Japanese Credits.kosm"
 		even
 
 ; ---------------------------------------------------------------------------
@@ -4571,25 +4249,25 @@ Art_SpinDust:	binclude	"artunc/SpinDust.unc"
 ; Compressed graphics - various
 ; ---------------------------------------------------------------------------
 	if Revision=0
-Nem_Smoke:	binclude	"artnem/Unused - Smoke.nem"
+KosM_Smoke:	binclude	"artkosm/Unused - Smoke.kosm"
 		even
-Nem_SyzSparkle:	binclude	"artnem/Unused - SYZ Sparkles.nem"
+KosM_SyzSparkle:	binclude	"artkosm/Unused - SYZ Sparkles.kosm"
 		even
 	endif
 
-Nem_Shield:	binclude	"artnem/Shield.nem"
+KosM_Shield:	binclude	"artkosm/Shield.kosm"
 		even
-Nem_Stars:	binclude	"artnem/Invincibility Stars.nem"
+KosM_Stars:	binclude	"artkosm/Invincibility Stars.kosm"
 		even
 
 	if Revision=0
-Nem_LzSonic:	binclude	"artnem/Unused - LZ Sonic.nem" ; Sonic holding his breath
+KosM_LzSonic:	binclude	"artkosm/Unused - LZ Sonic.kosm" ; Sonic holding his breath
 		even
-Nem_UnkFire:	binclude	"artnem/Unused - Fireball.nem" ; unused fireball
+KosM_UnkFire:	binclude	"artkosm/Unused - Fireball.kosm" ; unused fireball
 		even
-Nem_Warp:	binclude	"artnem/Unused - SStage Flash.nem" ; entry to special stage flash
+KosM_Warp:	binclude	"artkosm/Unused - SStage Flash.kosm" ; entry to special stage flash
 		even
-Nem_Goggle:	binclude	"artnem/Unused - Goggles.nem" ; unused goggles
+KosM_Goggle:	binclude	"artkosm/Unused - Goggles.kosm" ; unused goggles
 		even
 	endif
 
@@ -4598,289 +4276,289 @@ Nem_Goggle:	binclude	"artnem/Unused - Goggles.nem" ; unused goggles
 ; ---------------------------------------------------------------------------
 Map_SSWalls:	include	"_maps/SS Walls.asm"
 
-Nem_SSWalls:	binclude	"artnem/Special Walls.nem" ; special stage walls
+KosM_SSWalls:	binclude	"artkosm/Special Walls.kosm" ; special stage walls
 		even
 Eni_SSBg1:	binclude	"tilemaps/SS Background 1.eni" ; special stage background (mappings)
 		even
-Nem_SSBgFish:	binclude	"artnem/Special Birds & Fish.nem" ; special stage birds and fish background
+KosM_SSBgFish:	binclude	"artkosm/Special Birds & Fish.kosm" ; special stage birds and fish background
 		even
 Eni_SSBg2:	binclude	"tilemaps/SS Background 2.eni" ; special stage background (mappings)
 		even
-Nem_SSBgCloud:	binclude	"artnem/Special Clouds.nem" ; special stage clouds background
+KosM_SSBgCloud:	binclude	"artkosm/Special Clouds.kosm" ; special stage clouds background
 		even
-Nem_SSGOAL:	binclude	"artnem/Special GOAL.nem" ; special stage GOAL block
+KosM_SSGOAL:	binclude	"artkosm/Special GOAL.kosm" ; special stage GOAL block
 		even
-Nem_SSRBlock:	binclude	"artnem/Special R.nem" ; special stage R block
+KosM_SSRBlock:	binclude	"artkosm/Special R.kosm" ; special stage R block
 		even
-Nem_SS1UpBlock:	binclude	"artnem/Special 1UP.nem" ; special stage 1UP block
+KosM_SS1UpBlock:	binclude	"artkosm/Special 1UP.kosm" ; special stage 1UP block
 		even
-Nem_SSEmStars:	binclude	"artnem/Special Emerald Twinkle.nem" ; special stage stars from a collected emerald
+KosM_SSEmStars:	binclude	"artkosm/Special Emerald Twinkle.kosm" ; special stage stars from a collected emerald
 		even
-Nem_SSRedWhite:	binclude	"artnem/Special Red-White.nem" ; special stage red/white block
+KosM_SSRedWhite:	binclude	"artkosm/Special Red-White.kosm" ; special stage red/white block
 		even
-Nem_SSZone1:	binclude	"artnem/Special ZONE1.nem" ; special stage ZONE1 block
+KosM_SSZone1:	binclude	"artkosm/Special ZONE1.kosm" ; special stage ZONE1 block
 		even
-Nem_SSZone2:	binclude	"artnem/Special ZONE2.nem" ; ZONE2 block
+KosM_SSZone2:	binclude	"artkosm/Special ZONE2.kosm" ; ZONE2 block
 		even
-Nem_SSZone3:	binclude	"artnem/Special ZONE3.nem" ; ZONE3 block
+KosM_SSZone3:	binclude	"artkosm/Special ZONE3.kosm" ; ZONE3 block
 		even
-Nem_SSZone4:	binclude	"artnem/Special ZONE4.nem" ; ZONE4 block
+KosM_SSZone4:	binclude	"artkosm/Special ZONE4.kosm" ; ZONE4 block
 		even
-Nem_SSZone5:	binclude	"artnem/Special ZONE5.nem" ; ZONE5 block
+KosM_SSZone5:	binclude	"artkosm/Special ZONE5.kosm" ; ZONE5 block
 		even
-Nem_SSZone6:	binclude	"artnem/Special ZONE6.nem" ; ZONE6 block
+KosM_SSZone6:	binclude	"artkosm/Special ZONE6.kosm" ; ZONE6 block
 		even
-Nem_SSUpDown:	binclude	"artnem/Special UP-DOWN.nem" ; special stage UP/DOWN block
+KosM_SSUpDown:	binclude	"artkosm/Special UP-DOWN.kosm" ; special stage UP/DOWN block
 		even
-Nem_SSEmerald:	binclude	"artnem/Special Emeralds.nem" ; special stage chaos emeralds
+KosM_SSEmerald:	binclude	"artkosm/Special Emeralds.kosm" ; special stage chaos emeralds
 		even
-Nem_SSGhost:	binclude	"artnem/Special Ghost.nem" ; special stage ghost block
+KosM_SSGhost:	binclude	"artkosm/Special Ghost.kosm" ; special stage ghost block
 		even
-Nem_SSWBlock:	binclude	"artnem/Special W.nem" ; special stage W block
+KosM_SSWBlock:	binclude	"artkosm/Special W.kosm" ; special stage W block
 		even
-Nem_SSGlass:	binclude	"artnem/Special Glass.nem" ; special stage destroyable glass block
+KosM_SSGlass:	binclude	"artkosm/Special Glass.kosm" ; special stage destroyable glass block
 		even
-Nem_ResultEm:	binclude	"artnem/Special Result Emeralds.nem" ; chaos emeralds on special stage results screen
+KosM_ResultEm:	binclude	"artkosm/Special Result Emeralds.kosm" ; chaos emeralds on special stage results screen
 		even
 
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - GHZ stuff
 ; ---------------------------------------------------------------------------
-Nem_Stalk:	binclude	"artnem/GHZ Flower Stalk.nem"
+KosM_Stalk:	binclude	"artkosm/GHZ Flower Stalk.kosm"
 		even
-Nem_Swing:	binclude	"artnem/GHZ Swinging Platform.nem"
+KosM_Swing:	binclude	"artkosm/GHZ Swinging Platform.kosm"
 		even
-Nem_Bridge:	binclude	"artnem/GHZ Bridge.nem"
+KosM_Bridge:	binclude	"artkosm/GHZ Bridge.kosm"
 		even
-Nem_GhzUnkBlock:binclude	"artnem/Unused - GHZ Block.nem"
+KosM_GhzUnkBlock:binclude	"artkosm/Unused - GHZ Block.kosm"
 		even
-Nem_Ball:	binclude	"artnem/GHZ Giant Ball.nem"
+KosM_Ball:	binclude	"artkosm/GHZ Giant Ball.kosm"
 		even
-Nem_Spikes:	binclude	"artnem/Spikes.nem"
+KosM_Spikes:	binclude	"artkosm/Spikes.kosm"
 		even
-Nem_GhzLog:	binclude	"artnem/Unused - GHZ Log.nem"
+KosM_GhzLog:	binclude	"artkosm/Unused - GHZ Log.kosm"
 		even
-Nem_SpikePole:	binclude	"artnem/GHZ Spiked Log.nem"
+KosM_SpikePole:	binclude	"artkosm/GHZ Spiked Log.kosm"
 		even
-Nem_PplRock:	binclude	"artnem/GHZ Purple Rock.nem"
+KosM_PplRock:	binclude	"artkosm/GHZ Purple Rock.kosm"
 		even
-Nem_GhzWall1:	binclude	"artnem/GHZ Breakable Wall.nem"
+KosM_GhzWall1:	binclude	"artkosm/GHZ Breakable Wall.kosm"
 		even
-Nem_GhzWall2:	binclude	"artnem/GHZ Edge Wall.nem"
+KosM_GhzWall2:	binclude	"artkosm/GHZ Edge Wall.kosm"
 		even
 
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - LZ stuff
 ; ---------------------------------------------------------------------------
-Nem_Water:	binclude	"artnem/LZ Water Surface.nem"
+KosM_Water:	binclude	"artkosm/LZ Water Surface.kosm"
 		even
-Nem_Splash:	binclude	"artnem/LZ Water & Splashes.nem"
+KosM_Splash:	binclude	"artkosm/LZ Water & Splashes.kosm"
 		even
-Nem_LzSpikeBall:binclude	"artnem/LZ Spiked Ball & Chain.nem"
+KosM_LzSpikeBall:binclude	"artkosm/LZ Spiked Ball & Chain.kosm"
 		even
-Nem_FlapDoor:	binclude	"artnem/LZ Flapping Door.nem"
+KosM_FlapDoor:	binclude	"artkosm/LZ Flapping Door.kosm"
 		even
-Nem_Bubbles:	binclude	"artnem/LZ Bubbles & Countdown.nem"
+KosM_Bubbles:	binclude	"artkosm/LZ Bubbles & Countdown.kosm"
 		even
-Nem_LzBlock3:	binclude	"artnem/LZ 32x16 Block.nem"
+KosM_LzBlock3:	binclude	"artkosm/LZ 32x16 Block.kosm"
 		even
-Nem_LzDoor1:	binclude	"artnem/LZ Vertical Door.nem"
+KosM_LzDoor1:	binclude	"artkosm/LZ Vertical Door.kosm"
 		even
-Nem_Harpoon:	binclude	"artnem/LZ Harpoon.nem"
+KosM_Harpoon:	binclude	"artkosm/LZ Harpoon.kosm"
 		even
-Nem_LzPole:	binclude	"artnem/LZ Breakable Pole.nem"
+KosM_LzPole:	binclude	"artkosm/LZ Breakable Pole.kosm"
 		even
-Nem_LzDoor2:	binclude	"artnem/LZ Horizontal Door.nem"
+KosM_LzDoor2:	binclude	"artkosm/LZ Horizontal Door.kosm"
 		even
-Nem_LzWheel:	binclude	"artnem/LZ Wheel.nem"
+KosM_LzWheel:	binclude	"artkosm/LZ Wheel.kosm"
 		even
-Nem_Gargoyle:	binclude	"artnem/LZ Gargoyle & Fireball.nem"
+KosM_Gargoyle:	binclude	"artkosm/LZ Gargoyle & Fireball.kosm"
 		even
-Nem_LzBlock2:	binclude	"artnem/LZ Blocks.nem"
+KosM_LzBlock2:	binclude	"artkosm/LZ Blocks.kosm"
 		even
-Nem_LzPlatfm:	binclude	"artnem/LZ Rising Platform.nem"
+KosM_LzPlatfm:	binclude	"artkosm/LZ Rising Platform.kosm"
 		even
-Nem_Cork:	binclude	"artnem/LZ Cork.nem"
+KosM_Cork:	binclude	"artkosm/LZ Cork.kosm"
 		even
-Nem_LzBlock1:	binclude	"artnem/LZ 32x32 Block.nem"
+KosM_LzBlock1:	binclude	"artkosm/LZ 32x32 Block.kosm"
 		even
 
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - MZ stuff
 ; ---------------------------------------------------------------------------
-Nem_MzMetal:	binclude	"artnem/MZ Metal Blocks.nem"
+KosM_MzMetal:	binclude	"artkosm/MZ Metal Blocks.kosm"
 		even
-Nem_MzSwitch:	binclude	"artnem/MZ Switch.nem"
+KosM_MzSwitch:	binclude	"artkosm/MZ Switch.kosm"
 		even
-Nem_MzGlass:	binclude	"artnem/MZ Green Glass Block.nem"
+KosM_MzGlass:	binclude	"artkosm/MZ Green Glass Block.kosm"
 		even
-Nem_UnkGrass:	binclude	"artnem/Unused - Grass.nem"
+KosM_UnkGrass:	binclude	"artkosm/Unused - Grass.kosm"
 		even
-Nem_MzFire:	binclude	"artnem/Fireballs.nem"
+KosM_MzFire:	binclude	"artkosm/Fireballs.kosm"
 		even
-Nem_Lava:	binclude	"artnem/MZ Lava.nem"
+KosM_Lava:	binclude	"artkosm/MZ Lava.kosm"
 		even
-Nem_MzBlock:	binclude	"artnem/MZ Green Pushable Block.nem"
+KosM_MzBlock:	binclude	"artkosm/MZ Green Pushable Block.kosm"
 		even
-Nem_MzUnkBlock:	binclude	"artnem/Unused - MZ Background.nem"
+KosM_MzUnkBlock:	binclude	"artkosm/Unused - MZ Background.kosm"
 		even
 
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - SLZ stuff
 ; ---------------------------------------------------------------------------
-Nem_Seesaw:	binclude	"artnem/SLZ Seesaw.nem"
+KosM_Seesaw:	binclude	"artkosm/SLZ Seesaw.kosm"
 		even
-Nem_SlzSpike:	binclude	"artnem/SLZ Little Spikeball.nem"
+KosM_SlzSpike:	binclude	"artkosm/SLZ Little Spikeball.kosm"
 		even
-Nem_Fan:	binclude	"artnem/SLZ Fan.nem"
+KosM_Fan:	binclude	"artkosm/SLZ Fan.kosm"
 		even
-Nem_SlzWall:	binclude	"artnem/SLZ Breakable Wall.nem"
+KosM_SlzWall:	binclude	"artkosm/SLZ Breakable Wall.kosm"
 		even
-Nem_Pylon:	binclude	"artnem/SLZ Pylon.nem"
+KosM_Pylon:	binclude	"artkosm/SLZ Pylon.kosm"
 		even
-Nem_SlzSwing:	binclude	"artnem/SLZ Swinging Platform.nem"
+KosM_SlzSwing:	binclude	"artkosm/SLZ Swinging Platform.kosm"
 		even
-Nem_SlzBlock:	binclude	"artnem/SLZ 32x32 Block.nem"
+KosM_SlzBlock:	binclude	"artkosm/SLZ 32x32 Block.kosm"
 		even
-Nem_SlzCannon:	binclude	"artnem/SLZ Cannon.nem"
+KosM_SlzCannon:	binclude	"artkosm/SLZ Cannon.kosm"
 		even
 
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - SYZ stuff
 ; ---------------------------------------------------------------------------
-Nem_Bumper:	binclude	"artnem/SYZ Bumper.nem"
+KosM_Bumper:	binclude	"artkosm/SYZ Bumper.kosm"
 		even
-Nem_SyzSpike2:	binclude	"artnem/SYZ Small Spikeball.nem"
+KosM_SyzSpike2:	binclude	"artkosm/SYZ Small Spikeball.kosm"
 		even
-Nem_LzSwitch:	binclude	"artnem/Switch.nem"
+KosM_LzSwitch:	binclude	"artkosm/Switch.kosm"
 		even
-Nem_SyzSpike1:	binclude	"artnem/SYZ Large Spikeball.nem"
+KosM_SyzSpike1:	binclude	"artkosm/SYZ Large Spikeball.kosm"
 		even
 
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - SBZ stuff
 ; ---------------------------------------------------------------------------
-Nem_SbzWheel1:	binclude	"artnem/SBZ Running Disc.nem"
+KosM_SbzWheel1:	binclude	"artkosm/SBZ Running Disc.kosm"
 		even
-Nem_SbzWheel2:	binclude	"artnem/SBZ Junction Wheel.nem"
+KosM_SbzWheel2:	binclude	"artkosm/SBZ Junction Wheel.kosm"
 		even
-Nem_Cutter:	binclude	"artnem/SBZ Pizza Cutter.nem"
+KosM_Cutter:	binclude	"artkosm/SBZ Pizza Cutter.kosm"
 		even
-Nem_Stomper:	binclude	"artnem/SBZ Stomper.nem"
+KosM_Stomper:	binclude	"artkosm/SBZ Stomper.kosm"
 		even
-Nem_SpinPform:	binclude	"artnem/SBZ Spinning Platform.nem"
+KosM_SpinPform:	binclude	"artkosm/SBZ Spinning Platform.kosm"
 		even
-Nem_TrapDoor:	binclude	"artnem/SBZ Trapdoor.nem"
+KosM_TrapDoor:	binclude	"artkosm/SBZ Trapdoor.kosm"
 		even
-Nem_SbzFloor:	binclude	"artnem/SBZ Collapsing Floor.nem"
+KosM_SbzFloor:	binclude	"artkosm/SBZ Collapsing Floor.kosm"
 		even
-Nem_Electric:	binclude	"artnem/SBZ Electrocuter.nem"
+KosM_Electric:	binclude	"artkosm/SBZ Electrocuter.kosm"
 		even
-Nem_SbzBlock:	binclude	"artnem/SBZ Vanishing Block.nem"
+KosM_SbzBlock:	binclude	"artkosm/SBZ Vanishing Block.kosm"
 		even
-Nem_FlamePipe:	binclude	"artnem/SBZ Flaming Pipe.nem"
+KosM_FlamePipe:	binclude	"artkosm/SBZ Flaming Pipe.kosm"
 		even
-Nem_SbzDoor1:	binclude	"artnem/SBZ Small Vertical Door.nem"
+KosM_SbzDoor1:	binclude	"artkosm/SBZ Small Vertical Door.kosm"
 		even
-Nem_SlideFloor:	binclude	"artnem/SBZ Sliding Floor Trap.nem"
+KosM_SlideFloor:	binclude	"artkosm/SBZ Sliding Floor Trap.kosm"
 		even
-Nem_SbzDoor2:	binclude	"artnem/SBZ Large Horizontal Door.nem"
+KosM_SbzDoor2:	binclude	"artkosm/SBZ Large Horizontal Door.kosm"
 		even
-Nem_Girder:	binclude	"artnem/SBZ Crushing Girder.nem"
+KosM_Girder:	binclude	"artkosm/SBZ Crushing Girder.kosm"
 		even
 
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - enemies
 ; ---------------------------------------------------------------------------
-Nem_BallHog:	binclude	"artnem/Enemy Ball Hog.nem"
+KosM_BallHog:	binclude	"artkosm/Enemy Ball Hog.kosm"
 		even
-Nem_Crabmeat:	binclude	"artnem/Enemy Crabmeat.nem"
+KosM_Crabmeat:	binclude	"artkosm/Enemy Crabmeat.kosm"
 		even
-Nem_Buzz:	binclude	"artnem/Enemy Buzz Bomber.nem"
+KosM_Buzz:	binclude	"artkosm/Enemy Buzz Bomber.kosm"
 		even
-Nem_UnkExplode:	binclude	"artnem/Unused - Explosion.nem"
+KosM_UnkExplode:	binclude	"artkosm/Unused - Explosion.kosm"
 		even
-Nem_Burrobot:	binclude	"artnem/Enemy Burrobot.nem"
+KosM_Burrobot:	binclude	"artkosm/Enemy Burrobot.kosm"
 		even
-Nem_Chopper:	binclude	"artnem/Enemy Chopper.nem"
+KosM_Chopper:	binclude	"artkosm/Enemy Chopper.kosm"
 		even
-Nem_Jaws:	binclude	"artnem/Enemy Jaws.nem"
+KosM_Jaws:	binclude	"artkosm/Enemy Jaws.kosm"
 		even
-Nem_Roller:	binclude	"artnem/Enemy Roller.nem"
+KosM_Roller:	binclude	"artkosm/Enemy Roller.kosm"
 		even
-Nem_Motobug:	binclude	"artnem/Enemy Motobug.nem"
+KosM_Motobug:	binclude	"artkosm/Enemy Motobug.kosm"
 		even
-Nem_Newtron:	binclude	"artnem/Enemy Newtron.nem"
+KosM_Newtron:	binclude	"artkosm/Enemy Newtron.kosm"
 		even
-Nem_Yadrin:	binclude	"artnem/Enemy Yadrin.nem"
+KosM_Yadrin:	binclude	"artkosm/Enemy Yadrin.kosm"
 		even
-Nem_Basaran:	binclude	"artnem/Enemy Basaran.nem"
+KosM_Basaran:	binclude	"artkosm/Enemy Basaran.kosm"
 		even
-Nem_Splats:	binclude	"artnem/Enemy Splats.nem"
+KosM_Splats:	binclude	"artkosm/Enemy Splats.kosm"
 		even
-Nem_Bomb:	binclude	"artnem/Enemy Bomb.nem"
+KosM_Bomb:	binclude	"artkosm/Enemy Bomb.kosm"
 		even
-Nem_Orbinaut:	binclude	"artnem/Enemy Orbinaut.nem"
+KosM_Orbinaut:	binclude	"artkosm/Enemy Orbinaut.kosm"
 		even
-Nem_Cater:	binclude	"artnem/Enemy Caterkiller.nem"
+KosM_Cater:	binclude	"artkosm/Enemy Caterkiller.kosm"
 		even
 
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - various
 ; ---------------------------------------------------------------------------
-Nem_TitleCard:	binclude	"artnem/Title Cards.nem"
+KosM_TitleCard:	binclude	"artkosm/Title Cards.kosm"
 		even
-Nem_Hud:	binclude	"artnem/HUD.nem" ; HUD (rings, time, score)
+KosM_Hud:	binclude	"artkosm/HUD.kosm" ; HUD (rings, time, score)
 		even
-Nem_Lives:	binclude	"artnem/HUD - Life Counter Icon.nem"
+KosM_Lives:	binclude	"artkosm/HUD - Life Counter Icon.kosm"
 		even
-Nem_Ring:	binclude	"artnem/Rings.nem"
+KosM_Ring:	binclude	"artkosm/Rings.kosm"
 		even
-Nem_Monitors:	binclude	"artnem/Monitors.nem"
+KosM_Monitors:	binclude	"artkosm/Monitors.kosm"
 		even
-Nem_Explode:	binclude	"artnem/Explosion.nem"
+KosM_Explode:	binclude	"artkosm/Explosion.kosm"
 		even
-Nem_Points:	binclude	"artnem/Points.nem" ; points from destroyed enemy or object
+KosM_Points:	binclude	"artkosm/Points.kosm" ; points from destroyed enemy or object
 		even
-Nem_GameOver:	binclude	"artnem/Game Over.nem" ; game over / time over
+KosM_GameOver:	binclude	"artkosm/Game Over.kosm" ; game over / time over
 		even
-Nem_HSpring:	binclude	"artnem/Spring Horizontal.nem"
+KosM_HSpring:	binclude	"artkosm/Spring Horizontal.kosm"
 		even
-Nem_VSpring:	binclude	"artnem/Spring Vertical.nem"
+KosM_VSpring:	binclude	"artkosm/Spring Vertical.kosm"
 		even
-Nem_SignPost:	binclude	"artnem/Signpost.nem" ; end of level signpost
+KosM_SignPost:	binclude	"artkosm/Signpost.kosm" ; end of level signpost
 		even
-Nem_Lamp:	binclude	"artnem/Lamppost.nem"
+KosM_Lamp:	binclude	"artkosm/Lamppost.kosm"
 		even
-Nem_BigFlash:	binclude	"artnem/Giant Ring Flash.nem"
+KosM_BigFlash:	binclude	"artkosm/Giant Ring Flash.kosm"
 		even
-Nem_Bonus:	binclude	"artnem/Hidden Bonuses.nem" ; hidden bonuses at end of a level
+KosM_Bonus:	binclude	"artkosm/Hidden Bonuses.kosm" ; hidden bonuses at end of a level
 		even
 
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - continue screen
 ; ---------------------------------------------------------------------------
-Nem_ContSonic:	binclude	"artnem/Continue Screen Sonic.nem"
+KosM_ContSonic:	binclude	"artkosm/Continue Screen Sonic.kosm"
 		even
-Nem_MiniSonic:	binclude	"artnem/Continue Screen Stuff.nem"
+KosM_MiniSonic:	binclude	"artkosm/Continue Screen Stuff.kosm"
 		even
 
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - animals
 ; ---------------------------------------------------------------------------
-Nem_Rabbit:	binclude	"artnem/Animal Rabbit.nem"
+KosM_Rabbit:	binclude	"artkosm/Animal Rabbit.kosm"
 		even
-Nem_Chicken:	binclude	"artnem/Animal Chicken.nem"
+KosM_Chicken:	binclude	"artkosm/Animal Chicken.kosm"
 		even
-Nem_Penguin:	binclude	"artnem/Animal Penguin.nem"
+KosM_Penguin:	binclude	"artkosm/Animal Penguin.kosm"
 		even
-Nem_Seal:	binclude	"artnem/Animal Seal.nem"
+KosM_Seal:	binclude	"artkosm/Animal Seal.kosm"
 		even
-Nem_Pig:	binclude	"artnem/Animal Pig.nem"
+KosM_Pig:	binclude	"artkosm/Animal Pig.kosm"
 		even
-Nem_Flicky:	binclude	"artnem/Animal Flicky.nem"
+KosM_Flicky:	binclude	"artkosm/Animal Flicky.kosm"
 		even
-Nem_Squirrel:	binclude	"artnem/Animal Squirrel.nem"
+KosM_Squirrel:	binclude	"artkosm/Animal Squirrel.kosm"
 		even
 
 ; ---------------------------------------------------------------------------
@@ -4888,9 +4566,9 @@ Nem_Squirrel:	binclude	"artnem/Animal Squirrel.nem"
 ; ---------------------------------------------------------------------------
 Blk16_GHZ:	binclude	"map16/GHZ.bin"
 		even
-Nem_GHZ_1st:	binclude	"artnem/8x8 - GHZ1.nem" ; GHZ primary patterns
+KosM_GHZ_1st:	binclude	"artkosm/8x8 - GHZ1.kosm" ; GHZ primary patterns
 		even
-Nem_GHZ_2nd:	binclude	"artnem/8x8 - GHZ2.nem" ; GHZ secondary patterns
+KosM_GHZ_2nd:	binclude	"artkosm/8x8 - GHZ2.kosm" ; GHZ secondary patterns
 		even
 Blk256_GHZ:	binclude	"map256/GHZ.bin"
 		even
@@ -4898,21 +4576,21 @@ Blk256_GHZ:	binclude	"map256/GHZ.bin"
 ; Title screen background (separate copies, editable without affecting GHZ)
 Blk16_Title:	binclude	"map16/Title.bin"
 		even
-Nem_Title:	binclude	"artnem/8x8 - Title.nem" ; title background patterns
+KosM_Title:	binclude	"artkosm/8x8 - Title.kosm" ; title background patterns
 		even
 Blk256_Title:	binclude	"map256/Title.bin"
 		even
 
 Blk16_LZ:	binclude	"map16/LZ.bin"
 		even
-Nem_LZ:		binclude	"artnem/8x8 - LZ.nem" ; LZ primary patterns
+KosM_LZ:		binclude	"artkosm/8x8 - LZ.kosm" ; LZ primary patterns
 		even
 Blk256_LZ:	binclude	"map256/LZ.bin"
 		even
 
 Blk16_MZ:	binclude	"map16/MZ.bin"
 		even
-Nem_MZ:		binclude	"artnem/8x8 - MZ.nem" ; MZ primary patterns
+KosM_MZ:		binclude	"artkosm/8x8 - MZ.kosm" ; MZ primary patterns
 		even
 Blk256_MZ:
 	if Revision=0
@@ -4925,21 +4603,21 @@ Blk256_MZ:
 
 Blk16_SLZ:	binclude	"map16/SLZ.bin"
 		even
-Nem_SLZ:	binclude	"artnem/8x8 - SLZ.nem" ; SLZ primary patterns
+KosM_SLZ:	binclude	"artkosm/8x8 - SLZ.kosm" ; SLZ primary patterns
 		even
 Blk256_SLZ:	binclude	"map256/SLZ.bin"
 		even
 
 Blk16_SYZ:	binclude	"map16/SYZ.bin"
 		even
-Nem_SYZ:	binclude	"artnem/8x8 - SYZ.nem" ; SYZ primary patterns
+KosM_SYZ:	binclude	"artkosm/8x8 - SYZ.kosm" ; SYZ primary patterns
 		even
 Blk256_SYZ:	binclude	"map256/SYZ.bin"
 		even
 
 Blk16_SBZ:	binclude	"map16/SBZ.bin"
 		even
-Nem_SBZ:	binclude	"artnem/8x8 - SBZ.nem" ; SBZ primary patterns
+KosM_SBZ:	binclude	"artkosm/8x8 - SBZ.kosm" ; SBZ primary patterns
 		even
 Blk256_SBZ:
 	if Revision=0
@@ -4953,38 +4631,38 @@ Blk256_SBZ:
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - bosses and ending sequence
 ; ---------------------------------------------------------------------------
-Nem_Eggman:	binclude	"artnem/Boss - Main.nem"
+KosM_Eggman:	binclude	"artkosm/Boss - Main.kosm"
 		even
-Nem_Weapons:	binclude	"artnem/Boss - Weapons.nem"
+KosM_Weapons:	binclude	"artkosm/Boss - Weapons.kosm"
 		even
-Nem_Prison:	binclude	"artnem/Prison Capsule.nem"
+KosM_Prison:	binclude	"artkosm/Prison Capsule.kosm"
 		even
-Nem_Sbz2Eggman:	binclude	"artnem/Boss - Eggman in SBZ2 & FZ.nem"
+KosM_Sbz2Eggman:	binclude	"artkosm/Boss - Eggman in SBZ2 & FZ.kosm"
 		even
-Nem_FzBoss:	binclude	"artnem/Boss - Final Zone.nem"
+KosM_FzBoss:	binclude	"artkosm/Boss - Final Zone.kosm"
 		even
-Nem_FzEggman:	binclude	"artnem/Boss - Eggman after FZ Fight.nem"
+KosM_FzEggman:	binclude	"artkosm/Boss - Eggman after FZ Fight.kosm"
 		even
-Nem_Exhaust:	binclude	"artnem/Boss - Exhaust Flame.nem"
+KosM_Exhaust:	binclude	"artkosm/Boss - Exhaust Flame.kosm"
 		even
-Nem_EndEm:	binclude	"artnem/Ending - Emeralds.nem"
+KosM_EndEm:	binclude	"artkosm/Ending - Emeralds.kosm"
 		even
-Nem_EndSonic:	binclude	"artnem/Ending - Sonic.nem"
+KosM_EndSonic:	binclude	"artkosm/Ending - Sonic.kosm"
 		even
-Nem_TryAgain:	binclude	"artnem/Ending - Try Again.nem"
+KosM_TryAgain:	binclude	"artkosm/Ending - Try Again.kosm"
 		even
 	if Revision=0
-Nem_EndEggman:
-		binclude	"artnem/Unused - Eggman Ending.nem"
+KosM_EndEggman:
+		binclude	"artkosm/Unused - Eggman Ending.kosm"
 		even
 	endif
 Kos_EndFlowers:	binclude	"artkos/Flowers at Ending.kos" ; ending sequence animated flowers
 		even
-Nem_EndFlower:	binclude	"artnem/Ending - Flowers.nem"
+KosM_EndFlower:	binclude	"artkosm/Ending - Flowers.kosm"
 		even
-Nem_CreditText:	binclude	"artnem/Ending - Credits.nem"
+KosM_CreditText:	binclude	"artkosm/Ending - Credits.kosm"
 		even
-Nem_EndStH:	binclude	"artnem/Ending - StH Logo.nem"
+KosM_EndStH:	binclude	"artkosm/Ending - StH Logo.kosm"
 		even
 
 ; ---------------------------------------------------------------------------

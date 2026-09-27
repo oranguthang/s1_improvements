@@ -636,11 +636,11 @@ ArtTile_Sega_Tiles:		equ $000
 ; Title Screen
 ; Tile counts of the title graphics; update these when the art changes.
 ; The title graphics are packed one after another from these counts.
-Title_Background_Tiles:		equ $106			; artnem/8x8 - Title.nem (at least $106, see below)
-Title_Foreground_Tiles:		equ $F0				; artnem/Title Screen Foreground.nem (emblem only)
-Title_Sonic_Tiles:		equ $20D			; artnem/Title Screen Sonic.nem
-Title_PSB_Tiles:		equ $12				; artnem/Title Screen PSB.nem ("PRESS START BUTTON")
-Title_TM_Tiles:			equ 2				; artnem/Title Screen TM.nem
+Title_Background_Tiles:		equ $106			; artkosm/8x8 - Title.kosm (at least $106, see below)
+Title_Foreground_Tiles:		equ $F0				; artkosm/Title Screen Foreground.kosm (emblem only)
+Title_Sonic_Tiles:		equ $20D			; artkosm/Title Screen Sonic.kosm
+Title_PSB_Tiles:		equ $12				; artkosm/Title Screen PSB.kosm ("PRESS START BUTTON")
+Title_TM_Tiles:			equ 2				; artkosm/Title Screen TM.kosm
 
 ArtTile_Title_Japanese_Text:	equ $000
 ArtTile_Title_Foreground:	equ Title_Background_Tiles	; Title Screen.eni (40x28) is relative to this tile

@@ -373,6 +373,7 @@ ProcessDMAQueue:
 
 .jump0:
 	ResetDMAQueue
+	clr.b	(v_plc_dma_pending).w				; Art_Buffer can be reused after DMA
 	rts
 ; End of function ProcessDMAQueue
 ; ===========================================================================

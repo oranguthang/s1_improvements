@@ -49,8 +49,11 @@ v_ringanimqueue_count: ds.w 1
 v_ringanimqueue: ds.w $3F
 v_draw_rings: ds.b 1
 v_ringmanager_size: equ *-v_ringmanager
+                    even                        ; Kosinski DMA source must be word aligned
 Engine_Managers_Size: equ *-v_16x16
-                    ds.b $1800-Engine_Managers_Size ; remaining free block buffer
+Art_Buffer:         ds.b $1000               ; one decompressed KosM module
+Art_Buffer_End:
+                    ds.b $1800-Engine_Managers_Size-$1000 ; reserve the rest
 
 VDP_Command_Buffer:	ds.w	7*$12			; 18 queued VDP commands
 VDP_Command_Buffer_Slot: ds.l	1			; next free DMA queue slot
@@ -192,17 +195,15 @@ plc_slot_size:		equ	4+2				; size of a single PLC slot: 6 bytes = 4 bytes (data 
 v_plc_buffer:		ds.b	plc_slot_size*16		; pattern load cues buffer (maximum $10 PLCs)
 v_plc_buffer_dest:	equ	v_plc_buffer+4			; VRAM destination for 1st item in PLC buffer (2 bytes)
 v_plc_buffer_only_end:
-v_plc_ptrnemcode:	ds.l	1				; pointer for nemesis decompression code ($1502 or $150C)
-v_plc_repeatcount:	ds.l	1
-v_plc_paletteindex:	ds.l	1
-v_plc_previousrow:	ds.l	1
-v_plc_dataword:		ds.l	1
-v_plc_shiftvalue:	ds.l	1
-v_plc_patternsleft:	ds.w	1
-v_plc_framepatternsleft:ds.w	1
-			ds.b	4				; unused
-v_plc_buffer_end:
-
+v_plc_artptr:      ds.l 1                  ; next compressed module, zero before a new cue
+v_plc_patternsleft: ds.w 1                 ; decompressed bytes remaining in active cue
+                    ds.w 1                  ; pad ClearPLC region to longword boundary
+v_plc_buffer_end:                           ; ClearPLC clears up to here
+v_plc_peak:        ds.b 1                  ; maximum occupied PLC slots
+v_plc_overflow:    ds.b 1                  ; truncated PLC lists, saturating counter
+v_plc_dma_pending: ds.b 1                  ; Art_Buffer is still a DMA source
+                    ds.b 1                  ; spare
+                    ds.b $14                ; keep following level RAM at its original address
 v_levelvariables:						; variables that are reset between levels
 v_screenposx:		ds.l	1				; screen position x
 v_screenposy:		ds.l	1				; screen position y
