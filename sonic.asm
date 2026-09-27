@@ -1231,6 +1231,7 @@ ClearScreen:
 	endif
 
 		ResetDMAQueue
+		clr.b	(v_draw_rings).w
 		rts						; return
 ; End of function ClearScreen
 
@@ -2958,6 +2959,7 @@ Level_ChkWater:
 		move.w	#$120,(v_watersurface2+obX).w		; set base X-position for surface B
 
 Level_LoadObj:
+		jsr	(RingsManager_Init).l
 		jsr	(ObjPosLoad).l				; initialize object manager
 		jsr	(ExecuteObjects).l			; load objects that are already visible during fade-in
 		jsr	(BuildSprites).l			; build sprites for objects before fade-in
@@ -3158,6 +3160,7 @@ Level_DoScroll:
 Level_SkipScroll:
 		jsr	(BuildSprites).l			; build sprite table
 		jsr	(ObjPosLoad).l				; run the object manager to load level objects
+		jsr	(RingsManager).l			; process level rings
 		bsr.w	PaletteCycle				; run palette cycles
 		bsr.w	RunPLC					; run PLC, if any
 		bsr.w	OscillateNumDo				; advance oscillation values
@@ -4247,6 +4250,7 @@ Map_UnkExplode:	include	"_maps/Unused Explosion.asm"
 
 ; ===========================================================================
 ; >>> Rings
+		include	"_inc/RingsManager.asm"
 		include	"_incObj/25, 37 Rings.asm"
 		include	"_incObj/4B, 7C Giant Ring and Flash.asm"
 		include	"_anim/Rings.asm"
@@ -5375,6 +5379,105 @@ ObjPos_End:	binclude	"objpos/ending.bin"
 		even
 
 ObjPos_Null:	dc.b $FF, $FF, 0, 0, 0,	0
+
+; ---------------------------------------------------------------------------
+; Ring locations index for RingManager
+; ---------------------------------------------------------------------------
+
+RingPos_Index:	;	Act 1		Act 2		Act 3		Act 4
+		dc.l	Rings_GHZ1,	Rings_GHZ2,	Rings_GHZ3,	Rings_Null	; GHZ
+		dc.l	Rings_LZ1,	Rings_LZ2,	Rings_LZ3,	Rings_SBZ3	; LZ (SBZ3 => LZ4)
+		dc.l	Rings_MZ1,	Rings_MZ2,	Rings_MZ3,	Rings_Null	; MZ
+		dc.l	Rings_SLZ1,	Rings_SLZ2,	Rings_SLZ3,	Rings_Null	; SLZ
+		dc.l	Rings_SYZ1,	Rings_SYZ2,	Rings_SYZ3,	Rings_Null	; SYZ
+		dc.l	Rings_SBZ1,	Rings_SBZ2,	Rings_FZ,	Rings_Null	; SBZ (FZ => SBZ3)
+		zonewarning RingPos_Index,$10
+		dc.l	Rings_Ending,	Rings_Ending,	Rings_Null,	Rings_Null	; Ending Sequence
+
+Rings_GHZ1:	binclude "objpos/Rings/ghz1.bin"
+		even
+Rings_GHZ2:	binclude "objpos/Rings/ghz2.bin"
+		even
+Rings_GHZ3:
+	if Revision=0
+		binclude "objpos/Rings/ghz3 (REV00).bin"
+		even
+	else
+		binclude "objpos/Rings/ghz3 (REV01).bin"
+		even
+	endif
+
+Rings_LZ1:
+	if Revision=0
+		binclude "objpos/Rings/lz1 (REV00).bin"
+		even
+	else
+		binclude "objpos/Rings/lz1 (REV01).bin"
+		even
+	endif
+Rings_LZ2:	binclude "objpos/Rings/lz2.bin"
+		even
+Rings_LZ3:
+	if Revision=0
+		binclude "objpos/Rings/lz3 (REV00).bin"
+		even
+	else
+		binclude "objpos/Rings/lz3 (REV01).bin"
+		even
+	endif
+Rings_SBZ3:	binclude "objpos/Rings/sbz3.bin"
+		even
+
+Rings_MZ1:
+	if Revision=0
+		binclude "objpos/Rings/mz1 (REV00).bin"
+		even
+	else
+		binclude "objpos/Rings/mz1 (REV01).bin"
+		even
+	endif
+Rings_MZ2:	binclude "objpos/Rings/mz2.bin"
+		even
+Rings_MZ3:	binclude "objpos/Rings/mz3.bin"
+		even
+
+Rings_SLZ1:	binclude "objpos/Rings/slz1.bin"
+		even
+Rings_SLZ2:	binclude "objpos/Rings/slz2.bin"
+		even
+Rings_SLZ3:	binclude "objpos/Rings/slz3.bin"
+		even
+
+Rings_SYZ1:	binclude "objpos/Rings/syz1.bin"
+		even
+Rings_SYZ2:	binclude "objpos/Rings/syz2.bin"
+		even
+Rings_SYZ3:
+	if Revision=0
+		binclude "objpos/Rings/syz3 (REV00).bin"
+		even
+	else
+		binclude "objpos/Rings/syz3 (REV01).bin"
+		even
+	endif
+
+Rings_SBZ1:
+	if Revision=0
+		binclude "objpos/Rings/sbz1 (REV00).bin"
+		even
+	else
+		binclude "objpos/Rings/sbz1 (REV01).bin"
+		even
+	endif
+Rings_SBZ2:	binclude "objpos/Rings/sbz2.bin"
+		even
+Rings_FZ:	binclude "objpos/Rings/fz.bin"
+		even
+
+Rings_Ending:	binclude "objpos/Rings/ending.bin"
+		even
+
+Rings_Null:	dc.w $FFFF, $FFFF
 
 ; ---------------------------------------------------------------------------
 

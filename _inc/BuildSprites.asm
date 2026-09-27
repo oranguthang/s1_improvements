@@ -27,6 +27,14 @@ BuildSprites:
 		lea	(v_spritequeue).w,a4
 		moveq	#spritelayer_num-1,d7
 .priorityLoop:
+		cmpi.w	#spritelayer_num-2,d7
+		bne.s	.noRings
+		tst.b	(v_draw_rings).w
+		beq.s	.noRings
+		movem.l	d7/a4,-(sp)
+		bsr.w	BuildRings
+		movem.l	(sp)+,d7/a4
+.noRings:
 		tst.w	(a4)					; are there objects left to draw in current priority layer?
 		beq.w	.nextPriority				; if not, go to next priority layer
 

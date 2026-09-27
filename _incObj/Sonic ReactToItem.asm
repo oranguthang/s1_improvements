@@ -11,7 +11,7 @@
 ; ---------------------------------------------------------------------------
 
 ReactToItem:
-		nop						; useless nop (probably so an rts could easily be inserted here)
+		jsr	(Touch_Rings).l			; collect level rings
 		move.w	obX(a0),d2				; load Sonic's x-axis position
 		move.w	obY(a0),d3				; load Sonic's y-axis position
 		subq.w	#sonic_react_width,d2			; d2 = X-position of Sonic's left edge

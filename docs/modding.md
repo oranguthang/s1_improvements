@@ -31,3 +31,7 @@ The title screen uses its own art, block maps, chunk maps, layouts, camera bound
 ## Object placements and state
 
 Ordinary object records are six bytes: X word, Y/flip word, object ID/remember byte, subtype. Sort by X and terminate with `$FFFF` X. Each placed object has respawn state. Use the `respawn_entry` macro; `$14–$15` is the state pointer. `$23` is reserved for sub-sprite count. Preserve `d7`, the object executor counter, in helpers called while an object runs.
+
+## Ordinary ring lists
+
+Placed rings use four-byte S3K records in `objpos/Rings/`: X word and Y word, sorted by X, terminated by `$FFFFFFFF`. Each act can hold up to 512 rings. SonLVL uses `ringfmt=S3K`. Giant rings remain ordinary objects; lost/debug rings retain their object routines.

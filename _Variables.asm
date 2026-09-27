@@ -40,7 +40,17 @@ Camera_Y_Pos_Last: ds.w 1
 Camera_X_Coarse_Back: ds.w 1
 Camera_Y_Coarse_Back: ds.w 1
 Object_Manager_Size: equ *-v_16x16
-                    ds.b $1800-Object_Manager_Size ; remaining free former block buffer
+v_ringmanager:
+v_ringstates: ds.b 512                 ; one state byte per ordinary ring
+v_ringstates_pointer: ds.w 1
+v_ringwindow_start: ds.l 1
+v_ringwindow_end: ds.l 1
+v_ringanimqueue_count: ds.w 1
+v_ringanimqueue: ds.w $3F
+v_draw_rings: ds.b 1
+v_ringmanager_size: equ *-v_ringmanager
+Engine_Managers_Size: equ *-v_16x16
+                    ds.b $1800-Engine_Managers_Size ; remaining free block buffer
 
 VDP_Command_Buffer:	ds.w	7*$12			; 18 queued VDP commands
 VDP_Command_Buffer_Slot: ds.l	1			; next free DMA queue slot
