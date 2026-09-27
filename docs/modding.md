@@ -11,3 +11,7 @@ In either SonLVL project use object `$4B`. Subtype `$00` is an act-end ring with
 ## Level editing
 
 Editable layouts are in `levels/`, object placements in `objpos/`, and collision data in `collide/`. Some acts have separate REV00/REV01 placements. Update the intended revision rather than assuming both projects share every file.
+
+## Swinging wrecking ball
+
+The unused swinging-ball object variant is restored and has an editor definition alongside swinging platforms.

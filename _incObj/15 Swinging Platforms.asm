@@ -127,6 +127,12 @@ Swing_CreateLinks:
 		move.b	#1,obFrame(a0)				; use checkered frame ID
 		move.b	#2,obPriority(a0)			; set alternate sprite priority (above chains)
 		move.b	#col_40x40|col_hurt,obColType(a0)	; make ball harmful on touch
+	if FixBugs
+		; The ball kept routine 2 (Swing_Platform), so Sonic could stand
+		; on top of it. Disable the platform logic, like the SBZ variant.
+		move.b	#$C,obRoutine(a0)			; use Swing_Swinging routine (disable platform logic)
+		bra.s	Swing_Swinging				; branch to Swing_Swinging
+	endif
 
 	.checkSBZ:
 		cmpi.b	#id_SBZ,(v_zone).w			; is zone SBZ?
