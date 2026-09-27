@@ -1537,23 +1537,82 @@ Sonic_JumpAngle:
 ; during development to debug the collision system while in air.
 ; ---------------------------------------------------------------------------
 
-Sonic_Floor:
-		move.w	obVelX(a0),d1				; get current horizontal speed
-		move.w	obVelY(a0),d2				; get current vertical speed
-		jsr	(CalcAngle).l				; calculate arctan based on Sonic's current fall direction
-		move.b	d0,(v_unused3).w			; (unused) store basic angle
-		subi.b	#$20,d0					; rotate 45 degrees counterclockwise
-		move.b	d0,(v_unused4).w			; (unused) store -45 degrees angle
-		andi.b	#$C0,d0					; snap to nearest multiple of 90 degrees
-		move.b	d0,(v_unused5).w			; (unused) store snapped angle
+; Originally this called CalcAngle and snapped ((angle-$20)&$C0) to a quadrant.
+; The same quadrant is now derived directly from the speeds without a division.
+; CalcAngle's table returns exactly 45 degrees once small*256/big >= $FA, which
+; tips near-diagonal movement into the next quadrant counterclockwise; that
+; rounding is reproduced exactly by the "diagonal" test below:
+;	floor(256*s/b) >= $FA  <=>  128*s >= 125*b  <=>  3*b - 128*(b-s) >= 0
+; (b/s = bigger/smaller absolute speed, unsigned like CalcAngle.)
+; The old debug writes to v_unused3-5 are dropped; nothing reads them.
+; ---------------------------------------------------------------------------
 
-		cmpi.b	#$40,d0					; is main movement direction to the left?
-		beq.w	Sonic_FloorLeft				; if yes, branch
-		cmpi.b	#$80,d0					; is main movement direction upward?
-		beq.w	Sonic_FloorUp				; if yes, branch
-		cmpi.b	#$C0,d0					; is main movement direction to the right?
-		beq.w	Sonic_FloorRight			; if yes, branch
-		; otherwise, d0 is $00 (fall-through...)
+Sonic_Floor:
+		move.w	obVelX(a0),d0				; get current horizontal speed
+		move.w	obVelY(a0),d1				; get current vertical speed
+		moveq	#0,d2					; clear upper word for the diagonal test
+		move.w	d0,d2					; d2 = |X|
+		bpl.s	.absX
+		neg.w	d2
+	.absX:
+		moveq	#0,d3					; clear upper word for the diagonal test
+		move.w	d1,d3					; d3 = |Y|
+		bpl.s	.absY
+		neg.w	d3
+	.absY:
+		cmp.w	d2,d3					; same unsigned comparison CalcAngle uses to pick its octant
+		bhs.s	.yIsBigger				; if |Y| >= |X|, branch
+		tst.w	d0					; |X| > |Y|: is Sonic moving right?
+		bpl.s	.xIsBigger_right			; if yes, branch
+
+	; |X| > |Y|, X < 0
+		tst.w	d1					; is Sonic moving up?
+		bpl.w	Sonic_FloorLeft				; if not, it's always left
+		sub.l	d2,d3					; d3 = s-b
+		lsl.l	#7,d3					; d3 = -128*(b-s)
+		add.l	d2,d3					; + b
+		add.l	d2,d3					; + b
+		add.l	d2,d3					; + b
+		bmi.w	Sonic_FloorLeft				; if not near the diagonal, branch
+		bra.w	Sonic_FloorUp				; near the diagonal CalcAngle rounds to up
+; ===========================================================================
+
+	.yIsBigger:
+		tst.w	d1					; |Y| >= |X|: is Sonic moving up?
+		bmi.s	.yIsBigger_up				; if yes, branch
+		tst.w	d0					; is Sonic moving left?
+		bpl.w	Sonic_FloorDown				; if not, it's always down (includes X = Y = 0)
+		sub.l	d3,d2					; d2 = s-b
+		lsl.l	#7,d2					; d2 = -128*(b-s)
+		add.l	d3,d2					; + b
+		add.l	d3,d2					; + b
+		add.l	d3,d2					; + b
+		bmi.w	Sonic_FloorDown				; if not near the diagonal, branch
+		bra.w	Sonic_FloorLeft				; near the diagonal CalcAngle rounds to left
+; ===========================================================================
+
+	.yIsBigger_up:
+		tst.w	d0					; is Sonic moving left?
+		bmi.w	Sonic_FloorUp				; if yes, it's always up
+		sub.l	d3,d2					; d2 = s-b
+		lsl.l	#7,d2					; d2 = -128*(b-s)
+		add.l	d3,d2					; + b
+		add.l	d3,d2					; + b
+		add.l	d3,d2					; + b
+		bmi.w	Sonic_FloorUp				; if not near the diagonal, branch
+		bra.w	Sonic_FloorRight			; near the diagonal CalcAngle rounds to right
+; ===========================================================================
+
+	.xIsBigger_right:
+		tst.w	d1					; is Sonic moving up?
+		bmi.w	Sonic_FloorRight			; if yes, it's always right
+		sub.l	d2,d3					; d3 = s-b
+		lsl.l	#7,d3					; d3 = -128*(b-s)
+		add.l	d2,d3					; + b
+		add.l	d2,d3					; + b
+		add.l	d2,d3					; + b
+		bmi.w	Sonic_FloorRight			; if not near the diagonal, branch
+		; near the diagonal CalcAngle rounds to down (fall-through...)
 
 ; ---------------------------------------------------------------------------
 ; When Sonic is in-air with his main momentum being downward

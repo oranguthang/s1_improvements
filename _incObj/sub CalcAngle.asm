@@ -7,64 +7,62 @@
 ;	d2 = y-axis distance
 ; 
 ; output:
-;	d0 = angle
+;	d0 = angle (d0.l = $0000xxxx)
+;	d1-d4 and all address registers are preserved
 ; ---------------------------------------------------------------------------
 
 CalcAngle:
-		movem.l	d3-d4,-(sp)				; store register data
-		moveq	#0,d3					; clear registers
-		moveq	#0,d4					; ''
-		move.w	d1,d3					; copy X and Y distances
-		move.w	d2,d4					; ''
-		or.w	d3,d4					; fuse X and Y together
-		beq.s	CA_NullAngle				; if they're both 0, branch to finish with angle 40 right away
-		move.w	d2,d4					; reload Y
-
-		tst.w	d3					; check X polarity
-		bpl.w	.posX					; if it's already positive, branch
+		move.l	d3,-(sp)				; store register data (d0 doubles as the Y work register, so d4 is no longer used)
+		moveq	#0,d3					; clear upper word for the 32-bit shift below
+		move.w	d1,d3					; copy X distance
+		bpl.s	.posX					; if it's already positive, branch
 		neg.w	d3					; convert to positive
 .posX:
-		tst.w	d4					; check Y polarity
-		bpl.w	.posY					; if it's already positive, branch
-		neg.w	d4					; convert to positive
+		moveq	#0,d0					; clear upper word for the 32-bit shift below
+		move.w	d2,d0					; copy Y distance
+		bpl.s	.posY					; if it's already positive, branch
+		neg.w	d0					; convert to positive
 .posY:
-		cmp.w	d3,d4					; find out which one has a larger distance
-		bhs.w	.yIsBigger				; if Y has a larger distance, branch
+		cmp.w	d3,d0					; find out which one has a larger distance
+		bhs.s	.yIsBigger				; if Y has a larger (or equal) distance, branch
 
-.xIsBigger:	; degrees 0 to 45
-		lsl.l	#8,d4					; multiply Y by 100 (creating fraction space)
-		divu.w	d3,d4					; divide by X distance
+.xIsBigger:	; degrees 0 to 45 (X is nonzero here)
+		lsl.l	#8,d0					; multiply Y by 100 (creating fraction space)
+		divu.w	d3,d0					; divide by X distance (quotient < $100)
+		move.w	d0,d3					; use quotient as table index
 		moveq	#0,d0					; prepare 0 degree angle
-		move.b	Angle_Data(pc,d4.w),d0			; load correct angle (advance up to correct angle 00 - 45 degrees)
+		move.b	Angle_Data(pc,d3.w),d0			; load correct angle (advance up to correct angle 00 - 45 degrees)
 		bra.s	.checkXFlip				; continue to 360 accommodation
 ; ===========================================================================
 
 .yIsBigger:	; degrees 45 to 90
+		tst.w	d0					; is Y 0 (and therefore X as well)?
+		beq.s	CA_NullAngle				; if yes, branch to finish with angle $40 right away
 		lsl.l	#8,d3					; multiply X by 100 (creating fraction space)
-		divu.w	d4,d3					; divide by Y distance
+		divu.w	d0,d3					; divide by Y distance (quotient <= $100)
 		moveq	#$40,d0					; prepare 90 degree angle
 		sub.b	Angle_Data(pc,d3.w),d0			; load correct angle (subtract down to correct angle 90 - 45 degrees)
 
 .checkXFlip:
 		tst.w	d1					; check X distance
-		bpl.w	.chkYFlip				; if distance were positive, branch to skip mirror
+		bpl.s	.chkYFlip				; if distance were positive, branch to skip mirror
 		neg.w	d0					; mirror angle
 		addi.w	#$40*2,d0				; ''
 
 .chkYFlip:
 		tst.w	d2					; check Y distance
-		bpl.w	.return					; if distance were positive, branch to skip flip
+		bpl.s	.return					; if distance were positive, branch to skip flip
 		neg.w	d0					; flip angle
 		addi.w	#$40*4,d0				; ''
 
 .return:
-		movem.l	(sp)+,d3-d4				; restore register data
+		movem.l	(sp)+,d3				; restore register data (movem keeps the CCR from the flip checks)
 		rts						; return
 ; ===========================================================================
 
 CA_NullAngle:
-		move.w	#$40,d0					; force angle to $40 (90 degrees)
-		movem.l	(sp)+,d3-d4				; restore register data
+		moveq	#$40,d0					; force angle to $40 (90 degrees)
+		movem.l	(sp)+,d3				; restore register data (movem keeps the CCR)
 		rts						; return
 ; End of function CalcAngle
 
