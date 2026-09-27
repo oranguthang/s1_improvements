@@ -14,15 +14,10 @@ LevelDataLoad:
 		addq.l	#4,a2					; skip 1st PLC and level gfx entry (handled in GM_Level)
 
 	; --- 16x16 Block Mappings ---
-		movea.l	(a2)+,a0				; get 16x16 data pointer from level header
-		lea	(v_16x16).w,a1				; set target RAM buffer for 16x16 mappings
-		move.w	#ArtTile_Level,d0			; set base art tile (0)
-		bsr.w	EniDec					; decompress Enigma-compressed block data to buffer
+		move.l	(a2)+,(v_rom_blocks).w			; set pointer to uncompressed 16x16 block data in ROM
 
 	; --- 256x256 Chunk Mappings ---
-		movea.l	(a2)+,a0				; get 256x256 chunk data pointer from level header
-		lea	(v_256x256).l,a1			; set target RAM buffer for 256x256 mappings
-		bsr.w	KosDec					; decompress Kosinski-compressed chunk data to buffer
+		move.l	(a2)+,(v_rom_chunks).w			; set pointer to uncompressed 256x256 chunk data in ROM
 
 	; --- Level Layout (FG/BG) ---
 		bsr.w	LevelLayoutLoad				; load FG and BG layout

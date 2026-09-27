@@ -19,15 +19,15 @@ FindNearestTile:
 		lsr.w	#8,d1
 		andi.w	#$7F,d1					; read only high byte of X-position
 		add.w	d1,d0					; combine for position within layout
-		moveq	#$FFFFFFFF,d1				; d1 = $FFFFFFFF (used to make a RAM address)
+		moveq	#0,d1					; clear upper word (chunk offset is added to v_rom_chunks below)
 		lea	(v_lvllayout_fg).w,a1
 		move.b	(a1,d0.w),d1				; get 256x256 chunk number
 		beq.s	.blanktile				; branch if 0 (blank chunk)
 		bmi.s	.specialtile				; branch if > $7F
 
 		subq.b	#1,d1					; make chunks start at 0
-		ext.w	d1					; d1 = $FFFF00xx
-		ror.w	#7,d1					; d1 = $FFFFxx00 where xx is multiplied by 2
+		ext.w	d1					; d1 = $000000xx (xx < $7F, so positive)
+		ror.w	#7,d1					; d1 = $0000xx00 where xx is multiplied by 2 (offset into the chunks)
 		move.w	d2,d0
 		add.w	d0,d0					; d0 = Y-position * 2 (because each 16x16 block is represented by 2 bytes)
 		andi.w	#$1E0,d0				; read only high nybble of low byte (for Y-position within 256x256 chunk)
@@ -38,6 +38,7 @@ FindNearestTile:
 		add.w	d0,d1					; add to base address
 
 	if FixBugs
+		add.l	(v_rom_chunks).w,d1			; add pointer to 256x256 chunk data in ROM
 		movea.l	d1,a1
 		rts
 
@@ -57,8 +58,13 @@ FindNearestTile:
 	    .chunk0:
 		dc.w 0
 	else
-	    .blanktile:
+		add.l	(v_rom_chunks).w,d1			; add pointer to 256x256 chunk data in ROM
 		movea.l	d1,a1
+		rts
+
+	    .blanktile:
+		; With chunks in RAM, d1 was $FFFFFF00 here; keep returning that address.
+		lea	(v_chunk0collision).w,a1		; blank chunk: v_chunk0collision ($FFFFFF00)
 		rts
 	endif
 
@@ -84,6 +90,7 @@ FindNearestTile:
 		lsr.w	#3,d0
 		andi.w	#$1E,d0
 		add.w	d0,d1
+		add.l	(v_rom_chunks).w,d1			; add pointer to 256x256 chunk data in ROM
 		movea.l	d1,a1
 		rts
 ; End of function FindNearestTile
@@ -109,7 +116,7 @@ FindNearestTile:
 ; ---------------------------------------------------------------------------
 
 FindFloor:
-		bsr.s	FindNearestTile				; a1 = address within 256x256 mappings of 16x16 block being stood on
+		bsr.w	FindNearestTile				; a1 = address within 256x256 mappings of 16x16 block being stood on
 		move.w	(a1),d0					; get value for solidness, orientation and 16x16 block number
 		move.w	d0,d4
 		andi.w	#$7FF,d0				; ignore solid/orientation bits

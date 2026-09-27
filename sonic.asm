@@ -2026,17 +2026,16 @@ Tit_LoadText:
 		bsr.w	LevelSizeLoad				; load level size (will use GHZ1's sizes)
 		bsr.w	DeformLayers				; initialize background deformation before fade-in (redundant here)
 
-		lea	(v_16x16).w,a1				; set target buffer for blocks mappings
-		lea	(Blk16_Title).l,a0			; load title background 16x16 blocks mappings
-		move.w	#ArtTile_Level,d0			; set to target VRAM address $0000
-		bsr.w	EniDec					; decompress Enigma-compressed blocks mappings to buffer
+		move.l	#Blk16_Title,(v_rom_blocks).w		; use the uncompressed title background 16x16 blocks in ROM
 
-		lea	(Blk256_Title).l,a0			; load title background 256x256 mappings
-		lea	(v_256x256).l,a1			; set target buffer for chunks mappings
-		bsr.w	KosDec					; decompress Kosinski-compressed chunks mappings to buffer
+		move.l	#Blk256_Title,(v_rom_chunks).w		; use the uncompressed title background 256x256 chunks in ROM
 
 		bsr.w	LevelLayoutLoad				; load title FG/BG layouts (titlefg.bin/titlebg.bin, see LevelLayoutLoad2)
+		tst.b	(f_title_fast).w
+		bne.s	Tit_SonicTeamFaded
 		bsr.w	PaletteFadeOut				; fade-out "SONIC TEAM PRESENTS" screen
+Tit_SonicTeamFaded:
+		clr.b	(f_title_fast).w
 ; ---------------------------------------------------------------------------
 
 		; "SONIC TEAM PRESENTS" screen has faded out, load remaining patterns and fade in
@@ -3736,7 +3735,7 @@ End_LoadData:
 		enable_ints					; enable interrupts
 
 		lea	(Kos_EndFlowers).l,a0			; load extra flower patterns
-		lea	(v_256x256_def+$4A*chunk_size).w,a1	; set RAM address to be used as decompression buffer (this overwrites unused chunk RAM)
+		lea	(v_ending_flowers).w,a1			; decompress to the ending flower buffer in RAM ($FF9400-$FFA3FF)
 		bsr.w	KosDec					; decompress Kosinski-compressed chunks mappings to buffer
 
 		moveq	#palid_Sonic,d0				; load Sonic's palette...
@@ -4883,67 +4882,67 @@ Nem_Squirrel:	binclude	"artnem/Animal Squirrel.nem"
 ; ---------------------------------------------------------------------------
 ; Compressed graphics - primary patterns and block mappings
 ; ---------------------------------------------------------------------------
-Blk16_GHZ:	binclude	"map16/GHZ.eni"
+Blk16_GHZ:	binclude	"map16/GHZ.bin"
 		even
 Nem_GHZ_1st:	binclude	"artnem/8x8 - GHZ1.nem" ; GHZ primary patterns
 		even
 Nem_GHZ_2nd:	binclude	"artnem/8x8 - GHZ2.nem" ; GHZ secondary patterns
 		even
-Blk256_GHZ:	binclude	"map256/GHZ.kos"
+Blk256_GHZ:	binclude	"map256/GHZ.bin"
 		even
 
 ; Title screen background (separate copies, editable without affecting GHZ)
-Blk16_Title:	binclude	"map16/Title.eni"
+Blk16_Title:	binclude	"map16/Title.bin"
 		even
 Nem_Title:	binclude	"artnem/8x8 - Title.nem" ; title background patterns
 		even
-Blk256_Title:	binclude	"map256/Title.kos"
+Blk256_Title:	binclude	"map256/Title.bin"
 		even
 
-Blk16_LZ:	binclude	"map16/LZ.eni"
+Blk16_LZ:	binclude	"map16/LZ.bin"
 		even
 Nem_LZ:		binclude	"artnem/8x8 - LZ.nem" ; LZ primary patterns
 		even
-Blk256_LZ:	binclude	"map256/LZ.kos"
+Blk256_LZ:	binclude	"map256/LZ.bin"
 		even
 
-Blk16_MZ:	binclude	"map16/MZ.eni"
+Blk16_MZ:	binclude	"map16/MZ.bin"
 		even
 Nem_MZ:		binclude	"artnem/8x8 - MZ.nem" ; MZ primary patterns
 		even
 Blk256_MZ:
 	if Revision=0
-		binclude	"map256/MZ (REV00).kos"
+		binclude	"map256/MZ (REV00).bin"
 		even
 	else
-		binclude	"map256/MZ (REV01).kos"
+		binclude	"map256/MZ (REV01).bin"
 		even
 	endif
 
-Blk16_SLZ:	binclude	"map16/SLZ.eni"
+Blk16_SLZ:	binclude	"map16/SLZ.bin"
 		even
 Nem_SLZ:	binclude	"artnem/8x8 - SLZ.nem" ; SLZ primary patterns
 		even
-Blk256_SLZ:	binclude	"map256/SLZ.kos"
+Blk256_SLZ:	binclude	"map256/SLZ.bin"
 		even
 
-Blk16_SYZ:	binclude	"map16/SYZ.eni"
+Blk16_SYZ:	binclude	"map16/SYZ.bin"
 		even
 Nem_SYZ:	binclude	"artnem/8x8 - SYZ.nem" ; SYZ primary patterns
 		even
-Blk256_SYZ:	binclude	"map256/SYZ.kos"
+Blk256_SYZ:	binclude	"map256/SYZ.bin"
 		even
 
-Blk16_SBZ:	binclude	"map16/SBZ.eni"
+Blk16_SBZ:	binclude	"map16/SBZ.bin"
 		even
 Nem_SBZ:	binclude	"artnem/8x8 - SBZ.nem" ; SBZ primary patterns
 		even
 Blk256_SBZ:
 	if Revision=0
-		binclude	"map256/SBZ (REV00).kos"
+		binclude	"map256/SBZ (REV00).bin"
 		even
 	else
-		binclude	"map256/SBZ (REV01).kos"
+		binclude	"map256/SBZ (REV01).bin"
 		even
 	endif
 

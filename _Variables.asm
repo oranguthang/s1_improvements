@@ -14,9 +14,12 @@ ramaddr function x,(-(x&$80000000)<<1)|x
 v_ram_start_def:
 v_ram_start:		equ	v_ram_start_def&$FFFFFF		; 24-bit addressing
 
-v_256x256_def:		ds.b	chunk_size*$52			; 256x256 tile mappings ($52 chunks)
+v_256x256_def:		ds.b	chunk_size*$52			; formerly 256x256 chunk mappings (now read from ROM via v_rom_chunks);
+								; still scratch RAM for Sega/title/Special Stage and the ending flowers
 v_256x256:		equ	v_256x256_def&$FFFFFF		; 24-bit addressing
 v_256x256_end:
+v_ending_flowers:	equ	v_256x256_def+$4A*chunk_size	; decompressed ending flower art ($1000 bytes, $FF9400-$FFA3FF)
+v_ending_flowers_end:	equ	v_256x256_end
 
 v_lvllayout:		ds.b	layout_row*8			; level layouts (FG/BG rows interlaced, 8 rows and $400 total)
 v_lvllayout_fg:		equ	v_lvllayout			; start address of foreground's first row
@@ -29,7 +32,7 @@ v_ngfx_buffer_end:
 
 v_spritequeue:		ds.b	spritelayer_num*spritelayer_size ; sprite display queue, in order of priority (8*$80=$400 bytes)
 
-v_16x16:		ds.b	$1800				; 16x16 tile mappings
+v_16x16:		ds.b	$1800				; unused (formerly 16x16 tile mappings; now read from ROM via v_rom_blocks)
 
 VDP_Command_Buffer:	ds.w	7*$12			; 18 queued VDP commands
 VDP_Command_Buffer_Slot: ds.l	1			; next free DMA queue slot
@@ -308,7 +311,8 @@ v_scroll_block_1_size:	ds.w	1
 v_scroll_block_2_size:	ds.w	1				; unused
 v_scroll_block_3_size:	ds.w	1				; unused
 v_scroll_block_4_size:	ds.w	1				; unused
-			ds.b	8				; unused
+v_rom_blocks:		ds.l	1				; pointer to the current 16x16 block mappings in ROM
+v_rom_chunks:		ds.l	1				; pointer to the current 256x256 chunk mappings in ROM
 v_levelvariables_end:
 
 v_spritetablebuffer:	ds.b	spritetable_entrysize*sprites_max ; sprite table (8*80=$280 bytes) (last $80 bytes are overwritten by v_palette_water_fading)

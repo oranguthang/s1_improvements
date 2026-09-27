@@ -572,7 +572,7 @@ DrawBlock_Unused_NextPal:
 
 ; DrawBlocks:
 GetBlockData:
-		lea	(v_16x16).w,a1				; load block RAM
+		movea.l	(v_rom_blocks).w,a1			; load pointer to 16x16 block data in ROM
 		add.w	4(a3),d4				; add Screen Y position
 		add.w	(a3),d5					; add Screen X position
 
@@ -589,7 +589,7 @@ GetBlockData:
 
 		; Get chunk from level layout
 		add.w	d3,d0					; fuse Y and X together (d0 = layout position of chunk)
-		moveq	#$FFFFFFFF,d3				; prepare RAM address ($FFFF???? for layout)
+		moveq	#0,d3					; clear upper word (chunk offset is added to v_rom_chunks below)
 		move.b	(a4,d0.w),d3				; load correct chunk ID from layout
 		beq.s	.return					; if the chunk is $00, branch (chunk $00 is empty, no drawing necessary)
 
@@ -608,6 +608,7 @@ GetBlockData:
 		; Get block metadata from chunk
 		add.w	d4,d3					; add block's Y position to the chunk address in d3
 		add.w	d5,d3					; add block's X position to the chunk address in d3
+		add.l	(v_rom_chunks).w,d3			; add pointer to 256x256 chunk data in ROM
 		movea.l	d3,a0					; copy chunk/block address to a0
 		move.w	(a0),d3					; load block ID from chunk
 
