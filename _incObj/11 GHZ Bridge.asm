@@ -16,42 +16,57 @@ Bri_Index:	dc.w Bri_Main-Bri_Index		; 0
 		dc.w Bri_Delete-Bri_Index	; 8
 		dc.w Bri_ChildLog-Bri_Index	; A
 
-bridge_children:	equ obSubtype		; number of log objects, initially retrieved from subtype ($28)
-bridge_children_ram:	equ bridge_children+1	; RAM indices to log objects ($29-$39, usually read together with bridge_children)
-bridge_origY:		equ objoff_3C		; initial Y-position
+; The logs are no longer one object each. They form two groups of consecutive
+; logs, each drawn by one object as its own frame plus sub-sprites (#104):
+;	helper - logs 0 to bridge_split-1, anchored on log 0 (routine $A)
+;	parent - logs bridge_split to bridge_children-1, anchored on its own log
+; Every anchor's obY is its log's Y-position and every sub-sprite Y offset is
+; relative to it, so each log lands on the same Y as the old child objects.
+; A 16-log bridge takes 2 object slots instead of 16.
+
+bridge_children:	equ obSubtype		; number of logs Sonic can stand on, initially retrieved from subtype ($28)
+bridge_origY:		equ obAnim		; initial Y-position (2 bytes, $1C-$1D; the bridge never animates)
+bridge_helper:		equ obTimeFrame		; RAM index of the helper object drawing the left logs (0 = none)
+bridge_split:		equ obDelayAni		; number of logs drawn by the helper (logs left of the parent)
 bridge_nudge:		equ objoff_3E		; general nudge Y-offset while Sonic is on bridge
 bridge_currentlog:	equ objoff_3F		; 0-based index of log Sonic is currently standing on
+bridge_maxlogs:		equ 16			; the bend tables cover up to 16 logs
+
+	if bridge_nudge<subspr_data+subspr_size*subspr_max
+		fatal "GHZ bridge variables overlap the sub-sprite entries."
+	endif
+	if (subspr_x<>0)||(subspr_y<>1)||(subspr_frame<>2)||(subspr_size<>3)
+		fatal "Bri_InitGroup and Bri_MoveSonic assume X/Y/frame sub-sprite entries of 3 bytes."
+	endif
+	if (bridge_maxlogs/2>subspr_max+1)||(bridge_maxlogs-bridge_maxlogs/2>subspr_max+1)
+		fatal "A GHZ bridge group has more logs than one object can draw."
+	endif
 ; ===========================================================================
 
 Bri_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)			; advance to Bri_Action
 		move.l	#Map_Bri,obMap(a0)			; set mappings
 		move.w	#ArtTile_GHZ_Bridge|Tile_Pal3,obGfx(a0)	; set art tile and palette line
-		move.b	#sprite_cam_field,obRender(a0)		; set to playfield-positioned mode
+		move.b	#sprite_cam_field|sprite_subsprites,obRender(a0) ; set to playfield-positioned mode, draw right logs as sub-sprites
 		move.b	#3,obPriority(a0)			; set sprite priority
-	if FixBugs
-		move.b	#16/2,obActWid(a0)			; set sprite display width (one log)
-	else
-		; This sprite display width is way too large, causing the bridge to potentially screen-wrap.
-		; It's likely that this was forgotten when the bridge was turned into individual 16px log objects.
-		move.b	#256/2,obActWid(a0)			; set sprite display width (very large)
-	endif
+		move.b	#16/2,obActWid(a0)			; set sprite display width (one log, widened by Bri_InitGroup)
+		move.w	obY(a0),bridge_origY(a0)		; remember initial Y-position
 
-		move.w	obY(a0),d2				; copy Y-position from parent
-		move.w	obX(a0),d3				; get center X-position of bridge
-		_move.b	obID(a0),d4				; copy parent object ID to children
-		lea	bridge_children(a0),a2			; load child object index array (= obSubtype)
 		moveq	#0,d1					; clear d1
-		move.b	(a2),d1					; get subtype for bridge
-		move.b	#0,(a2)+				; clear subtype, and initialize number of spawned children to 0
-		move.w	d1,d0					; copy bridge log count to d0
-		lsr.w	#1,d0					; divide by 2 (half-size)
-		lsl.w	#4,d0					; multiply by $10 (16px per log)
-		sub.w	d0,d3					; d3 = X-position of leftmost log
-		subq.b	#2,d1					; -1 for dbf, -1 for parent log
-		bcs.s	Bri_Action				; branch on underflow (bridge only has only 1 log)
+		move.b	bridge_children(a0),d1			; get subtype for bridge
+		clr.b	bridge_children(a0)			; not solid unless the helper gets loaded
+		cmpi.b	#bridge_maxlogs,d1			; is the bridge longer than the bend tables?
+		bls.s	.countOk				; if not, branch
+		moveq	#bridge_maxlogs,d1			; clamp (longer bridges overran the SST in the original)
+	.countOk:
+		move.w	d1,d2					; copy bridge log count to d2
+		lsr.w	#1,d2					; d2 = number of logs left of the parent
+		beq.w	Bri_Action				; branch if bridge only has 1 log (the parent)
+		cmpi.w	#2,d1					; does the bridge have 2 logs?
+		bne.s	.findHelper				; if not, branch
+		moveq	#1,d1					; only the left log is solid and bends, as in the original
 
-.loopBuildBridge:
+	.findHelper:
 	if FixBugs
 		; If an object is allocated before the parent object, then
 		; when the child is deleted, it will have already been queued
@@ -60,41 +75,37 @@ Bri_Main:	; Routine 0
 	else
 		bsr.w	FindFreeObj				; find any free object RAM slot
 	endif
-		bne.s	Bri_Action				; if object RAM is full, abort
-		addq.b	#1,bridge_children(a0)			; increment number of loaded child objects
+		bne.w	Bri_Action				; if object RAM is full, keep only the parent log (like the original)
+		move.b	d1,bridge_children(a0)			; set number of logs
+		move.b	d2,bridge_split(a0)			; set number of logs drawn by the helper
+		move.w	a1,d0					; get helper address
+		subi.w	#v_objspace&$FFFF,d0			; make helper address 0-based
+		lsr.w	#object_size_bits,d0			; divide by $40 (object_size)
+		andi.w	#$7F,d0					; d0 = index of helper in object RAM
+		move.b	d0,bridge_helper(a0)			; remember it
 
-		cmp.w	obX(a0),d3				; is current X-position matching parent/middle log's initial X-position?
-		bne.s	.setupChild				; if not, branch
-		addi.w	#16,d3					; make next child horizontally skip over parent
-		move.w	d2,obY(a0)				; set parent Y-position (redundant)
-		move.w	d2,bridge_origY(a0)			; remember initial Y-position
-		move.w	a0,d5					; get parent address
-		subi.w	#v_objspace&$FFFF,d5			; make address 0-based
-		lsr.w	#object_size_bits,d5			; divide by $40 (object_size)
-		andi.w	#$7F,d5					; d5 = index of parent in object RAM
-		move.b	d5,(a2)+				; store parent RAM index as first entry in bridge_children
-		addq.b	#1,bridge_children(a0)			; increment number of loaded objects to account for parent
-
-	.setupChild:
-		move.w	a1,d5					; get child address
-		subi.w	#v_objspace&$FFFF,d5			; make child address 0-based
-		lsr.w	#object_size_bits,d5			; divide by $40 (object_size)
-		andi.w	#$7F,d5					; d5 = index of child in object RAM
-		move.b	d5,(a2)+				; store new child index at the end of bridge_children
-
-		move.b	#$A,obRoutine(a1)			; set child log to Bri_ChildLog (display only)
-		_move.b	d4,obID(a1)				; copy object ID from parent
-		move.w	d2,obY(a1)				; copy Y-position from parent
-		move.w	d2,bridge_origY(a1)			; remember initial Y-position
-		move.w	d3,obX(a1)				; write current X-position set in d3
+		move.b	#$A,obRoutine(a1)			; set helper to Bri_ChildLog (display only)
+		_move.b	obID(a0),d0				; get parent object ID
+		_move.b	d0,obID(a1)				; copy object ID to helper
+		move.w	d2,d0					; copy number of left logs
+		lsl.w	#4,d0					; multiply by $10 (16px per log)
+		neg.w	d0					; make it a leftwards offset
+		add.w	obX(a0),d0				; d0 = X-position of leftmost log
+		move.w	d0,obX(a1)				; anchor helper on the leftmost log
+		move.w	obY(a0),obY(a1)				; copy Y-position from parent
 		move.l	#Map_Bri,obMap(a1)			; set mappings
 		move.w	#ArtTile_GHZ_Bridge|Tile_Pal3,obGfx(a1)	; set art tile and palette line
-		move.b	#sprite_cam_field,obRender(a1)		; set to playfield-positioned mode
+		move.b	#sprite_cam_field|sprite_subsprites,obRender(a1) ; set to playfield-positioned mode, draw logs as sub-sprites
 		move.b	#3,obPriority(a1)			; set sprite priority
-		move.b	#16/2,obActWid(a1)			; set sprite display width for individual log
-		addi.w	#16,d3					; position next log 16px further to the right
+		sub.w	d2,d1					; d1 = parent's own log and the logs right of it
+		subq.w	#1,d2					; the helper's own frame is log 0
+		bsr.w	Bri_InitGroup				; set up helper sub-sprites
 
-		dbf	d1,.loopBuildBridge			; repeat for length of bridge
+		movea.l	a0,a1					; now the parent
+		move.w	d1,d2					; copy number of parent logs
+		subq.w	#1,d2					; the parent's own frame is its log
+		bmi.s	Bri_Action				; branch if the parent isn't one of the logs (2-log bridge)
+		bsr.w	Bri_InitGroup				; set up parent sub-sprites
 ; ---------------------------------------------------------------------------
 
 Bri_Action:	; Routine 2
@@ -200,13 +211,30 @@ Bri_WalkOff:
 Bri_MoveSonic:
 		moveq	#0,d0					; clear d0
 		move.b	bridge_currentlog(a0),d0		; get index of log Sonic is currently standing on
-		move.b	bridge_children_ram(a0,d0.w),d0		; find RAM index of that log
-		lsl.w	#object_size_bits,d0			; multiply by $40 (object_size)
-		addi.l	#v_objspace&$FFFFFF,d0			; add base object RAM offset
-		movea.l	d0,a2					; a1 = full RAM address to log Sonic is standing on
+		movea.l	a0,a2					; assume a log of the parent group
+		sub.b	bridge_split(a0),d0			; d0 = index within the parent group
+		bhs.s	.gotGroup				; branch if Sonic is on the parent group
+		add.b	bridge_split(a0),d0			; d0 = index within the helper group
+		moveq	#0,d1					; clear d1
+		move.b	bridge_helper(a0),d1			; get RAM index of helper
+		lsl.w	#object_size_bits,d1			; multiply by $40 (object_size)
+		addi.l	#v_objspace&$FFFFFF,d1			; add base object RAM offset
+		movea.l	d1,a2					; a2 = helper
 
+	.gotGroup:
+		move.w	obY(a2),d1				; get Y-position of the group's anchor log
+		subq.b	#1,d0					; is Sonic on the anchor log itself?
+		bcs.s	.gotY					; if yes, branch
+		move.w	d0,d2					; get sub-sprite index
+		add.w	d0,d0
+		add.w	d2,d0					; multiply by subspr_size (3)
+		move.b	subspr_data+subspr_y(a2,d0.w),d2	; get log's Y offset from the anchor
+		ext.w	d2
+		add.w	d2,d1					; d1 = Y-position of log Sonic is standing on
+
+	.gotY:
 		lea	(v_player).w,a1				; load Sonic player object
-		move.w	obY(a2),d0				; get current Y-position of log Sonic is standing on
+		move.w	d1,d0					; get current Y-position of log Sonic is standing on
 		subq.w	#8,d0					; align by 8px upwards
 		moveq	#0,d1					; clear d1
 		move.b	obHeight(a1),d1				; get Sonic's current collision height
@@ -240,22 +268,17 @@ Bri_Bend:
 		andi.w	#$F,d3					; clear upper nybble in d3
 		lsl.w	#4,d3					; multiply by $10 bytes per data row
 		lea	(a4,d3.w),a3				; a3 = start index in align data array for current log
-		lea	bridge_children_ram(a0),a2		; a2 = RAM indices to log objects
+		lea	-bridge_maxlogs(sp),sp			; make room for the bend of every log
+		movea.l	sp,a2					; a2 = log bends (0-16px below initial Y-position)
 
 	.loopLeftLogs:
-		moveq	#0,d0					; clear d0
-		move.b	(a2)+,d0				; get next RAM index for log object
-		lsl.w	#object_size_bits,d0			; multiply by $40 (object_size)
-		addi.l	#v_objspace&$FFFFFF,d0			; add base object RAM offset
-		movea.l	d0,a1					; a1 = full RAM address to object
 		moveq	#0,d0					; clear d0
 		move.b	(a3)+,d0				; retrieve next byte value from align data array
 		addq.w	#1,d0					; increment by 1 (max ROM value is $FF, probably to save space)
 		mulu.w	d5,d0					; multiply align value by max Y-bend distance
 		mulu.w	d4,d0					; multiply that by the sine of the current nudge distance
 		swap	d0					; move integer result into lower word
-		add.w	bridge_origY(a1),d0			; add initial Y-position
-		move.w	d0,obY(a1)				; update Y-position for current log
+		move.b	d0,(a2)+				; store bend for current log
 		dbf	d2,.loopLeftLogs			; repeat for all logs left of the one Sonic is standing on
 ; ---------------------------------------------------------------------------
 
@@ -266,33 +289,79 @@ Bri_Bend:
 		addq.b	#1,d3					; add 1 for total subtraction
 		sub.b	d0,d3					; subtract total log count from current log index
 		neg.b	d3					; make result positive again
-		bmi.s	.return					; if result is still negative, abort
+		bmi.s	.apply					; if result is still negative, skip the right side
 		move.w	d3,d2					; backup result
 		lsl.w	#4,d3					; multiply by $10 bytes per data row
 		lea	(a4,d3.w),a3				; load row in Bri_Data_Align
 		adda.w	d2,a3					; advance to first right-side log inside data row
 		subq.w	#1,d2					; undo earlier +1 for dbf
-		bcs.s	.return					; if underflowed, Sonic is already standing on the rightmost log
+		bcs.s	.apply					; if underflowed, Sonic is already standing on the rightmost log
 
 	.loopRightLogs:
-		moveq	#0,d0					; clear d0
-		move.b	(a2)+,d0				; get next RAM index for log object
-		lsl.w	#object_size_bits,d0			; multiply by $40 (object_size)
-		addi.l	#v_objspace&$FFFFFF,d0			; add base object RAM offset
-		movea.l	d0,a1					; a1 = full RAM address to object
-
 		moveq	#0,d0					; clear d0
 		move.b	-(a3),d0				; retrieve PREVIOUS byte value from align data array
 		addq.w	#1,d0					; increment by 1 (max ROM value is $FF, probably to save space)
 		mulu.w	d5,d0					; multiply align value by max Y-bend distance
 		mulu.w	d4,d0					; multiply that by the sine of the current nudge distance
 		swap	d0					; move integer result into lower word
-		add.w	bridge_origY(a1),d0			; add initial Y-position
-		move.w	d0,obY(a1)				; update Y-position for current log
+		move.b	d0,(a2)+				; store bend for current log
 		dbf	d2,.loopRightLogs			; repeat for all logs right of the one Sonic is standing on
+; ---------------------------------------------------------------------------
+
+	.apply:
+		movea.l	sp,a2					; a2 = bend of log 0
+		moveq	#0,d1					; clear d1
+		move.b	bridge_split(a0),d1			; get number of helper logs
+		beq.s	.parentLogs				; branch if there is no helper
+		moveq	#0,d0					; clear d0
+		move.b	bridge_helper(a0),d0			; get RAM index of helper
+		lsl.w	#object_size_bits,d0			; multiply by $40 (object_size)
+		addi.l	#v_objspace&$FFFFFF,d0			; add base object RAM offset
+		movea.l	d0,a1					; a1 = helper
+		bsr.s	Bri_BendGroup				; move helper logs
+
+	.parentLogs:
+		moveq	#0,d1					; clear d1
+		move.b	bridge_children(a0),d1			; get bridge log count
+		sub.b	bridge_split(a0),d1			; d1 = number of parent logs
+		bls.s	.return					; branch if the parent isn't one of the logs
+		movea.l	a0,a1					; a1 = parent
+		bsr.s	Bri_BendGroup				; move parent logs
+
+	.return:
+		lea	bridge_maxlogs(sp),sp			; free the bends
+		rts						; return
+; End of function Bri_Bend
+
+; ---------------------------------------------------------------------------
+; Subroutine to move one group of logs to their bends
+;
+; input:
+;	d1.w = number of logs in group (anchor and sub-sprites, at least 1)
+;	a1 = group object (helper or parent)
+;	a2 = bend of the group's first log (advanced past the group)
+; ---------------------------------------------------------------------------
+
+Bri_BendGroup:
+		move.b	(a2)+,d2				; get bend of anchor log
+		moveq	#0,d0					; clear d0
+		move.b	d2,d0					; copy bend
+		add.w	bridge_origY(a0),d0			; add initial Y-position
+		move.w	d0,obY(a1)				; update Y-position for anchor log
+		lea	subspr_data+subspr_y(a1),a3		; a3 = Y offset of first sub-sprite log
+		subq.w	#2,d1					; -1 for anchor, -1 for dbf
+		bcs.s	.return					; branch if the anchor is the only log
+
+	.loopLogs:
+		move.b	(a2)+,d0				; get bend of next log
+		sub.b	d2,d0					; make it relative to the anchor log
+		move.b	d0,(a3)					; update Y offset for current log
+		addq.w	#subspr_size,a3				; next sub-sprite
+		dbf	d1,.loopLogs				; repeat for the rest of the group
 
 	.return:
 		rts						; return
+; End of function Bri_BendGroup
 
 ; ---------------------------------------------------------------------------
 ; GHZ bridge-bending data
@@ -342,8 +411,6 @@ Bri_Data_Align:	; Values used to align logs to the left & right of the one being
 		dc.b $19, $31, $4A, $61, $78, $8E, $A2, $B5, $C5, $D4, $E1, $EC, $F4, $FB, $FE, $FF	; standing on log 15
 		even
 
-; End of function Bri_Bend
-
 ; ===========================================================================
 
 Bri_ChkDel:
@@ -357,22 +424,13 @@ Bri_ChkDel:
 ; ---------------------------------------------------------------------------
 
 .deleteBridge:
-		moveq	#0,d2					; clear d2
-		lea	bridge_children(a0),a2			; load child log object index array (includes main parent log itself, too)
-		move.b	(a2)+,d2				; get number of child objects
-		subq.b	#1,d2					; decrement for dbf
-		bcs.s	.deleteParentLog			; if it underflowed, bridge only contained 1 log (parent)
-
-	.loopDeleteLogs:
 		moveq	#0,d0					; clear d0
-		move.b	(a2)+,d0				; get next RAM index for object
+		move.b	bridge_helper(a0),d0			; get RAM index of helper
+		beq.s	.deleteParentLog			; branch if there is no helper
 		lsl.w	#object_size_bits,d0			; multiply by $40 (object_size)
 		addi.l	#v_objspace&$FFFFFF,d0			; add base object RAM offset
 		movea.l	d0,a1					; move result to a1 as input for DeleteChild
-		cmp.w	a0,d0					; is current object the main parent log?
-		beq.s	.next					; if yes, postpone deletion
-		bsr.w	DeleteChild				; delete child log object
-	.next:	dbf	d2,.loopDeleteLogs			; repeat for bridge length
+		bsr.w	DeleteChild				; delete helper
 
 	.deleteParentLog:
 		bsr.w	DeleteObject				; finally, delete main parent log itself
@@ -386,9 +444,39 @@ Bri_Delete:	; Routine 6/8 (unused?)
 
 ; Bri_Display:
 Bri_ChildLog:	; Routine $A
-		; Note: Child logs are updated and deleted through the parent object!
-		bsr.w	DisplaySprite				; just display child log sprite
+		; Note: The helper is updated and deleted through the parent object!
+		bsr.w	DisplaySprite				; just display helper logs
 		rts						; return
+
+; ---------------------------------------------------------------------------
+; Subroutine to lay out a flat group of logs as sub-sprites, 16px apart to
+; the right of the anchor log, and widen the display width to cover them
+;
+; input:
+;	d2.w = number of sub-sprite logs (0-7)
+;	a1 = group object (helper or parent)
+; ---------------------------------------------------------------------------
+
+Bri_InitGroup:
+		move.b	d2,obSubSprites(a1)			; set number of sub-sprite logs
+		move.w	d2,d0					; copy it
+		lsl.w	#4,d0					; multiply by $10 (16px per log)
+		addq.w	#16/2,d0				; add half a log
+		move.b	d0,obActWid(a1)				; set sprite display width to reach the last log
+		lea	subspr_data(a1),a2			; a2 = first sub-sprite entry
+		moveq	#0,d0					; X offset of the anchor log
+		bra.s	.next					; start with the count check
+	; ---------------------------------------------------------------------------
+
+	.loopLogs:
+		addi.b	#16,d0					; position next log 16px further to the right
+		move.b	d0,(a2)+				; set X offset
+		clr.b	(a2)+					; set Y offset (flat until Sonic steps on)
+		clr.b	(a2)+					; set log frame
+	.next:
+		dbf	d2,.loopLogs				; repeat for all sub-sprite logs
+		rts						; return
+; End of function Bri_InitGroup
 
 ; ===========================================================================
 

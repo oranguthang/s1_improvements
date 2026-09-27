@@ -224,6 +224,7 @@ sprite_cam_bg_bit:	equ 3					; position with background coordinates (unused, see
 sprite_customheight_bit:equ 4					; use obHeight instead of assuming 32px to determine display height
 sprite_rawmappings_bit:	equ 5					; obMap points to single, specific sprite piece rather than index of mappings
 sprite_looping_bit:	equ 6					; display behind looping chunks (only used by Sonic)
+sprite_subsprites_bit:	equ sprite_looping_bit			; same bit: draws sub-sprites only while obSubSprites is also nonzero
 sprite_rendered_bit:	equ 7					; set when sprite is in visible screen space and got rendered the previous frame
 
 sprite_xflip:		equ 1<<sprite_xflip_bit
@@ -233,6 +234,7 @@ sprite_cam_field:	equ 1<<sprite_cam_field_bit
 sprite_cam_bg:		equ 1<<sprite_cam_bg_bit
 sprite_customheight:	equ 1<<sprite_customheight_bit
 sprite_rawmappings:	equ 1<<sprite_rawmappings_bit
+sprite_subsprites:	equ 1<<sprite_subsprites_bit
 sprite_rendered:	equ 1<<sprite_rendered_bit
 
 ; Object variables
@@ -262,7 +264,8 @@ obDelayAni:		equ $1F					; time to delay animation
 obColType:		equ $20					; collision response type
 obColProp:		equ $21					; collision extra property
 obStatus:		equ $22					; orientation or mode
-; SST $23 is now free; respawn_index at $14 stores the state-byte address
+; SST $23 was obRespawnNo; respawn_index at $14 now stores the state-byte address
+obSubSprites:		equ $23					; sub-sprite child count; 0 for every other object
 obRoutine:		equ $24					; routine number
 ob2ndRout:		equ $25					; secondary routine number
 obSolid:		equ ob2ndRout				; solid status flag
@@ -327,6 +330,27 @@ obBossFlash:		equ objoff_3E				; number of remaining flash frames after taking a
 ; Size definition for one object in RAM ($40 bytes)
 object_size_bits:	equ 6
 object_size:		equ 1<<object_size_bits
+
+; Sub-sprite parents. BuildSprites draws obFrame, then obSubSprites child frames
+; from the parent's obMap/obGfx/flip bits, but only when obRender bit 6 is set
+; AND obSubSprites is nonzero. Bit 6 alone is still Sonic's loop flag (also
+; copied to the Spin Dash dust and debug-placed objects); they keep $23 at 0.
+; Children overlay the scratch bytes $29-$3D; $00-$28 keep their usual meaning,
+; so respawn_index ($14) and obColType ($20) stay valid. Offsets are signed
+; bytes from the parent's drawing position and are not mirrored by the flips.
+; A child is skipped when its origin is more than subspr_reach pixels outside
+; the screen, so child frames must stay within subspr_reach of their origin.
+subspr_data:		equ objoff_29				; first child entry
+subspr_x:		equ 0					; X offset, signed byte
+subspr_y:		equ 1					; Y offset, signed byte
+subspr_frame:		equ 2					; mapping frame
+subspr_size:		equ 3
+subspr_max:		equ 7					; larger obSubSprites values are clamped
+subspr_reach:		equ 64
+
+	if subspr_data+subspr_size*subspr_max>object_size
+		fatal "Sub-sprite children end at $\{subspr_data+subspr_size*subspr_max}, past the $\{object_size} byte SST."
+	endif
 
 ; Animation flags
 afEnd:			equ $FF	; return to beginning of animation

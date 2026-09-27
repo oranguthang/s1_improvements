@@ -120,6 +120,8 @@ BuildSprites:
 		adda.w	(a1,d1.w),a1				; get mappings frame address
 		moveq	#0,d1					; discard the high byte of the frame table index
 		move.b	(a1)+,d1				; get number of sprite pieces in frame
+		btst	#sprite_subsprites_bit,d4		; is this a sub-sprite parent (or Sonic's loop flag)?
+		bne.s	.chkSubSprites				; if yes, branch
 		subq.b	#1,d1					; subtract 1 for dbf
 		bmi.s	.setVisible				; skip rendering if mapping was blank
 
@@ -149,7 +151,95 @@ BuildSprites:
 	.spriteLimit:
 		move.b	#0,-5(a2)				; unlink penultimate sprite
 		rts
+; ---------------------------------------------------------------------------
+
+	; Bit 6 is also Sonic's loop flag, copied by the Spin Dash dust and debug
+	; placement, so only a nonzero child count makes the object a parent.
+	.chkSubSprites:
+		tst.b	obSubSprites(a0)			; does the object have children?
+		bne.s	.drawParent				; if yes, branch
+		subq.b	#1,d1					; subtract 1 for dbf
+		bmi.w	.setVisible				; skip rendering if mapping was blank
+		bra.w	.drawFrame				; draw as an ordinary object
+; ---------------------------------------------------------------------------
+
+	.drawParent:
+		subq.b	#1,d1					; subtract 1 for dbf
+		bmi.s	.drawChildren				; parent frame may be blank
+		bsr.w	BuildSpr_Draw				; draw parent frame (keeps d2/d3)
+
+	.drawChildren:
+		bsr.s	BuildSpr_SubSprites
+		bra.w	.setVisible
 ; End of function BuildSprites
+
+; ---------------------------------------------------------------------------
+; Draw the child frames of a sub-sprite parent (see subspr_* in _Constants.asm).
+;
+; input:
+;	d2 = parent's VDP Y-position
+;	d3 = parent's VDP X-position
+;	d5 = total rendered sprites so far
+;	a0 = parent object
+;	a2 = pointer to sprite link buffer
+;
+; Keeps d6/d7/a4 for the BuildSprites layer loop.
+; ---------------------------------------------------------------------------
+
+BuildSpr_SubSprites:
+		moveq	#0,d0
+		move.b	obSubSprites(a0),d0			; get child count
+		cmpi.b	#subspr_max,d0				; does it fit the SST?
+		bls.s	.countOk				; if yes, branch
+		moveq	#subspr_max,d0				; clamp to the children the SST holds
+	.countOk:
+		subq.w	#1,d0					; subtract 1 for dbf
+		movem.l	d6-d7/a5-a6,-(sp)
+		move.w	d0,d6					; d6 = children left
+		move.w	d2,d7					; d7 = parent Y
+		movea.w	d3,a6					; a6 = parent X
+		lea	subspr_data(a0),a5
+
+	.childLoop:
+		cmpi.b	#sprites_max,d5				; is the sprite table full?
+		beq.s	.return					; if yes, drop the remaining children
+
+		move.b	subspr_x(a5),d3
+		ext.w	d3
+		add.w	a6,d3					; d3 = child X
+		move.w	d3,d0
+		subi.w	#$80-subspr_reach,d0
+		cmpi.w	#320+subspr_reach*2,d0			; is child origin near the screen horizontally?
+		bhs.s	.nextChild				; if not, skip it (also keeps pieces from wrapping at X=512)
+
+		move.b	subspr_y(a5),d2
+		ext.w	d2
+		add.w	d7,d2					; d2 = child Y
+		move.w	d2,d0
+		subi.w	#$80-subspr_reach,d0
+		cmpi.w	#224+subspr_reach*2,d0			; is child origin near the screen vertically?
+		bhs.s	.nextChild				; if not, skip it
+
+		movea.l	obMap(a0),a1
+		moveq	#0,d1
+		move.b	subspr_frame(a5),d1
+		add.w	d1,d1					; preserve bit 8 so mapping frames $80-$FF work
+		adda.w	(a1,d1.w),a1				; get mappings frame address
+		moveq	#0,d1					; discard the high byte of the frame table index
+		move.b	(a1)+,d1				; get number of sprite pieces in frame
+		subq.b	#1,d1					; subtract 1 for dbf
+		bmi.s	.nextChild				; skip blank frames
+		move.b	obRender(a0),d4				; reload flip bits (the previous draw may have used d4)
+		bsr.w	BuildSpr_Draw
+
+	.nextChild:
+		addq.w	#subspr_size,a5
+		dbf	d6,.childLoop
+
+	.return:
+		movem.l	(sp)+,d6-d7/a5-a6
+		rts
+; End of function BuildSpr_SubSprites
 
 ; ---------------------------------------------------------------------------
 ; Sonic 2 style HUD renderer. Draws the frame the HUD object selected this
