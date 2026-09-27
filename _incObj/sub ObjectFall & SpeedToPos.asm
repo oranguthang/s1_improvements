@@ -6,21 +6,15 @@ gravity:	equ	$38				; gravity constant used by many objects
 ; ---------------------------------------------------------------------------
 
 ObjectFall:
-		move.l	obX(a0),d2				; get object's X-axis position
-		move.l	obY(a0),d3				; get object's Y-axis position
-		move.w	obVelX(a0),d0				; load horizontal speed
-		ext.l	d0					; extend speed to longword
-		asl.l	#8,d0					; shift speed up a byte (16.16 fixed point)
-		add.l	d0,d2					; add speed to X-axis position
-
-		move.w	obVelY(a0),d0				; load vertical speed
-		addi.w	#gravity,obVelY(a0)			; increase vertical speed (apply gravity)
-		ext.l	d0					; extend speed to longword
-		asl.l	#8,d0					; shift speed up a byte (16.16 fixed point)
-		add.l	d0,d3					; add speed to Y-axis position
-
-		move.l	d2,obX(a0)				; update X-axis position
-		move.l	d3,obY(a0)				; update Y-axis position
+		movem.w	obVelX(a0),d0/d3			; sign-extend both 8.8 velocities
+		asl.l	#8,d0					; convert X velocity to 16.16 delta
+		add.l	d0,obX(a0)				; update X, including subpixel position
+		move.l	obX(a0),d2				; preserve the original d2 result
+		asl.l	#8,d3					; convert Y velocity to 16.16 delta
+		move.l	d3,d0					; preserve the original d0 result
+		add.l	d3,obY(a0)				; move with the pre-gravity velocity
+		addi.w	#gravity,obVelY(a0)		; apply gravity for the next frame
+		move.l	obY(a0),d3				; preserve the original d3 and condition codes
 		rts						; return
 ; End of function ObjectFall
 
@@ -32,19 +26,13 @@ ObjectFall:
 ; ---------------------------------------------------------------------------
 
 SpeedToPos:
-		move.l	obX(a0),d2				; get object's X-axis position
-		move.l	obY(a0),d3				; get object's Y-axis position
-		move.w	obVelX(a0),d0				; load horizontal speed
-		ext.l	d0					; extend speed to longword
-		asl.l	#8,d0					; shift speed up a byte (16.16 fixed point)
-		add.l	d0,d2					; add speed to X-axis position
-
-		move.w	obVelY(a0),d0				; load vertical speed
-		ext.l	d0					; extend speed to longword
-		asl.l	#8,d0					; shift speed up a byte (16.16 fixed point)
-		add.l	d0,d3					; add speed to Y-axis position
-
-		move.l	d2,obX(a0)				; update X-axis position
-		move.l	d3,obY(a0)				; update Y-axis position
+		movem.w	obVelX(a0),d0/d3			; sign-extend both 8.8 velocities
+		asl.l	#8,d0					; convert X velocity to 16.16 delta
+		add.l	d0,obX(a0)				; update X, including subpixel position
+		move.l	obX(a0),d2				; preserve the original d2 result
+		asl.l	#8,d3					; convert Y velocity to 16.16 delta
+		move.l	d3,d0					; preserve the original d0 result
+		add.l	d3,obY(a0)				; update Y, including subpixel position
+		move.l	obY(a0),d3				; preserve the original d3 and condition codes
 		rts						; return
 ; End of function SpeedToPos
