@@ -92,7 +92,7 @@ id_GiantRing:		objptr	GiantRing		; 4B
 id_GeyserMaker:		objptr	GeyserMaker		; 4C
 id_LavaGeyser:		objptr	LavaGeyser		; 4D
 id_LavaWall:		objptr	LavaWall		; 4E
-id_Obj4F:		objptr	Obj4F			; 4F
+id_Splats:		objptr	Splats			; 4F
 id_Yadrin:		objptr	Yadrin			; 50
 id_SmashBlock:		objptr	SmashBlock		; 51
 id_MovingBlock:		objptr	MovingBlock		; 52

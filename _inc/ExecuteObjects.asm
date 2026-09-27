@@ -12,7 +12,7 @@ ExecuteObjects:
 		moveq	#(v_objspace_end-v_objspace)/object_size-1,d7 ; $80 objects - 1
 		moveq	#0,d0					; clear d0
 		cmpi.b	#6,(v_player+obRoutine).w		; is Sonic dying?
-		bhs.s	.sonic_dead				; if yes, branch to alternate logic
+		bhs.w	.sonic_dead				; if yes, branch to alternate logic
 
 ; loc_D348:
 .run_object:
@@ -45,6 +45,13 @@ ExecuteObjects:
 		moveq	#0,d0					; clear d0
 		move.b	obID(a0),d0				; load object ID from RAM
 		beq.s	.next_object_displayonly		; if ID is 0, this is an empty object slot, branch
+		cmpi.b	#id_Splats,d0				; Game/Time Over art reuses part of Splats' slot
+		bne.s	.frozen_art_valid
+		tst.b	(v_gameovertext1).w
+		bne.s	.next_object_displayonly
+		tst.b	(v_gameovertext2).w
+		bne.s	.next_object_displayonly
+.frozen_art_valid:
 		tst.b	obRender(a0)				; was object on-screen as Sonic died?
 		bpl.s	.next_object_displayonly		; if not, branch
 		bsr.w	DisplaySprite				; keep displaying the object as Sonic dies but don't execute it

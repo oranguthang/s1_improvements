@@ -4335,7 +4335,8 @@ Map_PRock:	include	"_maps/Purple Rock.asm"
 Map_Geyser:	include	"_maps/Lava Geyser.asm"
 Map_LWall:	include	"_maps/Wall of Lava.asm"
 		include	"_incObj/40 Badnik - Moto Bug.asm" ; includes "_incObj/sub RememberState.asm" subroutine
-		include	"_incObj/4F Unused - Blank.asm" ; this was Splats in the prototype
+		include	"_incObj/4F Badnik - Splats.asm"
+Map_Splats:	include	"_maps/Splats.asm"
 		include	"_incObj/50 Badnik - Yadrin.asm"
 		include	"_incObj/sub SolidObject.asm"
 		include	"_incObj/51 MZ Smashable Green Block.asm"

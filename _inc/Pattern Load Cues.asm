@@ -177,6 +177,7 @@ PLC_MZ:		plcheader
 		plcm	Nem_Buzz,	ArtTile_Buzz_Bomber		; buzz bomber enemy
 		plcm	Nem_Yadrin,	ArtTile_Yadrin			; yadrin enemy
 		plcm	Nem_Basaran,	ArtTile_Basaran			; basaran enemy
+		plcm	Nem_Splats,	ArtTile_Splats			; splats enemy
 		plcm	Nem_Cater,	ArtTile_MZ_SYZ_Caterkiller	; caterkiller enemy
 PLC_MZ_end:
 

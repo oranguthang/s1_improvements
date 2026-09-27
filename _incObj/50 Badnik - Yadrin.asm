@@ -1,8 +1,7 @@
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Subroutine to check if the object has hit a wall to the left or right
-; In the prototype, this routine was shared between Splats (Obj4F) and Yadrin,
-; but since Splats was deleted, it is only used by Yadrins anymore. See here:
+; Shared between Splats (Obj4F, restored from the prototype) and Yadrin. See:
 ; https://github.com/Totally-Not-Filter/s1-proto-disasm/blob/AS/obj/4F%20Splats.asm
 ; ---------------------------------------------------------------------------
 

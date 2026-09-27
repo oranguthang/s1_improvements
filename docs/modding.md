@@ -15,3 +15,7 @@ Editable layouts are in `levels/`, object placements in `objpos/`, and collision
 ## Swinging wrecking ball
 
 The unused swinging-ball object variant is restored and has an editor definition alongside swinging platforms.
+
+## Splats
+
+Splats occupies object `$4F`, with code in `_incObj/4F Badnik - Splats.asm` and mappings in `_maps/Splats.asm`. Its palette line avoids Sonic cycle colours. Include graphics, PLC registration, object pointer and editor definition when adding another badnik.

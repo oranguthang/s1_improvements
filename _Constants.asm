@@ -577,6 +577,8 @@ ArtTile_Newtron:		equ $49B
 ArtTile_Burrobot:		equ $4A6
 ArtTile_Basaran:		equ $4B8
 ArtTile_Roller:			equ $4B8
+ArtTile_Splats:			equ $297			; MZ art ends here; 29 unused tiles before the push block
+Splats_Tiles:			equ 29
 ArtTile_Moto_Bug:		equ $4F0
 ArtTile_Button:			equ $50F
 ArtTile_Button_Main:		equ ArtTile_Button+4		; Skips over unused red tiles
@@ -695,3 +697,10 @@ ArtTile_Credits_Font:		equ $5A0
 
 ; Error Handler
 ArtTile_Error_Handler_Font:	equ $7C0
+
+	if ArtTile_Splats<$297
+		fatal "Splats must not overwrite the MZ main art."
+	endif
+	if ArtTile_Splats+Splats_Tiles>ArtTile_MZ_Block
+		fatal "Splats must not overwrite the MZ push block."
+	endif

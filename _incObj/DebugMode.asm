@@ -465,6 +465,7 @@ __LABEL__:	label	*
 		dbug	Map_LWall,	id_LavaWall,		0,	0,	ArtTile_MZ_Lava|Tile_Pal4
 		dbug	Map_Push,	id_PushBlock,		0,	0,	ArtTile_MZ_Block|Tile_Pal3
 		dbug	Map_Yad,	id_Yadrin,		0,	0,	ArtTile_Yadrin|Tile_Pal2
+		dbug	Map_Splats,	id_Splats,		0,	0,	ArtTile_Splats|Tile_Pal2
 		dbug	Map_Smab,	id_SmashBlock,		0,	0,	ArtTile_MZ_Block|Tile_Pal3
 	    if FixBugs
 		dbug	Map_MBlock,	id_MovingBlock,		0,	0,	ArtTile_MZ_Block|Tile_Pal3
