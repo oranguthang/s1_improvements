@@ -188,27 +188,10 @@ GRing_Bonus:
 		move.b	obSubtype(a0),d0
 		subq.b	#1,d0
 		bset	d0,(v_midring_flags).w		; do not respawn this bonus on act reload
-		move.w	(v_rings).w,d0
-		addi.w	#50,d0
-		cmpi.w	#999,d0
-		bls.s	.storeRings
-		move.w	#999,d0
-	.storeRings:
-		move.w	d0,(v_rings).w
-		ori.b	#1,(f_ringcount).w		; redraw ring counter
+		moveq	#50,d0
+		jsr	(AddRings).l			; add 50 rings (capped at 999) and award any 100-ring lives
+		bne.s	.playSound			; if a life was awarded, play extra life music
 		move.w	#sfx_GiantRing,d0
-		cmpi.w	#100,(v_rings).w
-		blo.s	.playSound
-		bset	#1,(v_lifecount).w
-		beq.s	.extraLife
-		cmpi.w	#200,(v_rings).w
-		blo.s	.playSound
-		bset	#2,(v_lifecount).w
-		bne.s	.playSound
-	.extraLife:
-		addq.b	#1,(v_lives).w
-		addq.b	#1,(f_lifecount).w
-		move.w	#bgm_ExtraLife,d0
 	.playSound:
 		move.l	a0,-(sp)
 		jsr	(QueueSound2).l

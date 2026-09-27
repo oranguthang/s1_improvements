@@ -174,41 +174,67 @@ Ring_Delete:	; Routine 8
 ; ---------------------------------------------------------------------------
 
 CollectRing:
-	if FixBugs
-		; There isn't any limit to how many rings the player can
-		; collect, which bugs out the ring counter at 999+ rings.
-		; Sonic 2 and 3K would add a cap to stop this.
-		moveq	#1,d0					; add 1 to rings
-		add.w	(v_rings).w,d0				; get previous ring count
-		cmpi.w	#999,d0					; does the player have 999 rings now?
-		blo.s	.belowmax				; if not, branch
-		move.w	#999,d0					; cap at 999 rings
-.belowmax:	move.w	d0,(v_rings).w				; set new ring count
-	else
-		addq.w	#1,(v_rings).w				; add 1 to rings
-	endif
-		ori.b	#1,(f_ringcount).w			; update the rings counter
-
-		move.w	#sfx_Ring,d0				; play ring sound
-
-		cmpi.w	#100,(v_rings).w			; do you have 100 or more rings?
-		blo.s	.playSound				; if not, branch
-		bset	#1,(v_lifecount).w			; set "extra life for 100 rings" flag
-		beq.s	.extraLife				; if it wasn't set before, award an extra life
-		cmpi.w	#200,(v_rings).w			; do you have 200 or more rings?
-		blo.s	.playSound				; if not, branch
-		bset	#2,(v_lifecount).w			; set "extra life for 200 rings" flag
-		bne.s	.playSound				; if it was already set, do not award another extra life
-
-	.extraLife:
-		addq.b	#1,(v_lives).w				; add 1 to the number of lives you have
-		addq.b	#1,(f_lifecount).w			; update the lives counter
-
-		move.w	#bgm_ExtraLife,d0			; play extra life music
+		moveq	#1,d0					; add 1 ring
+		bsr.s	AddRings				; add it and award any 100-ring lives
+		bne.s	.playSound				; if a life was awarded, play extra life music
+		move.w	#sfx_Ring,d0				; otherwise play ring sound
 
 	.playSound:
 		jmp	(QueueSound2).l				; play selected sound
 ; End of function CollectRing
+
+; ---------------------------------------------------------------------------
+; Subroutine to add rings, capped at 999, and award one extra life for every
+; multiple of 100 reached. The low 7 bits of v_lifecount count how many
+; 100-ring lives this ring total has already paid out, so gains larger than
+; one ring can neither skip nor repeat a threshold. Bit 7 is the Special
+; Stage continue flag. The count is cleared together with the rings (level
+; start, Special Stage start, ring loss) and saved with them at lampposts.
+;
+; input:
+;	d0.w = rings to add
+; output:
+;	d0.w = bgm_ExtraLife if a life was awarded, otherwise 0 (Z set);
+;	       a threshold reached at 99 lives is consumed without a life
+; ---------------------------------------------------------------------------
+
+AddRings:
+		movem.l	d1-d2,-(sp)				; callers only expect d0 to change
+		add.w	(v_rings).w,d0				; add current rings
+		cmpi.w	#999,d0					; is the result above the counter limit?
+		bls.s	.belowmax				; if not, branch
+		move.w	#999,d0					; cap at 999 rings
+	.belowmax:
+		move.w	d0,(v_rings).w				; set new ring count
+		ori.b	#1,(f_ringcount).w			; update the rings counter
+
+		moveq	#0,d2					; no threshold reached yet
+	.chkThreshold:
+		moveq	#$7F,d1
+		and.b	(v_lifecount).w,d1			; get 100-ring lives already awarded
+		addq.w	#1,d1					; next multiple to reach
+		mulu.w	#100,d1					; convert to rings
+		cmp.w	d1,d0					; has it been reached?
+		blo.s	.done					; if not, branch
+		addq.b	#1,(v_lifecount).w			; remember this multiple (at most 9, never touches bit 7)
+		cmpi.b	#99,(v_lives).w				; is the lives counter full?
+		bhs.s	.chkThreshold				; if yes, consume the multiple without a life (2-digit HUD)
+		addq.b	#1,(v_lives).w				; add 1 to the number of lives you have
+		addq.b	#1,(f_lifecount).w			; update the lives counter
+		moveq	#1,d2					; play extra life music
+		bra.s	.chkThreshold				; check the next multiple too
+; ---------------------------------------------------------------------------
+
+	.done:
+		moveq	#0,d0					; assume no threshold reached
+		tst.b	d2					; was one reached?
+		beq.s	.return					; if not, branch
+		move.w	#bgm_ExtraLife,d0			; return extra life music
+	.return:
+		movem.l	(sp)+,d1-d2				; restore registers (flags unaffected)
+		tst.w	d0					; set Z if no threshold was reached
+		rts
+; End of function AddRings
 
 
 ; ===========================================================================
@@ -305,7 +331,7 @@ RLoss_Count:	; Routine 0
 .resetcounter:
 		move.w	#0,(v_rings).w				; reset number of rings to zero
 		move.b	#$80,(f_ringcount).w			; update ring counter ($80 means all digits should be reset to __0)
-		move.b	#0,(v_lifecount).w			; reset the flags for extra lives on 100/200 rings collected
+		move.b	#0,(v_lifecount).w			; reset the 100-ring extra life count along with the rings
 
 	if FixBugs
 		; Fix Ring Timers

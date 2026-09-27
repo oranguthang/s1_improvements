@@ -59,3 +59,7 @@ Title cards begin moving after the level fade. Control resumes as they move away
 ## Giant rings
 
 Free rings can enter a Special Stage from within an act. Act-end rings require 50 rings. Entry freezes Sonic while the flash plays. A return uses the ring centre for X and searches downward for supporting terrain; without a suitable surface the entry height is kept. Separate free-ring subtypes track independent rewards.
+
+## Extra lives
+
+Every 100 rings awards an extra life, including 200, 300 and later thresholds. Losing the rings resets those thresholds: collecting another 100 awards another life. The HUD counters remain bounded.

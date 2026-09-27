@@ -2963,7 +2963,7 @@ Level_LoadObj:
 		bne.s	Level_SkipClr				; if yes, branch
 		move.w	d0,(v_rings).w				; clear rings
 		move.l	d0,(v_time).w				; clear time
-		move.b	d0,(v_lifecount).w			; clear extra lives flags when getting 100/200 rings
+		move.b	d0,(v_lifecount).w			; clear count of 100-ring extra lives
 
 Level_SkipClr:
 		move.b	d0,(f_timeover).w			; clear time over flag
@@ -3409,7 +3409,7 @@ GM_Special:		; white fade-out from previous game mode
 		subq.b	#1,(v_btnpushtime2).w			; subtract 1 from demo key pressduration
 
 		clr.w	(v_rings).w				; clear rings
-		clr.b	(v_lifecount).w				; clear extra lives flags when getting 100/200 rings
+		clr.b	(v_lifecount).w				; clear count of 100-ring extra lives
 
 		move.w	#0,(v_debuguse).w			; exit debug mode if necessary
 		move.w	#1800,(v_generictimer).w		; run regular demos for 30 seconds
@@ -3763,7 +3763,7 @@ End_LoadSonic:
 		moveq	#0,d0					; set d0 to 0
 		move.w	d0,(v_rings).w				; clear rings
 		move.l	d0,(v_time).w				; clear time
-		move.b	d0,(v_lifecount).w			; clear extra lives flags when getting 100/200 rings
+		move.b	d0,(v_lifecount).w			; clear count of 100-ring extra lives
 		move.b	d0,(v_shield).w				; clear shield
 		move.b	d0,(v_invinc).w				; clear invincibility
 		move.b	d0,(v_shoes).w				; clear speed shoes

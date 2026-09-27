@@ -51,6 +51,8 @@ AddPoints:
 		addi.l	#5000,(v_scorelife).w			; increase requirement for next score extra life by 50000
 		tst.b	(v_megadrive).w				; is region set to Japanese?
 		bmi.s	.return					; if not (i.e. overseas), branch
+		cmpi.b	#99,(v_lives).w			; two-digit HUD limit
+		bhs.s	.return				; consume the score threshold at the limit
 		addq.b	#1,(v_lives).w				; award 1 extra life
 		addq.b	#1,(f_lifecount).w			; update lives counter
 		move.w	#bgm_ExtraLife,d0			; set extra life music

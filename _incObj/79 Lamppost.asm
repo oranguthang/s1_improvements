@@ -154,7 +154,7 @@ Lamp_StoreInfo:
 		move.w	obY(a0),(v_lamp_ypos).w			; y-position
 
 		move.w	(v_rings).w,(v_lamp_rings).w		; rings
-		move.b	(v_lifecount).w,(v_lamp_lives).w	; extra life flag on 100/200 rings
+		move.b	(v_lifecount).w,(v_lamp_lives).w	; count of 100-ring extra lives
 		move.l	(v_time).w,(v_lamp_time).w		; time
 
 		move.b	(v_dle_routine).w,(v_lamp_dle).w	; routine counter for dynamic level event
@@ -185,7 +185,7 @@ Lamp_LoadInfo:
 		move.w	(v_lamp_ypos).w,(v_player+obY).w	; y-position
 
 		move.w	(v_lamp_rings).w,(v_rings).w		; restore rings saved at the lamppost
-		move.b	(v_lamp_lives).w,(v_lifecount).w	; restore extra life flags
+		move.b	(v_lamp_lives).w,(v_lifecount).w	; restore count of 100-ring extra lives
 
 		move.l	(v_lamp_time).w,(v_time).w		; time
 		move.b	#60-1,(v_timecent).w			; set centiseconds part to a second

@@ -278,10 +278,14 @@ Pow_ChkSonic:
 		bne.s	Pow_ChkShoes				; if not, branch
 
 ExtraLife:
+		cmpi.b	#99,(v_lives).w			; two-digit HUD limit
+		bhs.s	.noLife				; consume the 1-up without wrapping the counter
 		addq.b	#1,(v_lives).w				; add 1 to the number of lives you have
 		addq.b	#1,(f_lifecount).w			; update the lives counter
 		move.w	#bgm_ExtraLife,d0			; set extra life music
 		jmp	(QueueSound1).l				; play it
+	.noLife:
+		rts
 ; ===========================================================================
 
 Pow_ChkShoes:
@@ -369,30 +373,12 @@ Pow_ChkRings:
 		cmpi.b	#6,d0					; does monitor contain 10 rings?
 		bne.s	Pow_ChkS				; if not, branch
 
-		addi.w	#10,(v_rings).w				; add 10 rings to the number of rings you have
-	if FixBugs
-		; There isn't any limit to how many rings the player can
-		; collect, which bugs out the ring counter at 999+ rings.
-		; Sonic 2 REV00 only fixed this for regular rings, while
-		; monitors were not fixed until REV01.
-		cmpi.w	#999,(v_rings).w			; does the player have 999 rings?
-		blo.s	.chkExtraLife				; if not, branch
-		move.w	#999,(v_rings).w			; cap at 999 rings
-	endif
-
-	.chkExtraLife:
-		ori.b	#1,(f_ringcount).w			; update the ring counter
-		cmpi.w	#100,(v_rings).w			; check if you have at least 100 rings now
-		blo.s	Pow_RingSound				; if not, branch
-		bset	#1,(v_lifecount).w			; set 100 rings extra life flag
-		beq.w	ExtraLife				; if it wasn't already set, award an extra life
-		cmpi.w	#200,(v_rings).w			; check if you have at least 200 rings now
-		blo.s	Pow_RingSound				; if not, branch
-		bset	#2,(v_lifecount).w			; set 200 rings extra life flag
-		beq.w	ExtraLife				; if it wasn't already set, award an extra life
-
-Pow_RingSound:
+		moveq	#10,d0					; add 10 rings (capped at 999)
+		jsr	(AddRings).l				; update HUD and award any 100-ring lives
+		bne.s	.playSound				; if a life was awarded, play extra life music
 		move.w	#sfx_Ring,d0				; set ring sound collection effect
+
+	.playSound:
 		jmp	(QueueSound1).l				; play it
 ; ===========================================================================
 
