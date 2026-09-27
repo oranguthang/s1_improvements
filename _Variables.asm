@@ -32,7 +32,15 @@ v_ngfx_buffer_end:
 
 v_spritequeue:		ds.b	spritelayer_num*spritelayer_size ; sprite display queue, in order of priority (8*$80=$400 bytes)
 
-v_16x16:		ds.b	$1800				; unused (formerly 16x16 tile mappings; now read from ROM via v_rom_blocks)
+v_16x16:
+Object_Respawn_Table: ds.b $300                ; one state byte per placed object
+Object_Respawn_Table_End:
+Camera_X_Pos_Last: ds.w 1
+Camera_Y_Pos_Last: ds.w 1
+Camera_X_Coarse_Back: ds.w 1
+Camera_Y_Coarse_Back: ds.w 1
+Object_Manager_Size: equ *-v_16x16
+                    ds.b $1800-Object_Manager_Size ; remaining free former block buffer
 
 VDP_Command_Buffer:	ds.w	7*$12			; 18 queued VDP commands
 VDP_Command_Buffer_Slot: ds.l	1			; next free DMA queue slot
@@ -344,8 +352,8 @@ v_palette_fading_line_3:ds.b $20
 v_palette_fading_line_4:ds.b $20
 v_palette_fading_end:
 
-v_objstate:		ds.b	$C0				; object state list
-v_objstate_end:
+v_error_workspace:	ds.b	$C0				; former object state list: error data plus $7B spare bytes
+v_error_workspace_end:
 
 v_systemstack_end:	ds.b	$140				; system stack end (items get added backwards)
 v_systemstack:							; system stack start
@@ -536,7 +544,7 @@ v_ss_scroll_clouds:	ds.b	$1C				; buffer to store scroll positions for SS backgr
 
 
 ; Error handler
-	phase	v_objstate
+	phase	v_error_workspace
 v_regbuffer:		ds.b	$40				; stores registers d0-a7 during an error event
 v_spbuffer:		ds.l	1				; stores most recent sp address
 v_errortype:		ds.b	1				; error type

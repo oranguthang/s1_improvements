@@ -48,11 +48,11 @@ Ring_Main:	; Routine 0
 		; Ring respawn table data arrangement (in bits): R7654321
 		;   R = respawn block flag for entire ring group
 		;   # = "ring collected" flag per ring, set to 1 if collected
-		lea	(v_objstate).w,a2			; load object respawn table
-		moveq	#0,d0					; clear d0 (obRespawnNo is a byte, we need word addressing)
-		move.b	obRespawnNo(a0),d0			; get object respawn index for ring group
-		lea	2(a2,d0.w),a2				; load respawn data for this ring group
-		move.b	(a2),d4					; store that data for later
+		moveq	#0,d4					; debug-created rings have no respawn entry
+		respawn_entry.s	.noentry
+		move.b	(a2),d4					; collected rings and loaded flag
+	.noentry:
+		moveq	#0,d0
 
 		; Rings are stored in groups within the level layouts, with the subtype dictating
 		; how many there are, and what distance/angle between individual rings to pick.
@@ -87,7 +87,6 @@ Ring_Main:	; Routine 0
 		move.w	obY(a0),d3				; remember base Y-position
 		lsr.b	#1,d4					; shift out first ring collected bit
 		bcs.s	Ring_NextRing				; has the first ring already been collected? if yes, skip spawning it
-		bclr	#7,(a2)					; clear respawn block flag so ring group can spawn again
 		bra.s	Ring_SpawnRing				; spawn first ring object
 ; ===========================================================================
 
@@ -95,7 +94,6 @@ Ring_MakeRings:
 		swap	d1					; swap to respawn index bit
 		lsr.b	#1,d4					; shift out next remembered ring respawn bit
 		bcs.s	Ring_NextRing				; has this ring already been collected? if yes, branch
-		bclr	#7,(a2)					; clear respawn block flag so ring group can spawn again
 
 		bsr.w	FindFreeObj				; find a free RAM slot for the new ring
 		bne.s	Ring_SpawningDone			; if object RAM is full, branch
@@ -113,7 +111,7 @@ Ring_SpawnRing:
 		move.b	#2,obPriority(a1)			; set sprite priority
 		move.b	#col_12x12|col_item,obColType(a1)	; set to power-up collision type and hitbox 12x12 (=$47)
 		move.b	#16/2,obActWid(a1)			; set sprite display width
-		move.b	obRespawnNo(a0),obRespawnNo(a1)		; remember respawn index of ring group
+		move.w	respawn_index(a0),respawn_index(a1)	; share the group's state entry
 		move.b	d1,ring_respawnbit(a1)			; remember "ring collected" index bit in respawn data
 
 ; loc_9C02:
@@ -126,23 +124,18 @@ Ring_NextRing:
 
 ; loc_9C0E:
 Ring_SpawningDone:
-		btst	#0,(a2)					; has first ring already been collected?
-		bne.w	DeleteObject				; if yes, delete it right away
+		; If ring 0 was collected, this slot remained the group spawner.
+		; Other rings may have been created, but this slot is not a drawable ring.
+		respawn_entry.s	Ring_Animate
+		btst	#0,(a2)
+		bne.w	DeleteObject
 ; ---------------------------------------------------------------------------
 
 Ring_Animate:	; Routine 2
 		move.b	(v_ani1_frame).w,obFrame(a0)		; set frame (updated in SynchroAnimate => Sync2)
 
-	if FixBugs
-		; Objects shouldn't call DisplaySprite and DeleteObject in
-		; the same frame or else cause a null-pointer dereference.
-		out_of_range.s	Ring_Delete,ring_origX(a0)	; has ring gone out of range (based on group X-position)? if yes, delete it
-		bra.w	DisplaySprite				; otherwise, display ring sprite
-	else
-		bsr.w	DisplaySprite				; display ring sprite
-		out_of_range.s	Ring_Delete,ring_origX(a0)	; has ring gone out of range (based on group X-position)? if yes, delete it
-		rts						; return
-	endif
+		out_of_range.s	Ring_Delete,ring_origX(a0)
+		bra.w	DisplaySprite
 ; ===========================================================================
 
 Ring_Collect:	; Routine 4 (set from ReactToItem)
@@ -151,11 +144,9 @@ Ring_Collect:	; Routine 4 (set from ReactToItem)
 		move.b	#1,obPriority(a0)			; make ring sparkles appear in front of Sonic's sprites
 		bsr.w	CollectRing				; add 1 ring
 
-		lea	(v_objstate).w,a2			; load object respawn table
-		moveq	#0,d0					; clear d0 (obRespawnNo is a byte, we need word addressing)
-		move.b	obRespawnNo(a0),d0			; get object respawn index for ring group
-		move.b	ring_respawnbit(a0),d1			; get "ring collected" bit index for respawn data
-		bset	d1,2(a2,d0.w)				; remember that this ring in the group has been collected
+		respawn_entry.s	Ring_Sparkle
+		move.b	ring_respawnbit(a0),d1
+		bset	d1,(a2)					; remember collected ring in its group's state
 ; ---------------------------------------------------------------------------
 
 Ring_Sparkle:	; Routine 6

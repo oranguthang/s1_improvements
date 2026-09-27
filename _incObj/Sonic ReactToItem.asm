@@ -488,12 +488,7 @@ KillSonic:
 		move.w	#0,obVelX(a0)				; stop horizontal movement
 		move.w	#0,obInertia(a0)			; stop ground movement
 
-	if FixBugs=0
-		; Leftover line from the prototype, where objoff_38 was used to respawn Sonic at his last Y-position,
-		; which causes sticktoconvex to get overwritten with the high byte of Sonic's Y-position.
-		; Sonic doesn't react to solids when he dies, but escaping death through debug mode would cause problems.
-		move.w	obY(a0),objoff_38(a0)			; (unused) backup Y-position before dying
-	endif
+		move.w	obY(a0),objoff_38(a0)			; remember Sonic's Y at death
 
 		move.b	#id_Death,obAnim(a0)			; set Sonic to use death animation
 		bset	#7,obGfx(a0)				; set Sonic to high sprite priority state

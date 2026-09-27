@@ -50,13 +50,10 @@ Bump_Hit:	; Routine 2
 		move.w	#sfx_Bumper,d0				; set bumper sound
 		jsr	(QueueSound2).l				; play it
 
-		lea	(v_objstate).w,a2			; load respawn table
-		moveq	#0,d0					; clear d0 for word-addressing
-		move.b	obRespawnNo(a0),d0			; get bumper's respawn table index
-		beq.s	.addscore				; if it doesn't have one, branch
-		cmpi.b	#10+$80,2(a2,d0.w)			; has bumper been hit 10 times? ($80 is bit 7, i.e. respawn block flag)
+		respawn_entry.s	.addscore		; state of this placed object
+		cmpi.b	#10+$80,(a2)			; has bumper been hit 10 times? ($80 is bit 7, i.e. respawn block flag)
 		bhs.s	Bump_Display				; if yes, award no more points
-		addq.b	#1,2(a2,d0.w)				; remember one more bumper hit in respawn data
+		addq.b	#1,(a2)				; remember one more bumper hit in respawn data
 	.addscore:
 		moveq	#1,d0					; set to add 10 points
 		jsr	(AddPoints).l				; add to score
@@ -77,11 +74,8 @@ Bump_Display:
 ; ===========================================================================
 
 .delete:
-		lea	(v_objstate).w,a2			; load respawn table
-		moveq	#0,d0					; clear d0 for word-addressing
-		move.b	obRespawnNo(a0),d0			; get bumper's respawn table index
-		beq.s	.norespawnentry				; if it doesn't have one, branch
-		bclr	#7,2(a2,d0.w)				; clear respawn block flag so object can spawn again
+		respawn_entry.s	.norespawnentry		; state of this placed object
+		bclr	#7,(a2)				; clear respawn block flag so object can spawn again
 
 	.norespawnentry:
 		bra.w	DeleteObject				; display bumper sprite

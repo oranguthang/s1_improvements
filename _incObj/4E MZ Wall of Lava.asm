@@ -120,15 +120,8 @@ LWall_Solid:	; Routine 2
 ; ---------------------------------------------------------------------------
 
 .startDelete:
-		lea	(v_objstate).w,a2			; load respawn table
-		moveq	#0,d0					; clear d0 for word-addressing
-		move.b	obRespawnNo(a0),d0			; get respawn table index
-	if FixBugs
-		; This didn't verify if the lava wall even has a respawn entry,
-		; which could write bad data (such as when placed in debug mode).
-		beq.s	.delete					; if it doesn't have an index, branch
-	endif
-		bclr	#7,2(a2,d0.w)				; clear respawn block flag so lava wall can spawn again
+		respawn_entry.s	.delete
+		bclr	#7,(a2)
 
 	.delete:
 		move.b	#8,obRoutine(a0)			; set to LWall_Delete

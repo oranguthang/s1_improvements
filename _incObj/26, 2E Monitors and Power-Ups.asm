@@ -42,14 +42,8 @@ Mon_Main:	; Routine 0
 		move.b	#3,obPriority(a0)			; set sprite priority to 3
 		move.b	#30/2,obActWid(a0)			; set render width
 
-		lea	(v_objstate).w,a2			; get object respawn table
-		moveq	#0,d0					; clear d0
-		move.b	obRespawnNo(a0),d0			; get monitor's respawn table index number
-	if FixBugs=0
-		; This has been relocated into the RememberState fix below
-		bclr	#7,2(a2,d0.w)				; immediately clear the respawn block flag (...why?)
-	endif
-		btst	#0,2(a2,d0.w)				; has monitor already been broken?
+		respawn_entry.s	.notbroken
+		btst	#0,(a2)				; has monitor already been broken?
 		beq.s	.notbroken				; if not, branch
 
 		move.b	#8,obRoutine(a0)			; run "Mon_Display" routine
@@ -202,10 +196,9 @@ Mon_Explode:
 
 ; .fail:
 Mon_RememberBroken:
-		lea	(v_objstate).w,a2			; get object respawn table
-		moveq	#0,d0					; clear d0
-		move.b	obRespawnNo(a0),d0			; get monitor's respawn table index number
-		bset	#0,2(a2,d0.w)				; remember that this monitor has been broken in respawn table
+		respawn_entry.s	.broken
+		bset	#0,(a2)
+.broken:
 
 		move.b	#9,obAnim(a0)				; set monitor animation to broken
 		bra.w	DisplaySprite				; keep displaying broken monitor

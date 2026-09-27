@@ -145,6 +145,10 @@ ScrollVertical:
 
 		move.w	(v_player+obY).w,d0			; get Sonic's current Y-position
 		sub.w	(v_screenposy).w,d0			; d0 = Sonic's distance from top of screen
+		tst.w	(v_limittop2).w			; does this level wrap vertically?
+		bpl.s	.noWrap
+		andi.w	#$7FF,d0
+	.noWrap:
 
 		btst	#2,(v_player+obStatus).w		; is Sonic rolling?
 		beq.s	.checkInAir				; if not, branch
@@ -251,10 +255,8 @@ SV_TopBoundary:
 		bgt.s	SV_SetScreen				; if not, branch
 		cmpi.w	#-$100,d1				; does level wrap vertically? (top boundary set to -$100)
 		bgt.s	.noWrap					; if not, branch
-		andi.w	#$7FF,d1				; wrap expected new camera Y-position
-		andi.w	#$7FF,(v_player+obY).w			; wrap Sonic vertically
-		andi.w	#$7FF,(v_screenposy).w			; wrap camera Y-position
-		andi.w	#$3FF,(v_bgscreenposy).w		; wrap background Y-position
+		andi.w	#$7FF,d1				; wrap new camera Y-position
+		bset	#0,(v_fg_scroll_flags).w		; redraw top row on wrap
 		bra.s	SV_SetScreen				; set updated screen position
 ; ---------------------------------------------------------------------------
 
@@ -277,9 +279,8 @@ SV_BottomBoundary:
 		blt.s	SV_SetScreen				; if not, branch
 		subi.w	#$7FF+1,d1				; does level wrap vertically? (bottom boundary set to $800)
 		bcs.s	.noWrap					; if not, branch
-		andi.w	#$7FF,(v_player+obY).w			; wrap Sonic vertically
 		subi.w	#$7FF+1,(v_screenposy).w		; move camera back to top +1
-		andi.w	#$3FF,(v_bgscreenposy).w		; wrap background Y-position
+		bset	#1,(v_fg_scroll_flags).w		; redraw bottom row on wrap
 		bra.s	SV_SetScreen				; set updated screen position
 
 	; loc_6720:

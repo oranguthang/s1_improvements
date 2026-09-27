@@ -1,305 +1,484 @@
-; ===========================================================================
+; S3K object manager adapted for Sonic 1 objpos; see docs/object_manager_migration.md
 ; ---------------------------------------------------------------------------
-; Subroutine to load a level's objects
+OPL_S1_Compatibility: equ 1
+; If 1, adds compatibility for the Sonic 1 objpos layout without needing any
+; further adjustments. This will account for the following limitations:
+; * Sonic 3 introduces one extra bit to the upper portion of the second word,
+;   which is called the "y-check skip" flag. This pushes the x-flip/y-flip
+;   flags one bit further to the right, so it has to be accounted for.
+; * Sonic 3 can place object IDs up to $FF in the level. Sonic 1 can only go
+;   up to a maximum of $7F, as the MSB is reserved for the (now-unused)
+;   remember-state flag. Even though it's no longer necessary, we need to
+;   keep the limit or else objects would load with invalid IDs, unless
+;   adjusted to never set the remember-state flag in the objpos layout.
 ; ---------------------------------------------------------------------------
 
+; ---------------------------------------------------------------------------
+; Objects Manager
+; Subroutine to load objects whenever they are close to the screen. Unlike in
+; normal s2, in this version every object gets an entry in the respawn table.
+; This is necessary to get the additional y-range checks to work.
+;
+; input variables:
+;  -none-
+;
+; writes:
+;  d0, d1, d2
+;  d3 = upper boundary to load object
+;  d4 = lower boundary to load object
+;  d5 = #$FFF, used to filter out object's y position
+;  d6 = camera position
+;
+;  a0 = address in object placement list
+;  a3 = address in object respawn table
+;  a6 = object loading routine
+; ---------------------------------------------------------------------------
+
+; loc_17AA4
 ObjPosLoad:
-		moveq	#0,d0
-		move.b	(v_opl_routine).w,d0
-		move.w	OPL_Index(pc,d0.w),d0
-		jmp	OPL_Index(pc,d0.w)
+		tst.b	(v_opl_routine).w
+		bne.w	ObjPosLoad_Main
+; ---------------------------------------------------------------------------
 
-; ===========================================================================
-OPL_Index:	dc.w OPL_Main-OPL_Index
-		dc.w OPL_Next-OPL_Index
-; ===========================================================================
+ObjPosLoad_Init:
+		addq.b	#4,(v_opl_routine).w
 
-; Spawn window is initially -256px to -128px (relative to v_screenposx)
-; This is moved to -128px to 640px during OPL_Next so that all on-screen objects load at level start
+		lea     (Object_Respawn_Table).w,a0
+		moveq   #0,d0
+		move.w  #$C0-1,d1			; set loop counter
+OPLBack1:	move.l  d0,(a0)+
+		dbf     d1,OPLBack1
 
-OPL_Main:
-		addq.b	#2,(v_opl_routine).w			; goto OPL_Next next
-		move.w	(v_zone_act).w,d0			; get zone/act numbers
+		move.w	(v_zone_act).w,d0		; include act, matching the original ObjPos_Index selector
 		lsl.b	#6,d0
-		lsr.w	#4,d0					; combine zone/act into single number, times 4
-		lea	(ObjPos_Index).l,a0
-		movea.l	a0,a1					; copy index pointer to a1
-		adda.w	(a0,d0.w),a0				; jump to objpos list for specified zone/act
-		move.l	a0,(v_opl_data).w			; copy objpos list address
+		lsr.w	#4,d0
+		lea	(ObjPos_Index).l,a0		; load the first pointer in the object layout list pointer index,
+		adda.w	(a0,d0.w),a0			; load the pointer to the current object layout
+
+		; initialize each object load address with the first object in the layout
+		move.l	a0,(v_opl_data).w
 		move.l	a0,(v_opl_data+4).w
-		adda.w	2(a1,d0.w),a1				; jump to secondary objpos list (this is always blank)
-		move.l	a1,(v_opl_data+8).w			; copy objpos list address
-		move.l	a1,(v_opl_data+$C).w
-		lea	(v_objstate).w,a2
-		move.w	#$101,(a2)+				; start respawn counter at 1
-	if FixBugs
-		move.w	#(v_objstate_end-v_objstate-2)/4-1,d0
-	else
-		; This clears longwords, but the loop counter is measured in words!
-		; This causes $17C bytes to be cleared instead of $BE.
-		move.w	#(v_objstate_end-v_objstate-2)/2-1,d0
-	endif
+		lea	(Object_Respawn_Table).w,a3
 
-	; OPL_ClrList:
-	.clear_respawn_list:
-		clr.l	(a2)+
-		dbf	d0,.clear_respawn_list			; clear object respawn list
-
-	if FixBugs
-		; Clear the last word, since the above loop only does longwords.
-		if (v_objstate_end-v_objstate-2)&2
-			clr.w	(a2)+
-		endif
-	endif
-
-		lea	(v_objstate).w,a2
-		moveq	#0,d2
 		move.w	(v_screenposx).w,d6
-		subi.w	#128,d6					; d6 = 128px to left of screen
-		bcc.s	.use_screen_x				; branch if camera is > 128px from left boundary
-		moveq	#0,d6					; assume 0 if camera is close to left boundary
+		subi.w	#$80,d6				; look one chunk to the left
+		bcc.s	OPL1				; if the result was negative,
+		moveq	#0,d6				; cap at zero
 
-	; loc_D93C:
-	.use_screen_x:
-		andi.w	#$FF80,d6				; round down to nearest $80
-		movea.l	(v_opl_data).w,a0			; get objpos data pointer
+OPL1:
+		andi.w	#$FF80,d6			; limit to increments of $80 (width of a chunk)
+		movea.l	(v_opl_data).w,a0		; get first object in layout
 
-; loc_D944:
-.loop_find_right_init:
-		cmp.w	(a0),d6					; (a0) = x pos of object; d6 = edge of spawn window
-		bls.s	.found_right				; branch if object is right of edge (1st object outside spawn window)
-		tst.b	4(a0)					; 4(a0) = object id and remember state flag
-		bpl.s	.no_respawn				; branch if no remember flag found
-		move.b	(a2),d2					; d2 = respawn state
-		addq.b	#1,(a2)					; increment respawn list counter
-
-	; loc_D952:
-	.no_respawn:
-		addq.w	#6,a0					; goto next object in objpos list
-		bra.s	.loop_find_right_init			; loop until object is found within window
-; ===========================================================================
-
-; loc_D956:
-.found_right:
-		move.l	a0,(v_opl_data).w			; save pointer for objpos, 128px left of screen
-		movea.l	(v_opl_data+4).w,a0			; get first objpos in list again
-		subi.w	#128,d6					; d6 = 256px to left of screen
-		bcs.s	.found_left				; branch if camera is close to left boundary
-
-; loc_D964:
-.loop_find_left_init:
-		cmp.w	(a0),d6					; (a0) = x pos of object; d6 = edge of spawn window
-		bls.s	.found_left				; branch if object is right of edge (1st object inside spawn window)
-		tst.b	4(a0)					; 4(a0) = object id and remember state flag
-		bpl.s	.no_respawn2				; branch if no remember flag found
-		addq.b	#1,1(a2)				; increment second respawn list counter
-
-	; loc_D972:
-	.no_respawn2:
-		addq.w	#6,a0					; goto next object in objpos list
-		bra.s	.loop_find_left_init			; loop until object is found within window
-; ===========================================================================
-
-; loc_D976:
-.found_left:
-		move.l	a0,(v_opl_data+4).w			; save pointer for objpos, 256px left of screen
-		move.w	#-1,(v_opl_screen).w			; start screen at -1 so OPL_Next thinks it's moving right
-		; fall-through to OPL_Next...
-
-; ---------------------------------------------------------------------------
-; Primary level object loading routine
+OPLBack2:	; at the beginning of a level this gives respawn table entries to any object that is one chunk
+		; behind the left edge of the screen that needs to remember its state (Monitors, Badniks, etc.)
+		cmp.w	(a0),d6				; is object's x position >= d6?
+		bls.s	OPL2				; if yes, branch
+		addq.w	#6,a0				; next object
+		addq.w	#1,a3				; respawn index of next object going right
+		bra.s	OPLBack2
 ; ---------------------------------------------------------------------------
 
-OPL_Next:
-		lea	(v_objstate).w,a2
-		moveq	#0,d2
-		move.w	(v_screenposx).w,d6
-		andi.w	#$FF80,d6				; d6 = camera x pos rounded down to nearest $80
-		cmp.w	(v_opl_screen).w,d6			; compare to previous screen position
-		beq.w	OPL_NoMove				; branch if screen hasn't moved
-		bge.s	OPL_MovedRight				; branch if screen is right of previous position (or if level just started)
-; ---------------------------------------------------------------------------
+OPL2:
+		move.l	a0,(v_opl_data).w		; remember rightmost object that has been processed, so far (we still need to look forward)
+		move.w	a3,(v_opl_data+8).w		; and its respawn table index
 
-OPL_MovedLeft:
-		move.w	d6,(v_opl_screen).w			; update screen position
-		movea.l	(v_opl_data+4).w,a0			; jump to objpos on left side of window
-		subi.w	#128,d6					; d6 = 128px to left of screen
-		bcs.s	.found_left				; branch if camera is close to left boundary
+		lea	(Object_Respawn_Table).w,a3	; reset a3
+		movea.l	(v_opl_data+4).w,a0		; reset a0
+		subi.w	#$80,d6				; look even farther left (any object behind this is out of range)
+		bcs.s	OPL3				; branch, if camera position would be behind level's left boundary
 
-; loc_D9A6:
-.loop_find_left:
-		cmp.w	-6(a0),d6				; read objpos backwards
-		bge.s	.found_left				; branch if object is outside spawn window
-		subq.w	#6,a0					; update pointer
-		tst.b	4(a0)					; 4(a0) = object id and remember state flag
-		bpl.s	.no_respawn				; branch if no remember flag found
-		subq.b	#1,1(a2)				; decrement second respawn list counter
-		move.b	1(a2),d2				; get respawn counter
-
-	; loc_D9BC:
-	.no_respawn:
-		bsr.w	OPL_SpawnObj				; check respawn flag and spawn object
-		bne.s	.failed_to_spawn			; branch if spawn fails
-		subq.w	#6,a0					; goto previous object in objpos list
-		bra.s	.loop_find_left				; loop until object is found within window
-; ===========================================================================
-
-; loc_D9C6:
-.failed_to_spawn:
-		tst.b	4(a0)					; did object that failed to spawn have remember flag set?
-		bpl.s	.no_respawn2				; if not, branch
-		addq.b	#1,1(a2)				; revert decrementing second respawn list counter from above
-
-	; loc_D9D0:
-	.no_respawn2:
-		addq.w	#6,a0					; advance objpos
-
-; loc_D9D2:
-.found_left:
-		move.l	a0,(v_opl_data+4).w			; save pointer for objpos
-		movea.l	(v_opl_data).w,a0			; jump to objpos on right side of window
-		addi.w	#128+320+320,d6				; d6 = 320px to right of screen
-
-; loc_D9DE:
-.loop_find_right:
-		cmp.w	-6(a0),d6				; read objpos backwards
-		bgt.s	.found_right				; branch if object is within spawn window
-		tst.b	-2(a0)					; -2(a0) = object id and remember state flag
-		bpl.s	.no_respawn3				; branch if no remember flag found
-		subq.b	#1,(a2)					; decrement respawn list counter
-
-	; loc_D9EC:
-	.no_respawn3:
-		subq.w	#6,a0					; goto previous object in objpos list
-		bra.s	.loop_find_right
-; ===========================================================================
-
-; loc_D9F0:
-.found_right:
-		move.l	a0,(v_opl_data).w			; save pointer for objpos
-		rts
-; End of function OPL_MovedLeft
-; ===========================================================================
-
-; loc_D9F6:
-OPL_MovedRight:
-		move.w	d6,(v_opl_screen).w			; update screen position
-		movea.l	(v_opl_data).w,a0			; jump to objpos on right side of window
-		addi.w	#320+320,d6				; d6 = 320px to right of screen
-
-; loc_DA02:
-.loop_find_right:
-		cmp.w	(a0),d6					; (a0) = x pos of object; d6 = right edge of spawn window
-		bls.s	.found_right				; branch if object is outside spawn window
-		tst.b	4(a0)
-		bpl.s	.no_respawn
-		move.b	(a2),d2
-		addq.b	#1,(a2)
-
-	; loc_DA10:
-	.no_respawn:
-		bsr.w	OPL_SpawnObj				; check respawn flag and spawn object
-		beq.s	.loop_find_right			; loop until object is found outside window
-	if FixBugs
-		; Fix a remember sprite related bug
-		; https://info.sonicretro.org/SCHG_How-to:Fix_a_remember_sprite_related_bug
-		tst.b	4(a0)					; was this object a remember state?
-		bpl.s	.found_right				; if not, branch
-		subq.b	#1,(a2)					; move right counter back
-	endif
-
-	; loc_DA16:
-	.found_right:
-		move.l	a0,(v_opl_data).w			; save pointer for objpos
-		movea.l	(v_opl_data+4).w,a0			; jump to objpos on left side of window
-		subi.w	#320+320+128,d6				; d6 = 128px to left of screen
-		bcs.s	.found_left
-
-; loc_DA24:
-.loop_find_left:
-		cmp.w	(a0),d6					; (a0) = x pos of object; d6 = left edge of spawn window
-		bls.s	.found_left				; branch if object is within spawn window
-		tst.b	4(a0)
-		bpl.s	.no_respawn2
-		addq.b	#1,1(a2)
-
-	; loc_DA32:
-	.no_respawn2:
+ OPLBack3:	; count how many objects are behind the screen that are not in range and need to remember their state
+		cmp.w	(a0),d6				; is object's x position >= d6?
+		bls.s	OPL3				; if yes, branch
 		addq.w	#6,a0
-		bra.s	.loop_find_left
-; ===========================================================================
-
-; loc_DA36:
-.found_left:
-		move.l	a0,(v_opl_data+4).w
-
-; locret_DA3A:
-OPL_NoMove:
-		rts
-; End of function OPL_MovedRight
-
-
-; ===========================================================================
-; ---------------------------------------------------------------------------
-; Subroutine to	load an object
-; 
-; input:
-;	d2.w = position in respawn list
-;	a0 = pointer to specific object in objpos list
-;	a2 = v_objstate
-; 
-; output:
-;	d0.l = 0 if object is spawned (or skipped because it was broken)
-;	a1 = address of OST of spawned object
+		addq.w	#1,a3				; respawn index of next object going left
+		bra.s	OPLBack3			; continue with next object
 ; ---------------------------------------------------------------------------
 
-; loc_DA3C:
-OPL_SpawnObj:
-		tst.b	4(a0)					; is remember respawn flag set?
-		bpl.s	OPL_MakeItem				; if not, branch
-	if FixBugs
-		; Fix a remember sprite related bug
-		; https://info.sonicretro.org/SCHG_How-to:Fix_a_remember_sprite_related_bug
-		btst	#7,2(a2,d2.w)				; is remember bit already set? (test only)
+OPL3:
+		move.l	a0,(v_opl_data+4).w		; remember current object from the left
+		move.w	a3,(v_opl_data+$C).w		; and its respawn table index
+
+		move.w	#-1,(Camera_X_Pos_Last).w	; make sure ObjPosLoad_GoingForward is run
+
+		move.w	(v_screenposy).w,d0
+		andi.w	#$FF80,d0
+		move.w	d0,(Camera_Y_Pos_Last).w	; make sure the Y check isn't run unnecessarily during initialization
+; ---------------------------------------------------------------------------
+
+ObjPosLoad_Main:
+		move.w	(v_screenposx).w,d1
+		subi.w	#$80,d1
+		andi.w	#$FF80,d1
+		move.w	d1,(Camera_X_Coarse_Back).w
+
+		move.w	(v_screenposy).w,d1
+		subi.w	#$80,d1
+		andi.w	#$FF80,d1
+		move.w	d1,(Camera_Y_Coarse_Back).w
+
+		tst.w	(v_limittop2).w			; does this level y-wrap?
+		bpl.s	ObjMan_Main_NoYWrap		; if not, branch
+		lea	(ChkLoadObj_YWrap).l,a6		; set object loading routine
+		move.w	(v_screenposy).w,d3
+		andi.w	#$FF80,d3			; get coarse value
+		move.w	d3,d4
+		addi.w	#$200,d4			; set lower boundary
+		subi.w	#$80,d3				; set upper boundary
+		bpl.s	OPL4				; branch, if upper boundary > 0
+		andi.w	#$7FF,d3			; wrap value
+		bra.s	ObjMan_Main_Cont
+; ---------------------------------------------------------------------------
+
+OPL4:
+		move.w	#$7FF,d0
+		addq.w	#1,d0
+		cmp.w	d0,d4
+		bls.s	OPL5				; branch, if lower boundary < $7FF
+		andi.w	#$7FF,d4			; wrap value
+		bra.s	ObjMan_Main_Cont
+; ---------------------------------------------------------------------------
+
+ObjMan_Main_NoYWrap:
+		move.w	(v_screenposy).w,d3
+		andi.w	#$FF80,d3			; get coarse value
+		move.w	d3,d4
+		addi.w	#$200,d4			; set lower boundary
+		subi.w	#$80,d3				; set upper boundary
+		bpl.s	OPL5
+		moveq	#0,d3				; no negative values allowed
+
+OPL5:
+		lea	(ChkLoadObj).l,a6		; set object loading routine
+
+ObjMan_Main_Cont:
+		move.w	#$FFF,d5			; this will be used later when we load objects
+		move.w	(v_screenposx).w,d6
+		andi.w	#$FF80,d6
+		cmp.w	(Camera_X_Pos_Last).w,d6	; is the X range the same as last time?
+		beq.w	ObjPosLoad_SameXRange		; if yes, branch
+		bge.s	ObjPosLoad_GoingForward		; if new pos is greater than old pos, branch
+
+		; if the player is moving back
+		move.w	d6,(Camera_X_Pos_Last).w	; remember current position for next time
+
+		movea.l	(v_opl_data+4).w,a0		; get current object going left
+		movea.w	(v_opl_data+$C).w,a3		; and its respawn table index
+
+		subi.w	#$80,d6				; look one chunk to the left
+		bcs.s	ObjMan_GoingBack_Part2		; branch, if camera position would be behind level's left boundary
+
+		jsr	(FindFreeObj).l			; find an empty object slot
+		bne.s	ObjMan_GoingBack_Part2		; branch, if there are none
+
+OPLBack4:	; load all objects left of the screen that are now in range
+		cmp.w	-6(a0),d6			; is the previous object's X pos less than d6?
+		bge.s	ObjMan_GoingBack_Part2		; if it is, branch
+		subq.w	#6,a0				; get object's address
+		subq.w	#1,a3				; and respawn table index
+		jsr	(a6)				; load object
+		bne.s	OPL6				; branch, if SST is full
+		subq.w	#6,a0
+		bra.s	OPLBack4			; continue with previous object
+; ---------------------------------------------------------------------------
+
+OPL6:
+		; undo a few things if the object couldn't load
+		addq.w	#6,a0				; go back to last object
+		addq.w	#1,a3				; since we didn't load the object, undo last change
+
+ObjMan_GoingBack_Part2:
+		move.l	a0,(v_opl_data+4).w		; remember current object going left
+		move.w	a3,(v_opl_data+$C).w		; and its respawn table index
+		movea.l	(v_opl_data).w,a0		; get next object going right
+		movea.w	(v_opl_data+8).w,a3		; and its respawn table index
+		addi.w	#$300,d6			; look two chunks beyond the right edge of the screen
+
+OPLBack5:	; subtract number of objects that have been moved out of range (from the right side)
+		cmp.w	-6(a0),d6			; is the previous object's X pos less than d6?
+		bgt.s	OPL7				; if it is, branch
+		subq.w	#6,a0				; get object's address
+		subq.w	#1,a3				; and respawn table index
+		bra.s	OPLBack5			; continue with previous object
+; ---------------------------------------------------------------------------
+
+OPL7:
+		move.l	a0,(v_opl_data).w		; remember next object going right
+		move.w	a3,(v_opl_data+8).w		; and its respawn table index
+		bra.s	ObjPosLoad_SameXRange
+; ---------------------------------------------------------------------------
+
+ObjPosLoad_GoingForward:
+		move.w	d6,(Camera_X_Pos_Last).w
+
+		movea.l	(v_opl_data).w,a0		; get next object from the right
+		movea.w (v_opl_data+8).w,a3		; and its respawn table index
+		addi.w	#$280,d6			; look two chunks forward
+		jsr	(FindFreeObj).l			; find an empty object slot
+		bne.s	ObjMan_GoingForward_Part2	; branch, if there are none
+
+OPLBack6:	; load all objects right of the screen that are now in range
+		cmp.w	(a0),d6				; is object's x position >= d6?
+		bls.s	ObjMan_GoingForward_Part2	; if yes, branch
+		jsr	(a6)				; load object (and get address of next object)
+		addq.w	#1,a3				; respawn index of next object to the right
+		beq.s	OPLBack6			; continue loading objects, if the SST isn't full
+
+ObjMan_GoingForward_Part2:
+		move.l	a0,(v_opl_data).w		; remember next object from the right
+		move.w	a3,(v_opl_data+8).w		; and its respawn table index
+		movea.l	(v_opl_data+4).w,a0		; get current object from the left
+		movea.w	(v_opl_data+$C).w,a3		; and its respawn table index
+		subi.w	#$300,d6			; look one chunk behind the left edge of the screen
+		bcs.s	ObjMan_GoingForward_End		; branch, if camera position would be behind level's left boundary
+
+OPLBack7:	; subtract number of objects that have been moved out of range (from the left)
+		cmp.w	(a0),d6				; is object's x position >= d6?
+		bls.s	ObjMan_GoingForward_End		; if yes, branch
+		addq.w	#6,a0				; next object
+		addq.w	#1,a3				; respawn index of next object to the left
+		bra.s	OPLBack7			; continue with next object
+; ---------------------------------------------------------------------------
+
+ObjMan_GoingForward_End:
+		move.l	a0,(v_opl_data+4).w		; remember current object from the left
+		move.w	a3,(v_opl_data+$C).w		; and its respawn table index
+
+ObjPosLoad_SameXRange:
+		move.w	(v_screenposy).w,d6
+		andi.w	#$FF80,d6
+		move.w	d6,d3
+		cmp.w	(Camera_Y_Pos_Last).w,d6	; is the y range the same as last time?
+		beq.w	ObjPosLoad_SameYRange		; if yes, branch
+		bge.s	ObjPosLoad_GoingDown		; if the player is moving down
+
+		; if the player is moving up
+		tst.w	(v_limittop2).w			; does the level y-wrap?
+		bpl.s	ObjMan_GoingUp_NoYWrap		; if not, branch
+		tst.w	d6
+		bne.s	ObjMan_GoingUp_YWrap
+		cmpi.w	#$80,(Camera_Y_Pos_Last).w
+		bne.s	ObjMan_GoingDown_YWrap
+
+ObjMan_GoingUp_YWrap:
+		subi.w	#$80,d3				; look one chunk up
+		bpl.s	ObjPosLoad_YCheck		; go to y check, if camera y position >= $80
+		andi.w	#$7FF,d3			; else, wrap value
+		bra.s	ObjPosLoad_YCheck
+
+; ---------------------------------------------------------------------------
+
+ObjMan_GoingUp_NoYWrap:
+		subi.w	#$80,d3				; look one chunk up
+		bmi.w	ObjPosLoad_SameYRange		; don't do anything if camera y position is < $80
+		bra.s	ObjPosLoad_YCheck
+; ---------------------------------------------------------------------------
+
+ObjPosLoad_GoingDown:
+		tst.w	(v_limittop2).w			; does the level y-wrap?
+		bpl.s	ObjMan_GoingDown_NoYWrap	; if not, branch
+		tst.w	(Camera_Y_Pos_Last).w
+		bne.s	ObjMan_GoingDown_YWrap
+		cmpi.w	#$80,d6
+		bne.s	ObjMan_GoingUp_YWrap
+
+ObjMan_GoingDown_YWrap:
+		addi.w	#$180,d3			; look one chunk down
+		cmpi.w	#$7FF,d3
+		bcs.s	ObjPosLoad_YCheck		; go to  check, if camera y position < $7FF
+		andi.w	#$7FF,d3			; else, wrap value
+		bra.s	ObjPosLoad_YCheck
+; ---------------------------------------------------------------------------
+
+ObjMan_GoingDown_NoYWrap:
+		addi.w	#$180,d3			; look one chunk down
+		cmpi.w	#$7FF,d3
+		bhi.w	ObjPosLoad_SameYRange		; don't do anything, if camera is too close to bottom
+
+ObjPosLoad_YCheck:
+		jsr	(FindFreeObj).l			; get an empty object slot
+		bne.s	ObjPosLoad_SameYRange		; branch, if there are none
+		move.w	d3,d4
+		addi.w	#$80,d4
+		move.w	#$FFF,d5			; this will be used later when we load objects
+		movea.l	(v_opl_data+4).w,a0		; get next object going left
+		movea.w	(v_opl_data+$C).w,a3		; and its respawn table index
+		move.l	(v_opl_data).w,d7		; get next object going right
+		sub.l	a0,d7				; d7 = number of objects between the left and right boundaries * 6
+		beq.s	ObjPosLoad_SameYRange		; branch if there are no objects inbetween
+		addq.w	#2,a0				; align to object's y position
+
+OPLBack8:	; check if current object needs to be loaded
+		tst.b	(a3)				; is object already loaded?
+		bmi.s	OPL8				; if yes, branch
+		cmpi.b	#id_Pylon,2(a0)		; screen-fixed SLZ foreground pylons ignore the Y window
+		beq.s	OPLBack8_Load
+		move.w	(a0),d1
+		and.w	d5,d1				; get object's y position
+		cmp.w	d3,d1
+		bcs.s	OPL8				; branch, if object is out of range from the top
+		cmp.w	d4,d1
+		bhi.s	OPL8				; branch, if object is out of range from the bottom
+OPLBack8_Load:
+		bset	#7,(a3)				; mark object as loaded
+
+		; load object
+		move.w	-2(a0),obX(a1)
+		move.w	(a0),d1
+		move.w	d1,d2
+		and.w	d5,d1				; get object's y position
+		move.w	d1,obY(a1)
+	if OPL_S1_Compatibility
+		rol.w	#2,d2
 	else
-		bset	#7,2(a2,d2.w)				; set flag so it isn't loaded more than once
+		rol.w	#3,d2
 	endif
-		beq.s	OPL_MakeItem				; branch if object hasn't already been destroyed
-		addq.w	#6,a0					; goto next object in objpos list
+		andi.w	#3,d2				; get object's render flags and status
+		move.b	d2,obRender(a1)
+		move.b	d2,obStatus(a1)
 		moveq	#0,d0
+		move.b	2(a0),d0
+	if OPL_S1_Compatibility
+		andi.b	#$7F,d0				; limit level-placeable objects to $7F (MSB is used for old remember state flag)
+	endif
+		_move.b	d0,obID(a1)
+		move.b	3(a0),obSubtype(a1)
+		move.w	a3,respawn_index(a1)
+		jsr	(FindFreeObj).l			; find new object slot
+		bne.s	ObjPosLoad_SameYRange		; brach, if there are none left
+OPL8:
+		addq.w	#6,a0				; address of next object
+		addq.w	#1,a3				; and its respawn index
+		subq.w	#6,d7				; subtract from size of remaining objects
+		bne.s	OPLBack8			; branch, if there are more
+
+ObjPosLoad_SameYRange:
+		move.w	d6,(Camera_Y_Pos_Last).w
 		rts
+
 ; ===========================================================================
+; ---------------------------------------------------------------------------
+; Subroutines to check if an object needs to be loaded,
+; with and without y-wrapping enabled.
+;
+; input variables:
+;  d3 = upper boundary to load object
+;  d4 = lower boundary to load object
+;  d5 = #$FFF, used to filter out object's y position
+;
+;  a0 = address in object placement list
+;  a1 = object
+;  a3 = address in object respawn table
+;
+; writes:
+;  d1, d2, d7
+; ---------------------------------------------------------------------------
 
-OPL_MakeItem:
-		bsr.w	FindFreeObj				; find free OST slot
-		bne.s	.fail					; branch if not found
-		move.w	(a0)+,obX(a1)				; set x pos
-		move.w	(a0)+,d0				; get y pos and x/y flip flags
-		move.w	d0,d1
-		andi.w	#$FFF,d0				; ignore x/y flip bits
-		move.w	d0,obY(a1)				; set y pos
-		rol.w	#2,d1
-		andi.b	#sprite_xflip|sprite_yflip,d1		; read only x/y flip bits
-		move.b	d1,obRender(a1)				; apply x/y flip
-		move.b	d1,obStatus(a1)
-		move.b	(a0)+,d0				; get object id
-		bpl.s	.no_respawn_bit				; branch if remember respawn bit is not set
-	if FixBugs
-		; Fix a remember sprite related bug
-		; https://info.sonicretro.org/SCHG_How-to:Fix_a_remember_sprite_related_bug
-		bset	#7,2(a2,d2.w)				; set as removed
-	endif
-		andi.b	#$7F,d0					; ignore respawn bit
-		move.b	d2,obRespawnNo(a1)			; give object its place in the respawn table
-
-	; loc_DA80:
-	.no_respawn_bit:
-		_move.b	d0,obID(a1)				; load object
-		move.b	(a0)+,obSubtype(a1)			; set subtype
-		moveq	#0,d0
-
-	; locret_DA8A:
-	.fail:
+ChkLoadObj_YWrap:
+		tst.b	(a3)				; is object already loaded?
+		bpl.s	OPL9				; if not, branch
+		addq.w	#6,a0				; address of next object
+		moveq	#0,d1				; let the objects manager know that it can keep going
 		rts
-; End of function OPL_SpawnObj
-; End of function ObjPosLoad (as a whole)
+; ---------------------------------------------------------------------------
+
+OPL9:
+		move.w	(a0)+,d7			; x_pos
+		move.w	(a0)+,d1			; y_pos, render flags, and y-check skip flag
+		move.w	d1,d2
+		cmpi.b	#id_Pylon,(a0)		; screen-fixed object: bypass Y range
+		beq.s	OPL10
+	if OPL_S1_Compatibility=0
+		bmi.s	OPL10				; are y-checks skipped? if yes, branch
+	endif
+		and.w	d5,d1				; y_pos
+		cmp.w	d3,d1
+		bcc.s	LoadObj_YWrap
+		cmp.w	d4,d1
+		bls.s	LoadObj_YWrap
+		addq.w	#2,a0				; address of next object
+		moveq	#0,d1				; let the objects manager know that it can keep going
+		rts
+; ---------------------------------------------------------------------------
+
+OPL10:
+		and.w	d5,d1				; y_pos
+
+LoadObj_YWrap:
+		bset	#7,(a3)				; mark object as loaded
+		move.w	d7,obX(a1)
+		move.w	d1,obY(a1)
+	if OPL_S1_Compatibility
+		rol.w	#2,d2				; rotate y-flip, and x-flip flags to lower bits (no y-check flag)
+	else
+		rol.w	#3,d2				; rotate y-check, y-flip, and x-flip flags to lower bits
+	endif
+		andi.w	#3,d2				; get render flags and status
+		move.b	d2,obRender(a1)
+		move.b	d2,obStatus(a1)
+		moveq	#0,d0
+		move.b	(a0)+,d0
+	if OPL_S1_Compatibility
+		andi.b	#$7F,d0				; limit level-placeable objects to $7F (MSB is used for old remember state flag)
+	endif
+		_move.b	d0,obID(a1)
+		move.b	(a0)+,obSubtype(a1)
+		move.w	a3,respawn_index(a1)
+		bra.w	FindFreeObj			; find new object slot
+; ---------------------------------------------------------------------------
+
+;loc_17F36
+ChkLoadObj:
+		tst.b	(a3)				; is object already loaded?
+		bpl.s	OPL11				; if not, branch
+		addq.w	#6,a0				; address of next object
+		moveq	#0,d1				; let the objects manager know that it can keep going
+		rts
+; ---------------------------------------------------------------------------
+
+OPL11:
+		move.w	(a0)+,d7			; x_pos
+		move.w	(a0)+,d1			; y_pos, render flags, and y-check skip flag
+		move.w	d1,d2
+		cmpi.b	#id_Pylon,(a0)		; screen-fixed object: bypass Y range
+		beq.s	OPL13
+	if OPL_S1_Compatibility=0
+		bmi.s	OPL13				; are y-checks skipped? if yes, branch
+	endif
+		and.w	d5,d1				; y_pos
+		cmp.w	d3,d1
+		bcs.s	OPL12				; branch, if object is out of range from the top
+		cmp.w	d4,d1
+		bls.s	LoadObj				; branch, if object is in range from the bottom
+OPL12:
+		addq.w	#2,a0				; address of next object
+		moveq	#0,d1
+		rts
+; ---------------------------------------------------------------------------
+
+OPL13:
+		and.w	d5,d1				; y_pos
+
+LoadObj:
+		bset	#7,(a3)				; mark object as loaded
+		move.w	d7,obX(a1)
+		move.w	d1,obY(a1)
+	if OPL_S1_Compatibility
+		rol.w	#2,d2				; rotate y-flip, and x-flip flags to lower bits (no y-check flag)
+	else
+		rol.w	#3,d2				; rotate y-check, y-flip, and x-flip flags to lower bits
+	endif
+		andi.w	#3,d2				; get render flags and status
+		move.b	d2,obRender(a1)
+		move.b	d2,obStatus(a1)
+		moveq	#0,d0
+		move.b	(a0)+,d0
+	if OPL_S1_Compatibility
+		andi.b	#$7F,d0				; limit level-placeable objects to $7F (MSB is used for old remember state flag)
+	endif
+		_move.b	d0,obID(a1)
+		move.b	(a0)+,obSubtype(a1)
+		move.w	a3,respawn_index(a1)
+		bra.w	FindFreeObj
+; End of function ChkLoadObj
+; ===========================================================================

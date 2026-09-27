@@ -86,6 +86,10 @@ Sonic_Control:	; Routine 2
 
 ; loc_12C7E:
 .ignoremodes:
+		tst.w	(v_limittop2).w			; wrap Sonic on vertical-loop levels
+		bpl.s	.noWrap
+		andi.w	#$7FF,obY(a0)
+	.noWrap:
 		bsr.s	Sonic_Display				; display Sonic sprite and handle power-up expiration
 		bsr.w	Sonic_Super				; update Super Sonic state and ring drain
 		bsr.w	Sonic_RecordPosition			; record Sonic's previous position for the invincibility stars trail
@@ -1911,6 +1915,10 @@ Sonic_Hurt:	; Routine 4
 		subi.w	#gravity-$18,obVelY(a0)			; reduce gravity to be only $10 while underwater
 ; loc_1380C:
 .notunderwater:
+		tst.w	(v_limittop2).w			; wrap Sonic on vertical-loop levels
+		bpl.s	.noWrap
+		andi.w	#$7FF,obY(a0)
+	.noWrap:
 		bsr.w	Sonic_HurtStop				; check if Sonic has landed again after taking damage and revert to normal state
 	if FixBugs
 		; Fix water not being acknowledged during a hurt state
@@ -2008,7 +2016,7 @@ Sonic_HandleDeath:
 	if FixBugs
 		; Fix the death boundary bug
 		; https://info.sonicretro.org/SCHG_How-to:Fix_the_death_boundary_bug
-		move.w	(v_screenposy).w,d0			; get current Y screen position
+		move.w	objoff_38(a0),d0			; use Sonic's Y at death before wrap
 		addi.w	#$100,d0				; go $100 pixels lower
 		cmp.w	obY(a0),d0				; has Sonic's death animation gone below the screen?
 		bge.w	.return					; if not, branch

@@ -247,7 +247,8 @@ obY:			equ $C					; y-axis position (2-4 bytes)
 obSubpixelY:		equ $E					; y-axis subpixel position for playfield items (2 bytes)
 obVelX:			equ $10					; x-axis velocity (2 bytes)
 obVelY:			equ $12					; y-axis velocity (2 bytes)
-obInertia:		equ $14					; potential speed (2 bytes)
+respawn_index:		equ $14					; address of object state byte (2 bytes)
+obInertia:		equ $20					; Sonic ground speed (2 bytes)
 obHeight:		equ $16					; height/2
 obWidth:		equ $17					; width/2
 obPriority:		equ $18					; sprite stack priority -- 0 is front
@@ -261,7 +262,7 @@ obDelayAni:		equ $1F					; time to delay animation
 obColType:		equ $20					; collision response type
 obColProp:		equ $21					; collision extra property
 obStatus:		equ $22					; orientation or mode
-obRespawnNo:		equ $23					; respawn list index number
+; SST $23 is now free; respawn_index at $14 stores the state-byte address
 obRoutine:		equ $24					; routine number
 ob2ndRout:		equ $25					; secondary routine number
 obSolid:		equ ob2ndRout				; solid status flag

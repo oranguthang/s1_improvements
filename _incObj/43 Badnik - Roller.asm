@@ -72,11 +72,8 @@ Roll_Action:	; Routine 2
 	; ---------------------------------------------------------------------------
 
 	.offscreen:
-		lea	(v_objstate).w,a2
-		moveq	#0,d0
-		move.b	obRespawnNo(a0),d0
-		beq.s	.delete
-		bclr	#7,2(a2,d0.w)
+		respawn_entry.s	.delete		; state of this placed object
+		bclr	#7,(a2)
 	.delete:
 		bra.w	DeleteObject
 	endif

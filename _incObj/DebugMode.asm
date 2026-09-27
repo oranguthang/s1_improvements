@@ -291,10 +291,6 @@ Debug_ChgItem:
 
 		jsr	(FindFreeObj).l				; find a free object slot
 		bne.s	Debug_ExitDebugMode			; if none are free, branch
-	if FixBugs
-		; Fix not being able to place more rings and such after collecting one
-		clr.b	(v_objstate+2).w			; free up object state for spawned object (target for obRespawnNo=0)
-	endif
 		move.w	obX(a0),obX(a1)				; set new object's X-position
 		move.w	obY(a0),obY(a1)				; set new object's Y-position
 		_move.b	obMap(a0),obID(a1)			; create object (ID is stored in list with mappings as map+(object<<24))

@@ -27,6 +27,10 @@ Surf_Main:	; Routine 0
 ; ---------------------------------------------------------------------------
 
 Surf_Action:	; Routine 2
+		cmpi.w	#$7FF,(v_waterpos2).w		; hidden above the vertical-loop section?
+		bls.s	.visible
+		rts
+	.visible:
 		move.w	(v_screenposx).w,d1			; get current camera X-position
 		andi.w	#$FFE0,d1				; wrap every $20px to make surface seem camera-independent
 		add.w	surf_origX(a0),d1			; add base X-position for left or right surface object
