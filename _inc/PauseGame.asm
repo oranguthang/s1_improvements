@@ -6,11 +6,11 @@
 PauseGame:
 		nop						; useless nop (probably so an rts could easily be inserted here)
 		tst.b	(v_lives).w				; do you have any lives left?
-		beq.s	.unpauseGame				; if not, branch (prevents pausing during a game over)
+		beq.w	.unpauseGame				; if not, branch (prevents pausing during a game over)
 		tst.w	(f_pause).w				; is game already paused?
 		bne.s	.startPause				; if yes, branch
 		btst	#bitStart,(v_jpadpress1).w		; has Start button been pressed?
-		beq.s	.return					; if not, branch
+		beq.w	.return					; if not, branch
 
 	; Pause_StopGame:
 	.startPause:
@@ -23,17 +23,26 @@ PauseGame:
 		move.b	#id_VBlank_Paused,(v_vblank_routine).w	; run routine $10 in VBlank
 		bsr.w	WaitForVBlank				; wait until VBlank has finished
 
+		tst.w	(f_debugmode).w			; debug also enables the pause+A title shortcut
+		bne.s	.checkTitleExit
 		tst.b	(f_slomocheat).w			; is slow-motion cheat on?
 		beq.s	.checkUnpausing				; if not, branch
+.checkTitleExit:
 		btst	#bitA,(v_jpadpress1).w			; is button A pressed?
 		beq.s	.checkSlowMotion			; if not, branch
+		tst.w	(f_debugmode).w
+		beq.s	.requestTitle
+		move.b	#1,(f_title_fast).w		; skip the splash on a debug return
+.requestTitle:
+		clr.w	(f_restart).w
 		move.b	#id_Title,(v_gamemode).w		; return to title screen
-		nop						; useless nop
 		bra.s	.unpauseMusic				; unpause music
 ; ---------------------------------------------------------------------------
 
 	; Pause_ChkBC:
 	.checkSlowMotion:
+		tst.b	(f_slomocheat).w			; debug alone does not enable frame stepping
+		beq.s	.checkUnpausing
 		btst	#bitB,(v_jpadhold1).w			; is button B held down?
 		bne.s	.slowMotion				; if yes, do continuous slow-motion
 		btst	#bitC,(v_jpadpress1).w			; is button C pressed?

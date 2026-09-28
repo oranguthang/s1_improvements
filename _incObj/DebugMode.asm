@@ -18,6 +18,13 @@ Debug_Index:	dc.w Debug_Init-Debug_Index			; 0 - init
 
 ; Debug_Main:
 Debug_Init:	; Routine 0
+		cmpi.b	#6,obRoutine(a0)			; was debug entered from death rather than live play?
+		bhs.s	.rescue
+		cmpi.b	#id_Drown,obAnim(a0)		; drowning waits before switching to Sonic_Death
+		bne.s	.alive
+.rescue:
+		jsr	(Sonic_RecoverFromDebugDeath).l
+.alive:
 		addq.b	#2,(v_debuguse).w			; set to Debug_Action
 
 		move.w	(v_limittop2).w,(v_limittopdb).w	; buffer level x-boundary
@@ -75,9 +82,7 @@ Debug_Init:	; Routine 0
 		bclr	#6,obStatus(a0)				; clear underwater status
 		beq.s	.notUnderwater				; if Sonic wasn't underwater, branch
 		jsr	(ResumeMusic).l				; resume music after a countdown
-		move.w  #son_maxspeed,(v_sonspeedmax).w		; restore Sonic's speed
-		move.w  #son_acceleration,(v_sonspeedacc).w	; restore Sonic's acceleration
-		move.w  #son_deceleration,(v_sonspeeddec).w	; restore Sonic's deceleration
+		jsr	(Sonic_ApplySpeedSettings).l		; preserve the live form's dry movement constants
 	.notUnderwater:
 	endif
 
@@ -311,13 +316,21 @@ Debug_ChgItem:
 
 Debug_ExitDebugMode:
 		btst	#bitB,(v_jpadpress1).w			; is button B pressed?
-		beq.s	.return					; if not, stay in debug mode
+		beq.w	.return					; if not, stay in debug mode
 
 		moveq	#0,d0					; prepare 0 value
 		move.w	d0,(v_debuguse).w			; deactivate debug mode
-		move.l	#Map_Sonic,(v_player+obMap).w		; reset Sonic's mappings
+		move.l	#Map_Sonic,(v_player+obMap).w
+		tst.b	(v_supersonic).w			; item placement must not change the live form
+		beq.s	.normalmap
+		move.l	#Map_SuperSonic,(v_player+obMap).w
+.normalmap:
 		move.w	#ArtTile_Sonic,(v_player+obGfx).w	; reset Sonic's art tile
 		move.b	d0,(v_player+obAnim).w			; reset Sonic's animation to walking
+		btst	#2,obStatus(a0)
+		beq.s	.animready
+		move.b	#id_Roll,obAnim(a0)			; retain the airborne ball pose when leaving placement
+.animready:
 		move.w	d0,obSubpixelX(a0)			; clear Sonic's X subpixel portion
 		move.w	d0,obSubpixelY(a0)			; clear Sonic's Y subpixel portion
 
@@ -325,7 +338,14 @@ Debug_ExitDebugMode:
 		move.w	(v_limitbtmdb).w,(v_limitbtm1).w	; restore bottom level boundary
 
 		cmpi.b	#id_Special,(v_gamemode).w		; are you in the Special Stage?
-		bne.s	.return					; if not, branch
+		beq.s	.specialstage
+		move.b	#-1,obPrevAni(a0)
+		move.b	#-1,(v_sonframenum).w		; debug item frames are not player DPLC frames
+		jsr	(Sonic_ApplySpeedSettings).l
+		jsr	(Sonic_Animate).l
+		jsr	(Sonic_LoadGfx).l
+		rts
+.specialstage:
 		clr.w	(v_ssangle).w				; make Special Stage "upright"
 		move.w	#ss_rotatespeed,(v_ssrotate).w		; restart maze rotation
 		move.l	#Map_Sonic,(v_player+obMap).w		; reset Sonic's mappings (redundant, already done)

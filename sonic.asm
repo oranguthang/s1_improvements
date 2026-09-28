@@ -21,6 +21,11 @@ FixBugs = 1
 ;	| If 1, enables various bugfixes across the game and sound driver
 ;	|       (see also the "_Fixed Binary Files" folder, and FixMusicAndSFXDataBugs)
 
+	ifndef MDDebugger
+MDDebugger = 1
+	endif
+; Blue exception screen is enabled in every standard build.
+
 CheatsEnabled = 0
 ;	| If 1, all in-game cheats (Level Select, Debug Mode, Slow-Motion, Japanese Credits)
 ;	|       will be enabled by default, without requiring any title screen button inputs
@@ -65,6 +70,10 @@ ZoneCount = 6
 
 ; ===========================================================================
 ; Expressing sprite mappings and DPLCs in a portable and human-readable form
+	if MDDebugger
+	include "_debug/md-debugger/Debugger.asm"
+	endif
+
 SonicMappingsVer = 1
 SonicDplcVer = 1
 	include	"_maps/_MapMacros.asm"
@@ -200,9 +209,13 @@ EndOfHeader:
 ; ===========================================================================
 ; Crash/Freeze the 68000. Unlike Sonic 2, Sonic 1 uses the 68000 for playing music, so it stops too
 ErrorTrap:
+	if MDDebugger
+		jmp	ErrorExcept				; report unexpected traps and interrupts
+	else
 		nop						; no operation
 		nop						; ''
 		bra.s	ErrorTrap				; loop forever
+	endif
 ; ===========================================================================
 
 ; ---------------------------------------------------------------------------
@@ -471,6 +484,7 @@ CheckSumError:
 	endif
 ; ===========================================================================
 
+	if MDDebugger=0
 BusError:	move.b	#2,(v_errortype).w			; set error code
 		bra.s	ErrorHandler_WithAddress		; continue to handler (with pc value)
 ; ---------------------------------------------------------------------------
@@ -621,6 +635,7 @@ ErrorWaitForC:
 		rts						; return to try recovering execution
 ; End of function ErrorWaitForC
 ; End of error handler (as a whole)
+	endif
 
 
 ; ===========================================================================
@@ -1685,13 +1700,21 @@ GM_Title:		; fading out from previous game mode
 		bsr.w	EniDec					; decompress Enigma-compressed mappings to RAM buffer
 		copyTilemap v_ram_start,vram_fg,40,28		; transfer decompressed patterns from RAM buffer to VRAM
 
-		clearRAM v_palette_fading			; set palette fade-in buffer to all-black
 		moveq	#palid_Sonic,d0				; load Sonic's palette...
 		bsr.w	PalLoad_Fade				; ...into fade-in buffer
 		move.b	#id_CreditsText,(v_sonicteam).w		; load "SONIC TEAM PRESENTS" object
 		jsr	(ExecuteObjects).l			; execute objects to load STP object
 		jsr	(BuildSprites).l			; build sprites for the STP object
 		bsr.w	PaletteFadeIn				; fade-in STP screen
+		; Faster art loading must not shorten SONIC TEAM PRESENTS.
+		move.w	#2*60-1,d7				; two seconds at NTSC speed
+		btst	#6,(v_megadrive).w			; PAL runs at 50 frames per second
+		beq.s	Tit_SonicTeamWait
+		move.w	#2*50-1,d7
+Tit_SonicTeamWait:
+		move.b	#id_VBlank_PaletteFade,(v_vblank_routine).w
+		bsr.w	WaitForVBlank				; transfer the static screen and keep music running
+		dbf	d7,Tit_SonicTeamWait
 ; ---------------------------------------------------------------------------
 
 		; load main title screen patterns while "SONIC TEAM PRESENTS" screen is shown
@@ -2481,6 +2504,10 @@ GM_Level:	; fading out from previous game mode
 Level_NoMusicFade:
 		bsr.w	ClearPLC				; clear any remaining PLC entries
 		bsr.w	PaletteFadeOut				; fade out from the previous screen
+		disable_ints
+		moveq	#plcid_Points,d0			; SS/Continue/ending art may have overwritten the static points
+		bsr.w	QuickPLC				; restore all nine tiles before any level/demo objects can run
+		enable_ints
 ; ---------------------------------------------------------------------------
 
 		; load title cards, queue PLCs, setup screen, play music
@@ -2567,7 +2594,7 @@ Level_WaterPal:
 
 Level_GetBgm:
 		tst.w	(f_demo).w				; is this a credits demo?
-		bmi.s	Level_SkipTtlCard			; if yes, don't load title cards or change music
+		bmi.w	Level_SkipTtlCard			; if yes, don't load title cards or change music
 
 		moveq	#0,d0					; clear d0
 		move.b	(v_zone).w,d0				; get current Zone ID
@@ -2585,11 +2612,19 @@ Level_PlayBgm:
 		move.b	(a1,d0.w),d0				; get music ID for current level
 		bsr.w	QueueSound1				; play music
 		move.b	#id_TitleCard,(v_titlecard).w		; load title card object
+		move.w	#2*60,(v_generictimer).w		; preserve the intro duration with faster PLCs
+		btst	#6,(v_megadrive).w
+		beq.s	Level_TtlCardLoop
+		move.w	#2*50,(v_generictimer).w
 ; ---------------------------------------------------------------------------
 
 Level_TtlCardLoop: ; move in title cards, stay on them until PLCs have finished
 		move.b	#id_VBlank_TitleCards,(v_vblank_routine).w ; set VBlank routine to $0C
 		bsr.w	WaitForVBlank				; wait until VBlank has finished
+		tst.w	(v_generictimer).w
+		beq.s	Level_TtlCardTimerDone
+		subq.w	#1,(v_generictimer).w
+Level_TtlCardTimerDone:
 		jsr	(ExecuteObjects).l			; execute title cards object
 		jsr	(BuildSprites).l			; build sprites to show title cards
 		bsr.w	RunPLC					; decompress level graphics
@@ -2616,6 +2651,8 @@ Level_CheckTtlCard:
 	endif
 		tst.l	(v_plc_buffer).w			; have patterns been fully decompressed and loaded?
 		bne.s	Level_TtlCardLoop			; if not, loop until they have
+		tst.w	(v_generictimer).w			; keep the cards visible for the minimum intro time
+		bne.s	Level_TtlCardLoop
 ; ---------------------------------------------------------------------------
 
 		; PLCs have finished, load/initialize remaining data
@@ -2845,6 +2882,8 @@ Level_StartGame:
 
 Level_MainLoop:
 		bsr.w	PauseGame				; handle pausing the game when pressing start
+		cmpi.b	#id_Title,(v_gamemode).w
+		beq.w	Level_ReturnToMode
 		move.b	#id_VBlank_Levels,(v_vblank_routine).w	; set VBlank routine to $08
 		bsr.w	WaitForVBlank				; wait until VBlank has finished
 		addq.w	#1,(v_framecount).w			; add 1 to level timer
@@ -2892,6 +2931,7 @@ Level_CheckRestart:
 	endif
 		cmpi.b	#id_Level,(v_gamemode).w		; is game mode still set to level?
 		beq.w	Level_MainLoop				; if yes, loop level game mode
+Level_ReturnToMode:
 		rts						; if game mode changed, return to MainGameLoop
 ; ===========================================================================
 
@@ -3153,6 +3193,8 @@ SS_NoDebug:
 
 SS_MainLoop:
 		bsr.w	PauseGame				; handle pausing the game when pressing start
+		cmpi.b	#id_Title,(v_gamemode).w
+		beq.w	Level_ReturnToMode
 		move.b	#id_VBlank_SpecialStage,(v_vblank_routine).w ; set VBlank routine to $0A
 		bsr.w	WaitForVBlank				; wait until VBlank has finished
 		bsr.w	MoveSonicInDemo				; simulate controls in demos (immediately returns outside demos)
@@ -3253,6 +3295,8 @@ SS_FinLoop_NoBrighten:
 
 SS_NormalExit:		; Special Stage results screen loop
 		bsr.w	PauseGame				; allow pausing during the results screen
+		cmpi.b	#id_Title,(v_gamemode).w
+		beq.w	Level_ReturnToMode
 		move.b	#id_VBlank_TitleCards,(v_vblank_routine).w ; set VBlank routine to $0C
 		bsr.w	WaitForVBlank				; wait until VBlank has finished
 		jsr	(ExecuteObjects).l			; execute SSR objects
@@ -3506,6 +3550,8 @@ End_LoadSonic:
 
 End_MainLoop:
 		bsr.w	PauseGame				; allow pausing during the ending sequence
+		cmpi.b	#id_Title,(v_gamemode).w
+		beq.w	Level_ReturnToMode
 		move.b	#id_VBlank_Ending,(v_vblank_routine).w	; set VBlank routine to $18
 		bsr.w	WaitForVBlank				; wait until VBlank has finished
 		addq.w	#1,(v_framecount).w			; add 1 to level timer
@@ -5235,6 +5281,10 @@ Art_SSWalls_End:
 ; ---------------------------------------------------------------------------
 
 ; end of 'ROM'
+	if MDDebugger
+	include "_debug/md-debugger/ErrorHandler.asm"
+	endif
+; Debug symbols are appended directly after this blob, before fixing the header.
 EndOfRom:
 
 		END

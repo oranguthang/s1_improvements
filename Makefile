@@ -1,4 +1,4 @@
-.PHONY: build
+.PHONY: build build-debug
 
 ifeq ($(OS),Windows_NT)
 LUA ?= build_tools/lua/lua.exe
@@ -16,3 +16,6 @@ endif
 
 build:
 	"$(LUA)" build.lua $(SYMBOL_FLAGS)
+
+build-debug:
+	"$(LUA)" build.lua debug $(SYMBOL_FLAGS)

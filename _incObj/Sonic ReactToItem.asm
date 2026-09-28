@@ -489,6 +489,7 @@ HurtSonic:
 ; 
 ; output:
 ;	d0.l = (unused) -1
+;	a0-a6 and d1-d7 are preserved (crush callers rely on a2)
 ; ---------------------------------------------------------------------------
 
 KillSonic:

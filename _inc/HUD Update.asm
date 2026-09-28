@@ -5,7 +5,8 @@
 
 HUD_Update:
 		tst.w	(f_debugmode).w				; is debug mode on?
-		bne.w	HudDebug				; if yes, branch to alternate HUD logic
+		beq.s	.chkscore				; ordinary counters are shared by both HUD modes
+		bsr.w	HudDebug				; update separate coordinates and sprite statistics
 ; ---------------------------------------------------------------------------
 
 .chkscore:
@@ -35,6 +36,8 @@ HUD_Update:
 		beq.s	.chklives				; if not, branch
 		tst.w	(f_pause).w				; is the game paused?
 		bne.s	.chklives				; if yes, branch
+		tst.w	(v_debuguse).w				; item placement pauses the act clock
+		bne.s	.chklives
 
 		; Each byte in v_time is treated individually in the format "00 0M SS FF", and it's updated right-to-left:
 		;   FF (v_timecent) = frame counter for one second (increments seconds after crossing 60 and resets to 00, used internally only)

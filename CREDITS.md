@@ -11,3 +11,7 @@ Super Sonic player art, mappings, dynamic graphics, transformation effects and d
 ## Title resources
 
 The independent title resources follow [Make an Alternative Title Screen](https://info.sonicretro.org/SCHG_How-to:Make_an_Alternative_Title_Screen). The source archive is retained with the resource inputs for repeatable extraction.
+
+## MD Debugger
+
+MD Debugger and ConvSym are by [Vladikcomper](https://github.com/vladikcomper/md-modules). The included MIT license is in `_debug/md-debugger/LICENSE`.
