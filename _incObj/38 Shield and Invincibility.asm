@@ -64,7 +64,7 @@ Shi_Stars:	; Routine 4
 		tst.b	(v_invinc).w				; has invincibility run out?
 		beq.w	Shi_Start_Delete			; if yes, delete stars object
 		tst.b	(v_supersonic).w			; hide invincibility stars while Super
-		bne.s	Shi_Start_Delete
+		bne.w	Shi_Start_Delete
 
 		move.w	(v_trackpos).w,d0			; get index value for tracking data
 		move.b	obAnim(a0),d1				; get stars animation ID (1-4)
@@ -117,6 +117,11 @@ Shi_Stars:	; Routine 4
 		move.w	#$8000,d4				; stars key flag
 		bsr.s	ShieldStars_LoadGfx			; all four stars objects stay in phase
 		bmi.s	.nodisplay				; new tiles could not be queued yet
+		cmpi.w	#2*60,(v_player+invtime).w	; flash for the last two seconds
+		bhi.s	.display
+		btst	#2,(v_framecount+1).w		; all four stars blink together
+		bne.s	.nodisplay
+.display:
 		jmp	(DisplaySprite).l			; keep displaying stars
 
 	.nodisplay:
