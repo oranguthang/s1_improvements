@@ -1951,7 +1951,12 @@ LevelSelect:
 		bsr.w	RunPLC					; run any potential PLC
 		tst.l	(v_plc_buffer).w			; are any patterns in the PLC still left to be loaded?
 		bne.s	LevelSelect				; if yes, block quitting level select until finished
-		andi.b	#btnABC+btnStart,(v_jpadpress1).w	; is A, B, C, or Start pressed?
+		move.w	#btnABC+btnStart,d0
+		cmpi.w	#levsel_sndtest_row,(v_levselitem).w
+		bne.s	.choiceButtons
+		move.w	#btnC+btnStart,d0			; A adjusts sounds; C/Start plays
+.choiceButtons:
+		and.b	(v_jpadpress1).w,d0
 		beq.s	LevelSelect				; if not, loop level select
 
 LevSel_SelectionMade:
@@ -2233,7 +2238,7 @@ LevSel_SndTest:
 		cmpi.w	#levsel_sndtest_row,(v_levselitem).w	; is sound test row selected?
 		bne.s	LevSel_NoMove				; if not, branch
 		move.b	(v_jpadpress1).w,d1			; get currently pressed buttons
-		andi.b	#btnR+btnL,d1				; is left/right pressed?
+		andi.b	#btnR+btnL+btnA,d1			; left/right/A changes sound selection
 		beq.s	LevSel_NoMove				; if not, branch
 
 		move.w	(v_levselsound).w,d0			; get currently selected sound test number
@@ -2252,6 +2257,20 @@ LevSel_Right:
 		moveq	#0,d0					; if sound test moves above last entry, set to 0
 
 LevSel_Refresh2:
+		btst	#bitA,d1
+		beq.s	LevSel_SetSound
+		btst	#bitB,(v_jpadhold1).w
+		bne.s	LevSel_A_WithB
+		addi.w	#$10,d0
+		cmpi.w	#sfx__Last-$80+1,d0
+		blo.s	LevSel_SetSound
+		subi.w	#sfx__Last-$80+1,d0
+		bra.s	LevSel_SetSound
+LevSel_A_WithB:
+		subi.w	#$10,d0
+		bhs.s	LevSel_SetSound
+		addi.w	#sfx__Last-$80+1,d0
+LevSel_SetSound:
 		move.w	d0,(v_levselsound).w			; set sound test number
 		bsr.w	LevSelTextLoad				; refresh text
 
