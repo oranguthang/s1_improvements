@@ -26,7 +26,7 @@ TSon_Main:	; Routine 0
 		move.w	#$80+$5E,obScreenY(a0)			; set initial Y-position
 		move.l	#Map_TSon,obMap(a0)			; set mappings
 		move.w	#ArtTile_Title_Sonic|Tile_Pal2,obGfx(a0) ; set art tile and palette line
-		move.b	#1,obPriority(a0)			; set sprite priority
+		move.b	#7,obPriority(a0)			; rise behind the priority-6 mask
 		move.b	#30-1,obDelayAni(a0)			; set time delay before Sonic moves in to 0.5 seconds
 		lea	(Ani_TSon).l,a1				; load animation script
 		bsr.w	AnimateSprite				; advance animation once
@@ -98,12 +98,16 @@ PSB_Main:	; Routine 0
 		bra.s	PSB_PrsStart				; animate
 	.notPressStart:
 
-		; Object is either TM or masking sprites
-		move.w	#ArtTile_Title_Foreground,obGfx(a0)	; masking sprites keep their original art tile
-		addq.b	#2,obRoutine(a0)			; advance to PSB_Exit (static)
-		cmpi.b	#3,obFrame(a0)				; is the object "TM"?
-		bne.s	PSB_Exit				; if not, branch (object is masking sprites)
-
+		addq.b	#2,obRoutine(a0)			; TM and mask are static
+		cmpi.b	#3,obFrame(a0)
+		beq.s	.trademark
+		clr.w	obGfx(a0)				; zero attribute identifies hardware masks
+		clr.w	obX(a0)
+		move.w	#$80+104,obScreenY(a0)
+		move.b	#6,obPriority(a0)
+		bra.s	PSB_Exit
+.trademark:
+		move.b	#0,obPriority(a0)
 		move.w	#ArtTile_Title_Trademark|Tile_Pal2,obGfx(a0) ; "TM" specific art tile
 	if FixBugs
 		; Fix horizontal title screen position
@@ -131,3 +135,23 @@ PSB_PrsStart:	; Routine 2
 
 Map_PSB:	include	"_maps/Press Start and TM.asm"
 Map_TSon:	include	"_maps/Title Screen Sonic.asm"
+
+; BuildSprites prevents X=0 during gameplay. Restore it for title masks only.
+; The preceding X=4 piece arms masking even with scanline limits disabled.
+TitleMaskSprites:
+		lea	(v_spritetablebuffer+4).w,a1
+		moveq	#0,d0
+		moveq	#0,d6
+		move.b	(v_spritecount).w,d6
+		subq.w	#1,d6
+		bcs.s	.return
+.loop:
+		tst.w	(a1)
+		bne.s	.next
+		bchg	#2,d0
+		move.w	d0,2(a1)
+.next:
+		addq.w	#8,a1
+		dbf	d6,.loop
+.return:
+		rts

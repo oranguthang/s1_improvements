@@ -1797,6 +1797,7 @@ Tit_SonicTeamFaded:
 		jsr	(ExecuteObjects).l			; load title screen objects
 		bsr.w	DeformLayers				; initialize background deformation before fade-in
 		jsr	(BuildSprites).l			; build sprites for the title screen objects before fade-in
+		jsr	(TitleMaskSprites).l
 		moveq	#plcid_Main,d0				; load main patterns (rings, etc.)
 		bsr.w	NewPLC					; (these get loaded once for the title screen and then never again, except when exiting Special Stages)
 
@@ -1818,6 +1819,7 @@ Tit_MainLoop:
 		jsr	(ExecuteObjects).l			; execute title screen objects
 		bsr.w	DeformLayers				; run background deformation
 		jsr	(BuildSprites).l			; display sprites
+		jsr	(TitleMaskSprites).l
 		bsr.w	PalCycle_Title				; run title screen palette cycle
 		bsr.w	RunPLC					; run any potential PLC
 

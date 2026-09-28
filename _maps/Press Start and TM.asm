@@ -4,7 +4,7 @@
 ; Each frame uses different art (see PSB_Main), so an editor shows only some
 ; frames correctly per art file (Flex2 entries in sonic1.flex.json):
 ;	.psb		- artkosm/Title Screen PSB.kosm ("Press Start")
-;	.spritemask	- artkosm/Title Screen Foreground.kosm ("Press Start & Masking")
+;	.spritemask	- hardware sprite mask, zero tile attribute
 ;	.tm		- artkosm/Title Screen TM.kosm ("TM Symbol")
 ; ---------------------------------------------------------------------------
 Map_PSB_internal:	mappingsTable
@@ -26,38 +26,12 @@ Map_PSB_internal:	mappingsTable
 .psb_End
 
 .spritemask:	spriteHeader
-	spritePiece	-$80, -$48, 4, 4, 0, 0, 0, 0, 0	; sprite line limiter
-	spritePiece	-$80, -$48, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$48, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$48, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$48, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$48, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$48, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$48, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$48, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$48, 4, 4, 0, 0, 0, 0, 0
-
-	spritePiece	-$80, -$28, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$28, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$28, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$28, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$28, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$28, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$28, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$28, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$28, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -$28, 4, 4, 0, 0, 0, 0, 0
-
-	spritePiece	-$80, -8, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -8, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -8, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -8, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -8, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -8, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -8, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -8, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -8, 4, 4, 0, 0, 0, 0, 0
-	spritePiece	-$80, -8, 4, 4, 0, 0, 0, 0, 0
+	spritePiece	0, 0, 1, 4, 0, 0, 0, 0, 0	; hardware X=0 mask pair
+	spritePiece	-8, 0, 1, 4, 0, 0, 0, 0, 0	; hardware X=0 mask pair
+	spritePiece	0, 32, 1, 4, 0, 0, 0, 0, 0	; hardware X=0 mask pair
+	spritePiece	-8, 32, 1, 4, 0, 0, 0, 0, 0	; hardware X=0 mask pair
+	spritePiece	0, 64, 1, 4, 0, 0, 0, 0, 0	; hardware X=0 mask pair
+	spritePiece	-8, 64, 1, 4, 0, 0, 0, 0, 0	; hardware X=0 mask pair
 .spritemask_End
 
 .tm:	spriteHeader
