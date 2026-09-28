@@ -123,6 +123,10 @@ PSB_Exit:	; Routine 4
 ; ===========================================================================
 
 PSB_PrsStart:	; Routine 2
+		tst.b	(v_title_unlocked).w
+		beq.s	.oldPSB
+		jmp	(PSB_TitleMenu).l
+	.oldPSB:
 		lea	(Ani_PSBTM).l,a1			; "PRESS START" is animated
 		bra.w	AnimateSprite				; flash PSB object
 
@@ -135,6 +139,7 @@ PSB_PrsStart:	; Routine 2
 
 Map_PSB:	include	"_maps/Press Start and TM.asm"
 Map_TSon:	include	"_maps/Title Screen Sonic.asm"
+Map_TitleMenu: include "_maps/Title Screen Menu.asm"
 
 ; BuildSprites prevents X=0 during gameplay. Restore it for title masks only.
 ; The preceding X=4 piece arms masking even with scanline limits disabled.

@@ -23,17 +23,11 @@ PauseGame:
 		move.b	#id_VBlank_Paused,(v_vblank_routine).w	; run routine $10 in VBlank
 		bsr.w	WaitForVBlank				; wait until VBlank has finished
 
-		tst.w	(f_debugmode).w			; debug also enables the pause+A title shortcut
-		bne.s	.checkTitleExit
-		tst.b	(f_slomocheat).w			; is slow-motion cheat on?
-		beq.s	.checkUnpausing				; if not, branch
-.checkTitleExit:
+		tst.b	(v_title_unlocked).w		; title menu must be unlocked
+		beq.s	.checkSlowMotion
 		btst	#bitA,(v_jpadpress1).w			; is button A pressed?
 		beq.s	.checkSlowMotion			; if not, branch
-		tst.w	(f_debugmode).w
-		beq.s	.requestTitle
-		move.b	#1,(f_title_fast).w		; skip the splash on a debug return
-.requestTitle:
+		move.b	#1,(f_title_fast).w		; go directly to the unlocked title menu
 		clr.w	(f_restart).w
 		move.b	#id_Title,(v_gamemode).w		; return to title screen
 		bra.s	.unpauseMusic				; unpause music

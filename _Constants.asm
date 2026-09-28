@@ -675,7 +675,18 @@ ArtTile_Title_Foreground:	equ Title_Background_Tiles	; Title Screen.eni (40x28) 
 ArtTile_Title_Sonic:		equ ArtTile_Title_Foreground+Title_Foreground_Tiles
 ArtTile_Title_PressStart:	equ ArtTile_Title_Sonic+Title_Sonic_Tiles
 ArtTile_Title_Trademark:	equ ArtTile_Title_PressStart+Title_PSB_Tiles
+ArtTile_Title_Menu: equ $580			; 60 text tiles; $A000 stages submenu tilemaps
+Title_Menu_Tiles: equ 3*20
 ArtTile_Level_Select_Font:	equ $680
+	if ArtTile_Title_Trademark+Title_TM_Tiles>ArtTile_Title_Menu
+		error "Title menu overlaps the packed title art"
+	endif
+	if ArtTile_Title_Menu+Title_Menu_Tiles>vram_fg/tile_size
+		error "Title menu overlaps the foreground name table"
+	endif
+	if ArtTile_Title_Menu<(vram_win+$1000)/tile_size
+		error "Title menu overlaps the staged submenu tilemap"
+	endif
 
 	; The emblem, big Sonic, "PRESS START" and "TM" load while the "SONIC TEAM
 	; PRESENTS" screen still shows its font ($60 tiles at ArtTile_Sonic_Team_Font

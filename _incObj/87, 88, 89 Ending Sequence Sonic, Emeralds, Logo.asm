@@ -32,7 +32,7 @@ eson_time:	equ objoff_30		; time to wait between events (2 bytes)
 ; ===========================================================================
 
 ESon_Main:	; Routine 0
-		cmpi.b	#ss_emeralds_num,(v_emeralds).w		; do you have all 6 emeralds?
+		jsr	(HasAllEmeralds).l			; earned or test-granted six
 		beq.s	ESon_GoodEnding				; if yes, branch
 		addi.b	#$10,ob2ndRout(a0)			; else, skip emerald sequence (set to ESon_BadEnding)
 		move.w	#(3*60)+36,eson_time(a0)		; set time before leap to just over 3.5 seconds

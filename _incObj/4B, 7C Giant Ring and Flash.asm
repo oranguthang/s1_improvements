@@ -33,7 +33,11 @@ GRing_Main:	; Routine 0
 
 		moveq	#0,d0
 		move.b	obSubtype(a0),d0
-		beq.s	.checkVisible
+		bne.s	.freeRing
+		tst.b	(v_endring_bonus).w
+		bne.w	GRing_Delete
+		bra.s	.checkVisible
+	.freeRing:
 		subq.b	#1,d0
 		btst	d0,(v_midring_flags).w		; remove a free ring used before this reload
 		bne.w	GRing_Delete
@@ -56,11 +60,8 @@ GRing_Main:	; Routine 0
 	.waitForApproach:
 		rts
 	.checkEmeralds:
-		cmpi.b	#ss_emeralds_num,(v_emeralds).w		; do you have all 6 emeralds?
-		bne.s	.checkSubtype
-		tst.b	obSubtype(a0)			; act-end rings disappear after all emeralds
-		beq.w	GRing_Delete
-		bra.s	GRing_Okay				; free rings become 50-ring bonuses
+		jsr	(HasAllEmeralds).l
+		beq.s	GRing_Okay			; every subtype becomes a 50-ring bonus
 	.checkSubtype:
 		tst.b	obSubtype(a0)			; free rings have no ring-count requirement
 		bne.s	GRing_Okay
@@ -127,11 +128,8 @@ GRing_RestoreExplosion:
 ; ===========================================================================
 
 GRing_Collect:	; Routine 4
-		cmpi.b	#ss_emeralds_num,(v_emeralds).w	; all emeralds turn free rings into bonuses
-		bne.s	.stageEntry
-		tst.b	obSubtype(a0)
-		beq.w	GRing_Offscreen			; hide any act-end ring already on screen
-		bra.w	GRing_Bonus
+		jsr	(HasAllEmeralds).l
+		beq.w	GRing_Bonus
 	.stageEntry:
 		subq.b	#2,obRoutine(a0)			; go back to GRing_Animate
 		move.b	#col_none,obColType(a0)			; disable further collision with ring
@@ -164,7 +162,7 @@ GRing_NoFlashSlot:
 		move.b	#col_16x32|col_item,obColType(a0)	; keep the ring usable if flash could not spawn
 		rts
 
-; Free giant rings give 50 rings once all Chaos Emeralds are collected.
+; Every giant ring gives 50 rings with six effective Chaos Emeralds.
 GRing_Bonus:
 		subq.b	#2,obRoutine(a0)			; keep the ring active if no flash slot is free
 		move.b	#col_none,obColType(a0)
@@ -186,8 +184,13 @@ GRing_Bonus:
 		clr.w	(v_gfxbigring).w
 		moveq	#0,d0
 		move.b	obSubtype(a0),d0
+		bne.s	.freeBonus
+		move.b	#1,(v_endring_bonus).w
+		bra.s	.award
+	.freeBonus:
 		subq.b	#1,d0
 		bset	d0,(v_midring_flags).w		; do not respawn this bonus on act reload
+	.award:
 		moveq	#50,d0
 		jsr	(AddRings).l			; add 50 rings (capped at 999) and award any 100-ring lives
 		bne.s	.playSound			; if a life was awarded, play extra life music

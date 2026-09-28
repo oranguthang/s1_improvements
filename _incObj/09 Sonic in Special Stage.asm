@@ -708,7 +708,15 @@ SonicSS_GetEmerald:
 		moveq	#0,d0					; clear d0
 		move.b	(v_emeralds).w,d0			; get number of emeralds already collected
 		lea	(v_emldlist).w,a2			; get array of previously collected emerald colors
-		move.b	d4,(a2,d0.w)				; insert newly collected emerald color as newest entry
+		move.w	d0,d1
+		beq.s	.newEmerald
+		subq.w	#1,d1
+	.checkOwned:
+		cmp.b	(a2,d1.w),d4
+		beq.s	SonicSS_NoEmerald		; selected stages never award an emerald twice
+		dbf	d1,.checkOwned
+	.newEmerald:
+		move.b	d4,(a2,d0.w)			; append to the genuine earned set
 
 		addq.b	#1,(v_emeralds).w			; add 1 to number of emeralds
 

@@ -58,10 +58,8 @@ Sonic_Main:	; Routine 0
 ; Obj01_Control:
 Sonic_Control:	; Routine 2
 		bsr.w	Sonic_PanCamera				; adjust horizontal camera focus
-		tst.w	(f_debugmode).w				; is debug cheat enabled?
-		beq.s	.nodebug				; if not, branch
-		btst	#bitB,(v_jpadpress1).w			; is button B pressed?
-		beq.s	.nodebug				; if not, branch
+		bsr.w	Sonic_ChkDebugToggle			; let airborne Super combos take priority over B
+		beq.s	.nodebug				; no standalone debug toggle
 		move.w	#1,(v_debuguse).w			; enter debug mode on the next frame (change Sonic into a ring/item)
 		clr.b	(f_lockctrl).w				; unlock controls
 		rts						; return
@@ -2611,7 +2609,40 @@ Sonic_LoadGfx:
 
 ; Subroutine called at the peak of a jump to transform into Super Sonic
 ; ---------------------------------------------------------------------------
-; Subroutine to toggle Super Sonic with a buffered A+B or B+C combination
+; Standalone B enters item placement. An airborne rolling Super combo must
+; reach Sonic_ToggleSuper instead, which runs after copying the player input.
+; Returns d0=1 for entering debug mode, d0=0 otherwise.
+Sonic_ChkDebugToggle:
+		moveq	#0,d0
+		tst.w	(f_debugmode).w
+		beq.s	.return
+		btst	#bitB,(v_jpadpress1).w
+		beq.s	.return
+		tst.b	(f_lockctrl).w
+		bne.s	.enterdebug
+		btst	#0,(f_playerctrl).w
+		bne.s	.enterdebug
+		move.b	obStatus(a0),d0
+		andi.b	#6,d0			; Super input is handled while airborne and rolling
+		cmpi.b	#6,d0
+		bne.s	.enterdebug
+		move.b	(v_jpadhold1).w,d0
+		andi.b	#btnA|btnC,d0		; simultaneous A+B or B+C
+		bne.s	.supercombo
+		cmpi.b	#1,objoff_3D(a0)		; one frame left expires in Sonic_ToggleSuper
+		bls.s	.enterdebug
+		move.b	objoff_3F(a0),d0
+		andi.b	#btnA|btnC,d0		; A/C was pressed in the existing combo window
+		beq.s	.enterdebug
+.supercombo:
+		moveq	#0,d0
+		rts
+.enterdebug:
+		moveq	#1,d0
+.return:
+		rts
+; ---------------------------------------------------------------------------
+; Subroutine to toggle Super Sonic with a buffered A+B, A+C or B+C combination
 ; ---------------------------------------------------------------------------
 
 Sonic_ToggleSuper:
@@ -2681,12 +2712,14 @@ Sonic_ActivateSuper:
 		bra.w	.return
 
 .chk_emeralds:
-		cmpi.b	#ss_emeralds_num,(v_emeralds).w	; do we have all six emeralds?
-		bne.w	.return			; if not, branch
+		jsr	(HasAllEmeralds).l
+		bne.w	.return			; six actual or test-granted emeralds required
 
 .chk_rings:
-		cmpi.w	#50,(v_rings).w		; does Sonic have at least 50 rings?
-		bhs.s	.chk_time		; if yes, branch
+		moveq	#0,d0
+		move.b	(v_dev_superrings).w,d0	; rings required by the developer menu (0, 10 or 50)
+		cmp.w	(v_rings).w,d0		; does Sonic have at least that many rings?
+		bls.s	.chk_time		; if yes, branch
 		bra.w	.return
 
 .chk_time:
@@ -2742,6 +2775,8 @@ Sonic_Super:
 		tst.b	(v_supersonic).w	; ignore all this code if not Super Sonic
 		beq.w	Sonic_Super_Return	; if not, branch
 	if SuperRingDrain
+		tst.b	(v_dev_superdrain).w	; is RING DRAIN on in the developer menu?
+		beq.w	Sonic_Super_Return	; if not, keep the ring count
 		cmpi.b	#1,(v_superpal_state).w	; do not drain rings during the transformation
 		beq.w	Sonic_Super_Return
 		cmpi.b	#3,(v_superpal_state).w	; the palette fade also continues after landing
@@ -2750,11 +2785,19 @@ Sonic_Super:
 		bpl.w	Sonic_Super_Return	; if time remains, branch
 		move.w	#60,(v_superframe).w	; reset frame counter to 60
 		tst.w	(v_rings).w		; does Sonic have any rings left?
-		beq.s	Sonic_RevertToNormal	; if not, revert
+		beq.s	.norings		; if not, branch
 		subq.w	#1,(v_rings).w
 		move.b	#$81,(f_ringcount).w	; fully redraw rings counter
 		tst.w	(v_rings).w		; revert as soon as the last ring is spent
 		bne.w	Sonic_Super_Return	; if rings remain, branch
+		tst.b	(v_dev_superrings).w	; with a zero threshold, zero rings are enough
+		bne.s	Sonic_RevertFromEvent	; otherwise revert (falls through as before)
+		bra.w	Sonic_Super_Return
+
+	.norings:
+		tst.b	(v_dev_superrings).w	; with a zero threshold, stay Super without rings
+		bne.s	Sonic_RevertToNormal	; otherwise revert
+		bra.w	Sonic_Super_Return
 	else
 		bra.w	Sonic_Super_Return	; test mode: keep the ring count
 	endif

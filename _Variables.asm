@@ -504,7 +504,25 @@ v_scorecopy:		ds.l	1				; score, duplicate (REV00 only)
 	else
 v_scorelife:		ds.l	1				; points required for an extra life (REV01 only)
 	endif
-			ds.b	$1C				; unused
+v_dev_settings:							; developer menu settings (initialised by DevMenu_ChkDefaults)
+v_dev_debug:		ds.b	1				; 1 = enable debug mode at level and Special Stage start
+v_dev_super:		ds.b	1				; reserved legacy byte (not an option)
+v_dev_emeralds:		ds.b	1				; reserved legacy byte (not an option)
+v_dev_superrings:	ds.b	1				; rings required to transform (0, 10 or 50)
+v_dev_superdrain:	ds.b	1				; 1 = Super Sonic spends one ring per second
+v_dev_god:		ds.b	1				; 1 = God Mode
+v_dev_menuitem:		ds.b	1				; developer menu - selected row
+v_dev_magic:		ds.b	1				; devmenu_magic once the settings hold valid values
+v_dev_all_emeralds: ds.b 1			; effective six, never overwrites the earned list
+v_title_unlocked: ds.b 1			; persisted title menu unlock
+v_title_menuitem: ds.b 1			; transient title menu cursor
+v_title_codepos: ds.b 1			; transient unlock code progress
+v_submenu_pending: equ v_title_codepos	; high bit requests an atomic title-to-submenu VBlank switch
+v_ss_selected: ds.b 1			; transient SS selector (0..5)
+v_ss_override: ds.b 1			; one-shot SS selector (1..6; 0 = automatic)
+v_endring_bonus: ds.b 1			; end ring already collected in this act
+v_dev_settings_end:
+			ds.b	$1C-(v_dev_settings_end-v_dev_settings) ; unused
 f_levselcheat:		ds.b	1				; level select cheat flag
 f_slomocheat:		ds.b	1				; slow motion & frame advance cheat flag
 f_debugcheat:		ds.b	1				; debug mode cheat flag

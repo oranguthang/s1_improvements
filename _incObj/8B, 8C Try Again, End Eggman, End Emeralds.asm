@@ -28,7 +28,7 @@ EEgg_Main:	; Routine 0
 		move.b	#2,obPriority(a0)			; set sprite priority (behind emeralds)
 
 		move.b	#2,obAnim(a0)				; use "END" tantrum animation by default (good ending)
-		cmpi.b	#ss_emeralds_num,(v_emeralds).w		; do you have all 6 emeralds?
+		jsr	(HasAllEmeralds).l			; earned or test-granted six
 		beq.s	EEgg_Animate				; if yes, we have a good ending
 
 		; Bad Ending (load emeralds)

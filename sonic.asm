@@ -39,7 +39,7 @@ ZeroOffsetOptimization = 0|AllOptimizations
 PaddingOptimization = 0|AllOptimizations
 ;	| If 1, removes about 3 KB of various superfluous padding
 
-EnableSRAM = 0
+EnableSRAM = 1
 ;	| If 1, enable SRAM support
 BackupSRAM = 1
 ;	| 0 = no saving (read-only SRAM); 1 = allow saving
@@ -429,6 +429,7 @@ GameInit:
 		bsr.w	VDPSetupGame				; initialize (proper) VDP registers
 		bsr.w	DACDriverLoad				; initialize Z80 DAC driver
 		bsr.w	JoypadInit				; initialize controller ports
+		jsr	(Settings_Load).l			; validated settings, independent of save states
 		move.b	#id_Sega,(v_gamemode).w			; set first Game Mode to Sega Screen
 
 	if CheatsEnabled=1
@@ -796,6 +797,12 @@ VBlank_SegaPCM:
 
 ; loc_C44: VBla_04:
 VBlank_Title:
+		tst.b	(v_submenu_pending).w		; submenu tilemap is ready in unused window VRAM
+		bpl.s	.standard
+		clr.b	(v_submenu_pending).w
+		move.w	#vreg_bgvram|(vram_win>>13),(vdp_control_port).l
+		move.w	#vreg_mode3|%0000,(vdp_control_port).l
+	.standard:
 		bsr.w	VBlank_StandardTransfers		; do standard screen transfers
 		bsr.w	LoadTilesAsYouMove_BGOnly		; update background tiles as title screen scrolls
 
@@ -1732,6 +1739,12 @@ Tit_LoadForeground:
 Tit_LoadText:
 		move.w	(a5)+,(a6)				; write one row of the level select font to VRAM
 		dbf	d1,Tit_LoadText				; loop until it's fully loaded
+		jsr	(TitleMenu_LoadTextGraphics).l	; copy three strings into their reserved sprite slot
+		clr.b	(v_title_codepos).w
+		cmpi.b	#3,(v_title_menuitem).w
+		blo.s	Tit_MenuCursorReady
+		clr.b	(v_title_menuitem).w
+Tit_MenuCursorReady:
 
 		move.b	#0,(v_lastlamp).w			; clear lamppost counter
 		move.w	#0,(v_debuguse).w			; exit debug mode if necessary
@@ -1805,6 +1818,7 @@ Tit_SonicTeamFaded:
 
 		move.b	#id_TitleSonic,(v_titlesonic).w		; load big Sonic object
 		move.b	#id_PSBTM,(v_pressstart).w		; load "PRESS START BUTTON" object
+		clr.b	(v_pressstart+obRoutine).w		; menu must initialize in either FixBugs mode
 	;	clr.b	(v_pressstart+obRoutine).w		; The 'Mega Games 10' version of Sonic 1 added this line to fix the 'PRESS START BUTTON' object not appearing
 
 	if Revision<>0
@@ -1825,8 +1839,6 @@ Tit_SonicTeamFaded:
 		moveq	#plcid_Main,d0				; load main patterns (rings, etc.)
 		bsr.w	NewPLC					; (these get loaded once for the title screen and then never again, except when exiting Special Stages)
 
-		move.w	#0,(v_title_dcount).w			; clear D-Pad counter for title screen cheats
-		move.w	#0,(v_title_ccount).w			; clear C counter for title screen cheats
 ; ---------------------------------------------------------------------------
 
 		; fade-in palette and enter main loop
@@ -1840,6 +1852,7 @@ Tit_SonicTeamFaded:
 Tit_MainLoop:
 		move.b	#id_VBlank_Title,(v_vblank_routine).w	; set VBlank routine to $04
 		bsr.w	WaitForVBlank				; wait for VBlank to finish
+		jsr	(TitleMenu_ReadInput).l		; unlock/update before building menu sprites
 		jsr	(ExecuteObjects).l			; execute title screen objects
 		bsr.w	DeformLayers				; run background deformation
 		jsr	(BuildSprites).l			; display sprites
@@ -1852,6 +1865,8 @@ Tit_MainLoop:
 		move.w	d0,(v_player+obX).w			; write new X position
 		cmpi.w	#$1C00,d0				; has Sonic object passed $1C00 on x-axis?
 		blo.s	Tit_ChkRegion				; if not, branch
+		tst.b	(v_title_unlocked).w
+		bne.s	Tit_ChkRegion			; menu interaction can extend the idle timer safely
 		; Will never happen due to the short title screen generic timer.
 		; This likely was an old failsafe before Demos were introduced.
 		move.b	#id_Sega,(v_gamemode).w			; return to Sega screen
@@ -1859,110 +1874,32 @@ Tit_MainLoop:
 ; ===========================================================================
 
 Tit_ChkRegion:
-		tst.b	(v_megadrive).w				; check if the machine is US or Japanese
-		bpl.s	Tit_RegionJap				; if Japanese, branch
-		lea	(LevSelCode_US).l,a0			; load US code
-		bra.s	Tit_EnterCheat				; skip over
-
-Tit_RegionJap:
-		lea	(LevSelCode_J).l,a0			; load J code
-
-Tit_EnterCheat:
-		move.w	(v_title_dcount).w,d0			; get number of successful D-Pad cheat inputs
-		adda.w	d0,a0					; add to loaded code to find current cheat input requirement
-		move.b	(v_jpadpress1).w,d0			; get buttons pressed this frame
-		andi.b	#btnDir,d0				; read only D-Pad buttons (UDLR)
-		cmp.b	(a0),d0					; does button press match current cheat entry?
-		bne.s	Tit_ResetCheat				; if not, branch and reset cheat
-		addq.w	#1,(v_title_dcount).w			; increment number of successful D-Pad cheat inputs
-		tst.b	d0					; has end of cheat code been reached? (0-entry in cheat)
-		bne.s	Tit_CountC				; if not, branch
-	if FixBugs
-		; Allow additional cheats to be entered without resetting the sequence first.
-		clr.w	(v_title_dcount).w			; reset D-Pad counter
-	endif
-
-Tit_ActivateCheat:
-		; (On JAPANESE consoles only) Activated cheat depends on the amount of times C was pressed:
-		; 0-1 level select -- 2-3 slow motion -- 4-5 debug mode -- 6-7: hidden Japanese credits & sound test 9E/9F
-		; For any other regions, pressing C twice or more will ALWAYS result in slow motion and debug mode,
-		; and the hidden Japanese credits cheat is unavailable under any circumstances on such consoles.
-		lea	(f_levselcheat).w,a0			; get base cheat index
-		move.w	(v_title_ccount).w,d1			; get number of tiles C was pressed
-		lsr.w	#1,d1					; half pressed amount
-		andi.w	#3,d1					; only four cheats are possible
-		beq.s	Tit_PlayRing				; if C was not pressed, only activate level select
-		tst.b	(v_megadrive).w				; check if the machine is US or Japanese
-		bpl.s	Tit_PlayRing				; if Japanese, branch
-		moveq	#1,d1					; on non-Japanese console, force index to slow motion cheat
-		move.b	d1,1(a0,d1.w)				; enable debug mode first (and slow motion in the next line)
-
-Tit_PlayRing:
-		move.b	#1,(a0,d1.w)				; activate cheat depending on C-press count
-		move.b	#sfx_Ring,d0				; set ring sound when code is entered
-		bsr.w	QueueSound2				; play it
-		bra.s	Tit_CountC				; skip over cheat reset
+		tst.b	(v_title_unlocked).w		; only the new unlocked title menu opens submenus
+		bne.w	Tit_CheckMenuButtons
+		tst.w	(v_generictimer).w		; otherwise Start begins the game normally
+		beq.w	GotoDemo
+		btst	#bitStart,(v_jpadpress1).w
+		beq.w	Tit_MainLoop
+		bra.w	PlayLevel
 ; ===========================================================================
 
-Tit_ResetCheat:
-		tst.b	d0					; has D-Pad been pressed?
-		beq.s	Tit_CountC				; if not, don't reset D-Pad counter
-		cmpi.w	#9,(v_title_dcount).w			; has cheat reached index 9? (impossible condition)
-		beq.s	Tit_CountC				; if yes, don't reset D-Pad counter
-		move.w	#0,(v_title_dcount).w			; reset cheat index counter
-	if FixBugs
-		; Entering an incorrect cheat input normally resets the entire sequence.
-		; If the incorrect input matches the first cheat button, it should be treated
-		; as the first successful input to make repeated attempts less awkward.
-		lea	(LevSelCode_J).l,a0			; reload J code
-		tst.b	(v_megadrive).w				; check if the machine is US or Japanese
-		bpl.s	.chkUp					; if Japanese, branch
-		lea	(LevSelCode_US).l,a0			; reload US code
-	.chkUp:	cmp.b	(a0),d0					; was incorrect button press the first cheat input?
-		beq.s	Tit_EnterCheat				; if yes, treat it as first correct input right away
-	endif
-
-Tit_CountC:
-		move.b	(v_jpadpress1).w,d0			; get currently pressed buttons
-		andi.b	#btnC,d0				; is C button pressed?
-		beq.s	Tit_ChkStartOrDemo			; if not, branch
-		addq.w	#1,(v_title_ccount).w			; increment C counter
-
-; loc_3230:
-Tit_ChkStartOrDemo:
-		tst.w	(v_generictimer).w			; has title screen timer expired?
-		beq.w	GotoDemo				; if yes, launch Demo mode
-		andi.b	#btnStart,(v_jpadpress1).w		; check if Start is pressed
-		beq.w	Tit_MainLoop				; if not, continue looping title screen
-
-Tit_ChkLevSel:
-		tst.b	(f_levselcheat).w			; check if level select code is on
-		beq.w	PlayLevel				; if not, begin game by playing normal level
-		btst	#bitA,(v_jpadhold1).w			; check if A was held while pressing Start
-		beq.w	PlayLevel				; if not, begin game by playing normal level
-; ---------------------------------------------------------------------------
+Tit_CheckMenuButtons:
+		jsr	(TitleMenu_Confirm).l
+		cmpi.b	#1,d0
+		beq.w	PlayLevel
+		cmpi.b	#2,d0
+		beq.s	Tit_EnterLevelSelect
+		cmpi.b	#3,d0
+		beq.w	Tit_EnterDevMenu
+		tst.w	(v_generictimer).w
+		beq.w	GotoDemo
+		bra.w	Tit_MainLoop
 
 Tit_EnterLevelSelect:
-	if FixBugs
-		; Fix the level selects graphics bug
-		; https://info.sonicretro.org/SCHG_How-to:Fix_the_Level_Select_graphics_bug
-		move.b	#id_VBlank_Title,(v_vblank_routine).w	; set VBlank routine to $04
-		bsr.w	WaitForVBlank				; run VBlank one extra frame to prevent graphical glitches
-	endif
-		moveq	#palid_LevelSel,d0			; load level select palette...
-		bsr.w	PalLoad					; ...directly to active palette
-
-		clearRAM v_hscrolltablebuffer			; clear H-Scroll buffer
-		move.l	d0,(v_scrposy_vdp).w			; clear VSRAM (d0 is still 0)
-		disable_ints					; disable interrupts
-
-		lea	(vdp_data_port).l,a6			; prepare VDP data write
-		locVRAM	vram_bg					; write to background nametable
-		move.w	#plane_size_64x32/4-1,d1		; write full screen
-.LevSelClearBG:	move.l	d0,(a6)					; clear background plane
-		dbf	d1,.LevSelClearBG			; loop until plane is fully cleared
-
+		clr.b	(v_jpadpress1).w			; consume the confirming A/C/Start
+		bsr.w	LevSel_PrepareScreen			; load level select palette and clear the background
 		bsr.w	LevSelTextLoad				; load level select text before entering main loop
+		bsr.w	LevSel_ShowScreen			; show the completed menu in one step
 
 ; ---------------------------------------------------------------------------
 ; Level Select main loop
@@ -1971,11 +1908,13 @@ Tit_EnterLevelSelect:
 LevelSelect:
 		move.b	#id_VBlank_Title,(v_vblank_routine).w	; set VBlank routine to $04
 		bsr.w	WaitForVBlank				; wait for VBlank to finish
+		btst	#bitB,(v_jpadpress1).w
+		bne.w	Tit_MenuReturn
 		bsr.w	LevSelControls				; update selected line if necessary
 		bsr.w	RunPLC					; run any potential PLC
 		tst.l	(v_plc_buffer).w			; are any patterns in the PLC still left to be loaded?
 		bne.s	LevelSelect				; if yes, block quitting level select until finished
-		move.w	#btnABC+btnStart,d0
+		move.w	#btnA+btnC+btnStart,d0
 		cmpi.w	#levsel_sndtest_row,(v_levselitem).w
 		bne.s	.choiceButtons
 		move.w	#btnC+btnStart,d0			; A adjusts sounds; C/Start plays
@@ -2058,6 +1997,7 @@ PlayLevel:
 		move.b	d0,(v_lastspecial).w			; clear special stage number
 		move.w	d0,(v_midring_act).w			; reset free giant rings for a new game
 		move.b	d0,(v_midring_flags).w
+		clr.b	(v_endring_bonus).w
 		move.b	d0,(v_emeralds).w			; clear emeralds
 		move.l	d0,(v_emldlist).w			; clear emeralds
 		move.l	d0,(v_emldlist+4).w			; clear emeralds
@@ -2120,22 +2060,6 @@ LevSel_PtrsEnd:	even
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
-; Level select codes
-; ---------------------------------------------------------------------------
-
-LevSelCode_J:
-	if Revision=0
-		dc.b btnUp,btnDn,btnL,btnR,0,$FF
-	else
-		dc.b btnUp,btnDn,btnDn,btnDn,btnL,btnR,0,$FF
-	endif
-		even
-
-LevSelCode_US:	dc.b btnUp,btnDn,btnL,btnR,0,$FF
-		even
-
-; ===========================================================================
-; ---------------------------------------------------------------------------
 ; Demo mode loading routine
 ; ---------------------------------------------------------------------------
 
@@ -2164,7 +2088,7 @@ GotoDemo_PreDelayLoop:
 ; loc_33E4:
 GotoDemo_ChkLoop:
 		andi.b	#btnStart,(v_jpadpress1).w		; has Start button been pressed during pre-delay?
-		bne.w	Tit_ChkLevSel				; if yes, abort loading demo and load normal level instead
+		bne.w	PlayLevel				; if yes, abort loading demo and load normal level instead
 		tst.w	(v_generictimer).w			; has pre-delay timer expired?
 		bne.w	GotoDemo_PreDelayLoop			; if not, branch
 ; ---------------------------------------------------------------------------
@@ -2219,6 +2143,38 @@ Demo_Levels:	; previously in "misc/Demo Level Order - Intro.bin"
 		dc.w id_SYZ_act1
 		dc.w $600 ; used as dummy value to start the Special Stage demo
 		even
+
+; ===========================================================================
+; ---------------------------------------------------------------------------
+; Subroutine to set up the level select screen (also used by the developer
+; menu). Build its tilemap in the unused window VRAM while the title remains
+; visible; LevSel_ShowScreen switches the background plane in VBlank.
+; ---------------------------------------------------------------------------
+
+LevSel_PrepareScreen:
+		moveq	#0,d0
+		lea	(vdp_data_port).l,a6			; prepare VDP data write
+		locVRAM	vram_win					; write to offscreen submenu nametable
+		move.w	#plane_size_64x32/4-1,d1		; write full screen
+.LevSelClearBG:	move.l	d0,(a6)					; clear background plane
+		dbf	d1,.LevSelClearBG			; loop until plane is fully cleared
+		rts
+; End of function LevSel_PrepareScreen
+
+; Commit the complete submenu at the next VBlank. Until then, the title's
+; palette, sprites and scrolling remain visible and unchanged.
+LevSel_ShowScreen:
+		disable_ints
+		moveq	#palid_LevelSel,d0
+		bsr.w	PalLoad
+		clearRAM v_hscrolltablebuffer
+		moveq	#0,d0
+		move.l	d0,(v_scrposy_vdp).w
+		jsr	(TitleMenu_HideForSubmenu).l
+		move.b	#$80,(v_submenu_pending).w
+		move.b	#id_VBlank_Title,(v_vblank_routine).w
+		bsr.w	WaitForVBlank
+		rts
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -2314,7 +2270,7 @@ levsel_sndtest_col:	equ levsel_line_length-8 ; column offset for the sound test 
 
 levsel_start_row:	equ 4	; top tile offset for start position
 levsel_start_col:	equ 8	; left tile offset for start position
-levsel_vram_main:	equ vram_bg+(levsel_start_row<<7)+(levsel_start_col<<1)	; nametable address in VRAM
+levsel_vram_main:	equ vram_win+(levsel_start_row<<7)+(levsel_start_col<<1)	; staged submenu nametable
 levsel_vram_sndtestnum:	equ levsel_vram_main+(levsel_sndtest_row<<7)+(levsel_sndtest_col<<1) ; nametable address for sound test numbers
 
 levsel_white:		equ ArtTile_Level_Select_Font|Tile_Pal4|Tile_Prio ; VRAM setting for white text (non-selected lines)
@@ -2470,6 +2426,10 @@ LevelMenuText:
 	charset	; reset charset to default
 	even
 
+	include	"_inc/Developer Menu.asm"
+	include	"_inc/Settings SRAM.asm"
+	include	"_inc/Title Menu.asm"
+
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Music playlist for the start of a level. Note that restarting the music
@@ -2540,6 +2500,7 @@ Level_ClrRam:
 		beq.s	Level_KeepMidRingFlags
 		move.w	d0,(v_midring_act).w
 		clr.b	(v_midring_flags).w
+		clr.b	(v_endring_bonus).w
 Level_KeepMidRingFlags:
 		clearRAM v_objspace				; clear object RAM
 		clearRAM v_misc_variables			; clear various miscellaneous RAM
@@ -2689,6 +2650,18 @@ Level_SkipTtlCard:
 		move.b	#id_HUD,(v_hud).w			; load HUD object
 
 Level_ChkDebug:
+		tst.b	(v_dev_debug).w				; is DEBUG on in the developer menu?
+		beq.s	.chkcheat				; if not, use the original cheat check
+		tst.w	(f_demo).w				; demos replay recorded buttons, including B
+		bne.s	.demo					; so keep debug mode off there
+		move.b	#1,(f_debugmode).w			; enable debug mode
+		bra.s	Level_ChkWater
+
+	.demo:
+		clr.b	(f_debugmode).w				; credits demos follow a game played with DEBUG on
+		bra.s	Level_ChkWater
+
+	.chkcheat:
 		tst.b	(f_debugcheat).w			; has debug cheat been entered?
 		beq.s	Level_ChkWater				; if not, branch
 		btst	#bitA,(v_jpadhold1).w			; is A button held?
@@ -3248,6 +3221,14 @@ GM_Special:		; white fade-out from previous game mode
 
 		move.w	#0,(v_debuguse).w			; exit debug mode if necessary
 		move.w	#1800,(v_generictimer).w		; run regular demos for 30 seconds
+		tst.b	(v_dev_debug).w				; is DEBUG on in the developer menu?
+		beq.s	.chkcheat				; if not, use the original cheat check
+		tst.w	(f_demo).w				; the Special Stage demo replays B presses
+		bne.s	SS_NoDebug				; so keep debug mode off there
+		move.b	#1,(f_debugmode).w			; enable debug mode
+		bra.s	SS_NoDebug
+
+	.chkcheat:
 		tst.b	(f_debugcheat).w			; has debug cheat been entered?
 		beq.s	SS_NoDebug				; if not, branch
 		btst	#bitA,(v_jpadhold1).w			; is A button held?
@@ -3543,7 +3524,7 @@ GM_Ending:
 		move.w	#30,(v_air).w				; replenish air
 
 		move.w	#id_EndZ_good,(v_zone_act).w		; set to good ending by default (level number 600, extra flowers)
-		cmpi.b	#ss_emeralds_num,(v_emeralds).w		; do you have all 6 emeralds?
+		jsr	(HasAllEmeralds).l			; earned or test-granted six
 		beq.s	End_LoadData				; if yes, use good ending
 		move.w	#id_EndZ_bad,(v_zone_act).w		; otherwise, set to bad ending (level number 601, no extra flowers)
 

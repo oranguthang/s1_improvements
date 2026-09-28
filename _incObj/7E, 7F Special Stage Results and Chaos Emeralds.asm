@@ -55,7 +55,10 @@ SSR_Loop:
 		dbf	d1,SSR_Loop				; repeat sequence 3 or 4 times
 
 		moveq	#7,d0					; use "SPECIAL STAGE" text by default
-		move.b	(v_emeralds).w,d1			; get number of collected emeralds
+		jsr	(GetEffectiveEmeraldCount).l
+		move.b	d0,d1
+		moveq	#7,d0			; helper returns count in d0
+		tst.b	d1
 		beq.s	.setFrame				; if you have zero emeralds, branch
 		moveq	#0,d0					; use "CHAOS EMERALDS" text
 		cmpi.b	#ss_emeralds_num,d1			; do you have all chaos emeralds?
@@ -266,7 +269,8 @@ SSRC_Main:	; Routine 0
 		lea	(SSRC_PosData).l,a2			; load emerald X-position data
 		moveq	#0,d2					; start at first entry in v_emldlist
 		moveq	#0,d1					; clear d1 (v_emeralds is a byte, we need a word)
-		move.b	(v_emeralds).w,d1			; d1 = number of collected emeralds to display
+		jsr	(GetEffectiveEmeraldCount).l
+		move.b	d0,d1			; display the effective set
 		subq.b	#1,d1					; subtract 1 for dbf
 		bcs.w	DeleteObject				; if you have no emeralds, delete emerald object
 
@@ -276,7 +280,11 @@ SSRC_Loop:
 		move.w	#$F0,obScreenY(a1)			; set fixed y-position
 
 		lea	(v_emldlist).w,a3			; check which emeralds you have
-		move.b	(a3,d2.w),d3				; get next entry from array of collected emeralds
+		move.b	d2,d3			; grant displays colors 0..5 without editing earned list
+		tst.b	(v_dev_all_emeralds).w
+		bne.s	.colorReady
+		move.b	(a3,d2.w),d3			; earned set stays in collection order
+	.colorReady:
 		move.b	d3,obFrame(a1)				; set that emerald's frame
 		move.b	d3,obAnim(a1)				; set that emerald's animation
 		addq.b	#1,d2					; go to next entry in v_emldlist
