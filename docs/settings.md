@@ -23,3 +23,7 @@ Selecting zero required rings switches drain OFF. Enabling drain at zero changes
 Odd-byte SRAM is declared at `$200001–$20FFFF`; only the first 16 logical bytes are used. Logical byte N is at `$200001 + 2*N`. The record stores `S1DV`, version 1, payload length 6, menu unlock and five settings, two reserved bytes, then a big-endian checksum of logical bytes 0–13. Invalid signatures, lengths, versions or checksums load defaults. Writes invalidate the signature first and restore it last.
 
 The ROM bank is restored after access, and the routines must remain below `$200000`. Keep the emulator `.srm` file when replacing a ROM with the same basename. Save states independently restore RAM and can temporarily restore earlier settings. Earned progress is not a persistent SRAM save system.
+
+## God Mode
+
+God Mode prevents damage, drowning and time-over death. Crossing the lower death boundary bounces Sonic upward; left/right input can move him back to solid ground. Air countdown and drowning music do not start while protection is active.

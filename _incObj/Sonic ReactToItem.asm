@@ -370,6 +370,8 @@ React_Caterkiller:
 ; ---------------------------------------------------------------------------
 
 React_ChkHurt:
+		tst.b	(v_dev_god).w				; is God Mode on?
+		bne.s	.noDamage				; if yes, keep checking other objects
 		tst.b	(v_invinc).w				; is Sonic invincible?
 		bne.s	.noDamage
 		tst.b	(v_supersonic).w			; is Sonic Super?
@@ -412,6 +414,8 @@ React_ChkHurt:
 ; ---------------------------------------------------------------------------
 
 HurtSonic:
+		tst.b	(v_dev_god).w				; is God Mode on?
+		bne.w	KillSonic_God				; if yes, ignore the damage
 		tst.b	(v_shield).w				; does Sonic have a shield?
 		bne.s	.bounceSonicAway			; if yes, branch
 		tst.w	(v_rings).w				; does Sonic have any rings?
@@ -495,6 +499,8 @@ HurtSonic:
 KillSonic:
 		tst.w	(v_debuguse).w				; is debug mode active?
 		bne.w	.return					; if yes, branch
+		tst.b	(v_dev_god).w				; is God Mode on? (crushers, time over)
+		bne.w	KillSonic_God				; if yes, Sonic survives
 
 		jsr	(Sonic_SaveDebugDeathMusic).l		; remember music before death clears powerup flags
 		move.b	#0,(v_invinc).w				; remove invincibility
@@ -550,6 +556,7 @@ KillSonic:
 
 	; .dontdie:
 	.return:
+KillSonic_God:
 		moveq	#-1,d0					; collision detected
 		rts						; return
 ; End of function KillSonic

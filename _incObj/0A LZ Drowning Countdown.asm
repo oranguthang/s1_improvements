@@ -219,6 +219,9 @@ Drown_Countdown:; Routine $A
 		andi.w	#1,d0					; limit to 0 or 1
 		move.b	d0,drown_extrabubbles(a0)		; spawn 0 or 1 extra bubbles
 
+		tst.b	(v_dev_god).w				; is God Mode on?
+		bne.w	.gotoSpawnExtraBubbles			; if yes, breathe normally: no air use, warnings or countdown
+
 		move.w	(v_air).w,d0				; check seconds of air remaining
 		cmpi.w	#25,d0					; 25 seconds left?
 		beq.s	.warningSound				; if yes, play sound

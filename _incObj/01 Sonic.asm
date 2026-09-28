@@ -1187,7 +1187,25 @@ Sonic_LevelBound:
 ; Jump-redirect to the KillSonic subroutine, as it is out of branch range in this
 ; project (with or without FixBugs). This is also a very common beginner's trap
 JumpTo_KillSonic:
+		tst.b	(v_dev_god).w				; is God Mode on? (only pit deaths come here)
+		bne.s	Sonic_GodBounce				; if yes, bounce out of the pit instead
 		jmp	(KillSonic).l				; kill Sonic
+; ---------------------------------------------------------------------------
+
+; God Mode: bounce Sonic up from the bottom boundary (d0) as an airborne,
+; non-jumping player, so left/right steer him back onto solid ground.
+Sonic_GodBounce:
+		move.w	d0,obY(a0)				; put Sonic back on the boundary
+		move.w	#-$A00,obVelY(a0)			; bounce roughly one screen high
+		btst	#6,obStatus(a0)				; is Sonic underwater?
+		beq.s	.dry					; if not, branch
+		move.w	#-$500,obVelY(a0)			; lower gravity underwater needs less speed
+	.dry:
+		bset	#1,obStatus(a0)				; Sonic is airborne
+		bclr	#7,obStatus(a0)				; allow another homing attack
+		clr.b	jumping(a0)				; releasing jump must not cut the bounce short
+		move.b	#2,obRoutine(a0)			; return to Sonic_Control if he fell while hurt
+		rts
 ; End of function Sonic_LevelBound
 
 

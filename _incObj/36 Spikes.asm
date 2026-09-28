@@ -76,7 +76,7 @@ Spikes_SideWays:
 		beq.s	.chkHurt				; if yes, branch
 		neg.w	d0					; invert difference to check opposite end for right spikes
 .chkHurt:	tst.w	d0					; is Sonic touching the "pointy" end of the spikes?
-		bgt.s	Spikes_Display				; if not, make spike harmless (backside touched)
+		bgt.w	Spikes_Display				; if not, make spike harmless (backside touched)
 		bra.s	Spikes_Hurt				; otherwise, trigger damage
 	else
 		btst	#3,obStatus(a0)				; is Sonic standing on top of the sideways spikes?
@@ -109,7 +109,7 @@ Spikes_Upright:
 		beq.s	.chkHurt				; if yes, branch
 		neg.w	d0					; invert difference to check opposite end for upside-down spikes
 .chkHurt:	tst.w	d0					; is Sonic touching the "pointy" end of the spikes?
-		bgt.s	Spikes_Display				; if not, make spike harmless (backside touched)
+		bgt.w	Spikes_Display				; if not, make spike harmless (backside touched)
 	else
 		btst	#3,obStatus(a0)				; is Sonic standing on top of the spikes?
 		bne.s	Spikes_Hurt				; if yes, trigger damage
@@ -121,6 +121,8 @@ Spikes_Hurt:
 		tst.b	(v_invinc).w				; is Sonic invincible?
 		bne.s	Spikes_Display				; if so, skip getting hurt
 		tst.b	(v_supersonic).w			; Super Sonic ignores spikes
+		bne.s	Spikes_Display
+		tst.b	(v_dev_god).w				; so does God Mode (before the position is adjusted)
 		bne.s	Spikes_Display
 	if FixBugs
 		; (Proper) Spike Bug Fix
