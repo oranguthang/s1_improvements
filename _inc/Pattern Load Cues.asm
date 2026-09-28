@@ -83,7 +83,7 @@ PLC_Main:	plcheader
 		plcm	KosM_Lamp,	ArtTile_Lamppost		; lamppost
 		plcm	KosM_Hud,	ArtTile_HUD			; HUD
 		plcm	KosM_Lives,	ArtTile_Lives_Counter		; lives counter
-		plcm	KosM_Ring,	ArtTile_Ring			; rings
+		plcm	KosM_RingSparkles,	ArtTile_Ring_Sparkle	; ring sparkles (ring frames are DMA'd, #42)
 PLC_Main_end:
 
 ; ---------------------------------------------------------------------------

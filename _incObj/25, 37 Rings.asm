@@ -132,10 +132,12 @@ Ring_SpawningDone:
 ; ---------------------------------------------------------------------------
 
 Ring_Animate:	; Routine 2
-		move.b	(v_ani1_frame).w,obFrame(a0)		; set frame (updated in SynchroAnimate => Sync2)
+		clr.b	obFrame(a0)				; ordinary ring slot; its rotation is DMA'd by RingArt_Update
 
 		out_of_range.s	Ring_Delete,ring_origX(a0)
-		bra.w	DisplaySprite
+		tst.b	(v_ringart_static).w			; is the ordinary ring frame in VRAM?
+		bpl.w	DisplaySprite				; if yes, display
+		rts						; otherwise stay hidden until it has been queued
 ; ===========================================================================
 
 Ring_Collect:	; Routine 4 (set from ReactToItem)
@@ -246,6 +248,7 @@ RLoss_Index:	dc.w RLoss_Count-RLoss_Index	; 0
 		dc.w RLoss_Delete-RLoss_Index	; 8
 
 rloss_spread:	equ (2<<8)+$80+8	; (=$288) boost byte + angle fanning out + base angle variation
+rloss_frame:	equ 9			; Map_Ring frame for the lost ring slot (ArtTile_Ring_Lost)
 ; ===========================================================================
 
 RLoss_Count:	; Routine 0
@@ -337,7 +340,7 @@ RLoss_Count:	; Routine 0
 ; ---------------------------------------------------------------------------
 
 RLoss_Bounce:	; Routine 2
-		move.b	(v_ani3_frame).w,obFrame(a0)		; set frame (updated in SynchroAnimate => Sync4)
+		move.b	#rloss_frame,obFrame(a0)		; lost ring slot; its rotation is DMA'd by RingArt_Update
 
 		bsr.w	SpeedToPos				; update ring position based on speed
 		addi.w	#$18,obVelY(a0)				; make ring fall faster
@@ -388,6 +391,10 @@ RLoss_Bounce:	; Routine 2
 		blo.s	RLoss_Delete				; if yes, delete ring
 	endif
 .keepLostRing:
+		tst.b	(v_ringart_lost).w			; is the lost ring frame in VRAM?
+		bpl.s	.artReady				; if yes, branch
+		rts						; otherwise stay hidden until it has been queued
+	.artReady:
 	if FixBugs
 		; Flash scattered rings during their last 80 frames.
 		cmpi.b	#80,obDelayAni(a0)

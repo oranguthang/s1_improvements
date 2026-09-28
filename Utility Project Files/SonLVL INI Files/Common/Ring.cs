@@ -32,10 +32,9 @@ namespace S1ObjectDefinitions.Common
 
 		public override void Init(ObjectData data)
 		{
-			byte[] artfile = ObjectHelper.OpenArtFile("../../artkosm/Rings.kosm", CompressionType.KosinskiM);
-			
-			string rev = "0";
-			img = ObjectHelper.MapASMToBmp(artfile, (data.CustomProperties.TryGetValue("revision", out rev) && rev == "1") ? "../../_maps/Rings (REV01).asm" : "../../_maps/Rings (REV00).asm", 0, 1);
+			// Frame 0 of the shared map draws the first 4 tiles of the DMA frame sheet: the front ring.
+			byte[] artfile = ObjectHelper.OpenArtFile("../../artunc/Ring Frames.unc", CompressionType.Uncompressed);
+			img = ObjectHelper.MapASMToBmp(artfile, "../../_maps/Rings.asm", 0, 1);
 		}
 
 		public override ReadOnlyCollection<byte> Subtypes

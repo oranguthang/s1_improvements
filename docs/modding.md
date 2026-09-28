@@ -55,3 +55,7 @@ Set render bit 6 and a nonzero `obSubSprites` to opt in. Up to seven children us
 ## Shield, stars and points VRAM
 
 Shield, invincibility and Super stars share the protected `$541–$552` slot and use mutually exclusive loading. Points occupy `$553–$55B`. Keep their tile ranges independent from Game Over and debug text. Loading a new owner must also change the active mappings/DPLC state.
+
+## Ring animation
+
+Ordinary and lost rings stream their animation from `artunc/Ring Frames.unc`; sparkle art remains separately resident. Keep normal pickup bookkeeping and sparkle capacity shared by Light Dash and ordinary contact.

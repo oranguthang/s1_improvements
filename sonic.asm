@@ -1245,6 +1245,7 @@ ClearScreen:
 
 		ResetDMAQueue
 		clr.b	(v_plc_dma_pending).w		; no queued DMA owns Art_Buffer now
+		move.w	#-1,(v_ringart_static).w	; discarded ring frame DMAs: both ring slots invalid (#42)
 		clr.b	(v_draw_rings).w
 		rts						; return
 ; End of function ClearScreen
@@ -2714,6 +2715,7 @@ Level_LoadObj:
 .noPylon:
 		jsr	(RingsManager_Init).l
 		jsr	(ObjPosLoad).l				; initialize object manager
+		bsr.w	RingArt_Update				; queue both ring frames so rings show from the first frame
 		jsr	(ExecuteObjects).l			; load objects that are already visible during fade-in
 		jsr	(BuildSprites).l			; build sprites for objects before fade-in
 
@@ -3065,8 +3067,77 @@ Sync4:
 		subq.b	#1,(v_ani3_time).w			; decrease ring loss timer
 
 SyncEnd:
-		rts						; return
+		; fall through: copy the selected ring frames into their VRAM slots
 ; End of function SynchroAnimate
+
+; ---------------------------------------------------------------------------
+; Dynamic ordinary ring art (#42)
+;
+; Ordinary rings (Sync2 phase) and lost rings (Sync4 phase) each own a 4-tile
+; slot holding only their current frame from Art_RingFrames. v_ringart_static
+; and v_ringart_lost hold the frame whose DMA is queued, or -1 while the slot
+; has no valid ring art; ring sprites stay hidden then. A frame is recorded
+; only after its DMA entry is in the queue, and a full queue leaves the old
+; value so the frame is retried next time. Every VBlank that uploads the
+; sprite table drains the queue in the same VBlank, so recorded art is in VRAM
+; before any sprite table built later is shown. ClearScreen discards the
+; queue and resets both values to -1.
+;
+; output: d0-d3/a1 trashed
+; ---------------------------------------------------------------------------
+
+RingArt_Update:
+		bsr.s	RingArt_UpdateStatic			; ordinary rings first
+		move.l	d4,-(sp)
+		move.b	(v_ani3_frame).w,d4			; get current lost ring frame
+		cmp.b	(v_ringart_lost).w,d4			; is it already queued?
+		beq.s	.done					; if yes, branch
+		move.w	#ArtTile_Ring_Lost*tile_size,d2
+		bsr.s	RingArt_Queue
+		bne.s	.done					; queue full: keep the old value, retry next frame
+		move.b	d4,(v_ringart_lost).w			; record the frame only once its DMA is queued
+	.done:
+		move.l	(sp)+,d4
+		rts
+; End of function RingArt_Update
+
+; Also used by the Special Stage, which has no lost rings.
+RingArt_UpdateStatic:
+		move.l	d4,-(sp)
+		move.b	(v_ani1_frame).w,d4			; get current ordinary ring frame
+		cmp.b	(v_ringart_static).w,d4			; is it already queued?
+		beq.s	.done					; if yes, branch
+		move.w	#ArtTile_Ring*tile_size,d2
+		bsr.s	RingArt_Queue
+		bne.s	.done					; queue full: keep the old value, retry next frame
+		move.b	d4,(v_ringart_static).w			; record the frame only once its DMA is queued
+	.done:
+		move.l	(sp)+,d4
+		rts
+; End of function RingArt_UpdateStatic
+
+; input: d4.b = ring frame (0-3), d2.w = VRAM destination
+; output: Z set if the DMA was queued, clear if the queue was full
+RingArt_Queue:
+		moveq	#3,d1
+		and.b	d4,d1					; four frames
+		lsl.w	#7,d1					; $80 bytes per frame
+		addi.l	#Art_RingFrames,d1			; source
+		move.w	#4*tile_size/2,d3			; 4 tiles, in words
+		move.w	sr,-(sp)
+		move.w	#$2700,sr				; VBlank/HBlank must not drain the queue between check and insert
+		movea.w	(VDP_Command_Buffer_Slot).w,a1
+		cmpa.w	#VDP_Command_Buffer_Slot,a1		; is the DMA queue full?
+		beq.s	.full					; if yes, branch
+		jsr	(QueueDMATransfer).l			; a slot is free, so the entry cannot be dropped
+		move.w	(sp)+,sr
+		moveq	#0,d0					; Z set: queued
+		rts
+	.full:
+		move.w	(sp)+,sr
+		moveq	#1,d0					; Z clear: retry next frame
+		rts
+; End of function RingArt_Queue
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -4006,13 +4077,7 @@ Map_UnkExplode:	include	"_maps/Unused Explosion.asm"
 		include	"_incObj/25, 37 Rings.asm"
 		include	"_incObj/4B, 7C Giant Ring and Flash.asm"
 		include	"_anim/Rings.asm"
-Map_Ring:   if Revision=0
-		include	"_maps/Rings (REV00).asm"
-	    else
-		; REV01 added an extra blank frame, possibly to mitigate
-		; rings occasionally popping up in the sign post sparkles
-		include	"_maps/Rings (REV01).asm"
-	    endif
+Map_Ring:	include	"_maps/Rings.asm"	; dynamic ring art (#42), same for both revisions
 Map_GRing:	include	"_maps/Giant Ring.asm"
 Map_Flash:	include	"_maps/Ring Flash.asm"
 
@@ -4596,7 +4661,7 @@ KosM_Hud:	binclude	"artkosm/HUD.kosm" ; HUD (rings, time, score)
 		even
 KosM_Lives:	binclude	"artkosm/HUD - Life Counter Icon.kosm"
 		even
-KosM_Ring:	binclude	"artkosm/Rings.kosm"
+KosM_RingSparkles:	binclude	"artkosm/Ring Sparkles.kosm" ; resident sparkle tiles; ring frames are DMA'd (#42)
 		even
 KosM_Monitors:	binclude	"artkosm/Monitors.kosm"
 		even
@@ -5276,6 +5341,18 @@ Art_SSWalls_End:
 	endif
 	if (MOMPASS>1)&&((Art_SSWalls>>17)<>((Art_SSWalls_End-1)>>17))
 		error "Art_SSWalls crosses a 128kB boundary; SS wall DMA would be corrupted. Move or align it."
+	endif
+
+; Ring frames for the two dynamic ring slots (#42): four 2x2 frames, $80 bytes
+; each, generated from the ring source artwork.
+Art_RingFrames:	binclude	"artunc/Ring Frames.unc"
+Art_RingFrames_End:
+		even
+	if (Art_RingFrames_End-Art_RingFrames)<>4*4*tile_size
+		error "artunc/Ring Frames.unc must hold four 4-tile ring frames"
+	endif
+	if (MOMPASS>1)&&((Art_RingFrames>>17)<>((Art_RingFrames_End-1)>>17))
+		error "Art_RingFrames crosses a 128kB boundary; ring DMA would be corrupted. Move or align it."
 	endif
 
 ; ---------------------------------------------------------------------------

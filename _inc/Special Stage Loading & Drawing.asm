@@ -187,14 +187,22 @@ SS_AnimateBlocks:
 	.wallsReady:
 
 	; --- Animate rings (8 frames) ---
-		lea	(v_ss_spritesettings+5).l,a1		; load sprite settings array, target frame ID (byte, +5)
+		; The rotation is DMA'd into the ordinary ring slot (#42); the SS ring
+		; stays blank until the current frame has been queued.
 		subq.b	#1,(v_ani1_time).w			; decrement delay until ring animation needs to update
 		bpl.s	.updateRingFrame			; if time remains, branch
 		move.b	#8-1,(v_ani1_time).w			; reset delay
 		addq.b	#1,(v_ani1_frame).w			; advance frame ID
 		andi.b	#3,(v_ani1_frame).w			; wrap around every 8 frames
 	.updateRingFrame:
-		move.b	(v_ani1_frame).w,8*id_SS_Ring(a1)	; set new ring frame ID
+		jsr	(RingArt_UpdateStatic).l		; queue the frame (trashes d0-d3/a1; d5/a2 kept)
+		lea	(v_ss_spritesettings+5).l,a1		; load sprite settings array, target frame ID (byte, +5)
+		moveq	#0,d0					; ring slot frame
+		tst.b	(v_ringart_static).w			; is the ring frame in VRAM?
+		bpl.s	.setRingFrame				; if yes, branch
+		moveq	#8,d0					; blank frame until it has been queued
+	.setRingFrame:
+		move.b	d0,8*id_SS_Ring(a1)			; set ring frame ID
 
 	; --- Animate various other blocks (2 frames) ---
 		subq.b	#1,(v_ani2_time).w			; decrement delay until frames need to update

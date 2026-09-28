@@ -634,7 +634,9 @@ ArtTile_Points:			equ ArtTile_Shield+Shield_Slot_Tiles ; $553-$55B, after shield
 Points_Tiles:			equ 9
 ArtTile_Lamppost:		equ $D800/$20			; ten tiles just before the HUD
 ArtTile_SpinDust:		equ $F400/$20
-ArtTile_Ring:			equ $7B2
+ArtTile_Ring:			equ $7B2			; current ordinary ring frame, 4 tiles (DMA, #42)
+ArtTile_Ring_Lost:		equ ArtTile_Ring+4		; current lost ring frame, 4 tiles (DMA, #42)
+ArtTile_Ring_Sparkle:		equ ArtTile_Ring+8		; ring sparkles, 4 tiles (PLC_Main); $7BE-$7BF are free
 ArtTile_Lives_Counter:		equ $7D4
 ArtTile_Lives_Counter_Num:	equ ArtTile_Lives_Counter+9
 

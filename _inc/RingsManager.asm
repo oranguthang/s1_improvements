@@ -20,7 +20,14 @@
 ; ----------------------------------------------------------------------------
 
 EnableAttractRings:		equ 0	; attract rings if Sonic has a shield (v_shield, since we have no lightning shields)
-SmoothRingsCompatibility:	equ 0	; compatibility with smooth rings (i.e. force to ring frame ID 0)
+; Ordinary ring rotation lives in VRAM (#42): every ring uses frame 0 and a 2x2 sprite.
+
+	if EnableAttractRings
+		; AttractRing spawns RingLoss with routine $A, but RLoss_Index ends at 8.
+		; An attracted ring also needs the ordinary-ring slot (frame 0, gated by
+		; v_ringart_static), not the lost-ring slot.
+		error "EnableAttractRings needs an attracted-ring routine in RingLoss first"
+	endif
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -326,6 +333,11 @@ BuildRings:
 
 		move.b	(a4)+,d1				; has this ring been collected and finished sparkling?
 		bmi.w	.next					; if yes, check next ring
+		andi.w	#$000F,d1				; extract stored frame (sparkle for collected rings, 0 otherwise)
+		bne.s	.visible				; sparkle art is resident, always draw it
+		tst.b	(v_ringart_static).w			; is the ordinary ring frame in VRAM?
+		bmi.w	.next					; if not, hide ordinary rings until it has been queued
+	.visible:
 		move.w	(a0),d3					; get ring X-position
 		sub.w	(a3),d3					; subtract camera X-position
 		addi.w	#$80-8,d3				; add VDP sprite start - half of ring width (16/2 = 8px)
@@ -339,27 +351,7 @@ BuildRings:
 		addi.w	#$80-8-8,d2				; add VDP sprite start and undo earlier 8px offset
 
 		move.w	d2,(a2)+				; store sprite Y-position in sprite buffer
-
-		andi.w	#$000F,d1				; extract stored ring frame value
-		bne.s	.renderRing				; does this ring have a custom frame ID? if yes, use that (sparkle for collected rings)
-	if SmoothRingsCompatibility
-		moveq	#0,d1					; force frame 0 for all smooth ring frames (updated in VRAM)
-	else
-		move.b	(v_ani1_frame).w,d1			; use regular frame ID from animation timer
-	endif
-
-	.renderRing:
-	if SmoothRingsCompatibility
-		move.b	#5,(a2)+				; store sprite width/height in sprite buffer
-	else
-		moveq	#5,d0					; use 2x2 sprite
-		cmpi.b	#2,d1					; is this the 90 degrees rotated ring?
-		bne.s	.writeDimensions			; if not, branch
-		moveq	#1,d0					; use 1x2 sprite instead
-		addq.w	#4,d3					; align X-position by 4px to right
-	.writeDimensions:
-		move.b	d0,(a2)+				; store sprite width/height in sprite buffer
-	endif
+		move.b	#5,(a2)+				; store sprite width/height (2x2 for every ring and sparkle frame)
 
 		addq.b	#1,d5					; increase total sprites counter
 		move.b	d5,(a2)+				; store sprite link in sprite buffer
@@ -382,14 +374,14 @@ BuildRings:
 
 ; Compact rings mappings for optimization purposes
 Map_RingsCompact:
-		dc.w ArtTile_Ring+$0|Tile_Pal2			; 0 - ring
-		dc.w ArtTile_Ring+$4|Tile_Pal2			; 1 - ring
-		dc.w ArtTile_Ring+$8|Tile_Pal2			; 2 - ring
-		dc.w ArtTile_Ring+$4|Tile_Pal2|$800		; 3 - ring
+		dc.w ArtTile_Ring|Tile_Pal2			; 0 - ring (current frame is DMA'd into this slot)
+		dc.w ArtTile_Ring|Tile_Pal2			; 1-3 - unused by the manager, same slot
+		dc.w ArtTile_Ring|Tile_Pal2
+		dc.w ArtTile_Ring|Tile_Pal2
 
-		dc.w ArtTile_Ring+$A|Tile_Pal2			; 4 - sparkle
-		dc.w ArtTile_Ring+$A|Tile_Pal2|$1800		; 5 - sparkle
-		dc.w ArtTile_Ring+$A|Tile_Pal2|$0800		; 6 - sparkle
-		dc.w ArtTile_Ring+$A|Tile_Pal2|$1000		; 7 - sparkle
+		dc.w ArtTile_Ring_Sparkle|Tile_Pal2		; 4 - sparkle
+		dc.w ArtTile_Ring_Sparkle|Tile_Pal2|$1800	; 5 - sparkle
+		dc.w ArtTile_Ring_Sparkle|Tile_Pal2|$0800	; 6 - sparkle
+		dc.w ArtTile_Ring_Sparkle|Tile_Pal2|$1000	; 7 - sparkle
 
 		dc.w 0, 0					; blank frames in case of overflow

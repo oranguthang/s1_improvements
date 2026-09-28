@@ -63,7 +63,9 @@ f_colqueue_fullscan:	ds.b	1				; flag set to make ReactToItem do a full scan ins
 			ds.b	1				; unused
 v_colqueue:		ds.w	colqueue_entries		; collision response queue: level objects with obColType set, in RAM order
 v_colqueue_end:
-			ds.b	$200-4-colqueue_entries*2	; unused after queues
+v_ringart_static:	ds.b	1				; ordinary ring frame queued into ArtTile_Ring, -1 = slot not valid (#42)
+v_ringart_lost:		ds.b	1				; lost ring frame queued into ArtTile_Ring_Lost, -1 = slot not valid (#42)
+			ds.b	$200-4-colqueue_entries*2-2	; unused after queues
 v_tracksonic:		ds.b	$100				; position tracking data for Sonic
 v_hscrolltablebuffer:	ds.b	$380				; scrolling table data
 v_hscrolltablebuffer_end:
