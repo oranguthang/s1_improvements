@@ -2648,6 +2648,12 @@ Level_ChkWater:
 		move.w	#$120,(v_watersurface2+obX).w		; set base X-position for surface B
 
 Level_LoadObj:
+		cmpi.b	#id_SLZ,(v_zone).w		; camera-relative foreground exists at every start
+		bne.s	.noPylon
+		jsr	(FindFreeObj).l
+		bne.s	.noPylon
+		move.b	#id_Pylon,obID(a1)
+.noPylon:
 		jsr	(RingsManager_Init).l
 		jsr	(ObjPosLoad).l				; initialize object manager
 		jsr	(ExecuteObjects).l			; load objects that are already visible during fade-in
