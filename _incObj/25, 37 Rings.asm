@@ -261,15 +261,29 @@ RLoss_Count:	; Routine 0
 		move.w	d0,d5					; if yes, cap number of rings to spawn to 32
 
 	.belowmax:
-		subq.w	#1,d5					; decrement d5 for dbf
-		move.w	#rloss_spread,d4			; set initial ring angle spread value
-		bra.s	.makerings				; spawn first ring object
-; ===========================================================================
-
+		tst.w	d5
+		beq.w	DeleteObject				; debug-placed ring loss with no rings
+		subq.w	#1,d5					; first ring uses the existing object
+		lea	(v_lvlobjspace).w,a2			; scan each dynamic slot only once
+		lea	(RLoss_VelocitiesAir).l,a3
+		tst.b	(f_water).w
+		beq.s	.velocitiesReady
+		move.w	(v_waterpos1).w,d0
+		cmp.w	obY(a0),d0
+		bgt.s	.velocitiesReady
+		lea	(RLoss_VelocitiesWater).l,a3		; preserve arithmetic rounding underwater
+.velocitiesReady:
+		bra.s	.makerings
 .loop:
-		bsr.w	FindFreeObj				; find a free RAM slot for the new ring
-		bne.w	.resetcounter				; if object RAM is full, branch
-
+		cmpa.w	#v_lvlobjend,a2
+		bhs.w	.resetcounter
+		tst.b	obID(a2)
+		beq.s	.freeSlot
+		lea	object_size(a2),a2
+		bra.s	.loop
+.freeSlot:
+		movea.l	a2,a1
+		lea	object_size(a2),a2
 .makerings:
 		_move.b	#id_RingLoss,obID(a1)			; load bouncing ring object
 		addq.b	#2,obRoutine(a1)			; set to RLoss_Animate
@@ -290,35 +304,7 @@ RLoss_Count:	; Routine 0
 		move.b	#255,(v_ani3_time).w			; set bouncy ring animation timer to 255 frames
 	endif
 
-		; Calculate bouncy ring angles
-		tst.w	d4					; are we spawning another ring and it's even?
-		bmi.s	.setRingSpeed				; if yes, just repeat the last X/Y velocities but X-flipped
-		move.w	d4,d0					; copy current spread value
-		bsr.w	CalcSine				; calculate sine and cosine of current spread value (upper byte is ignored)
-		move.w	d4,d2					; get current spread value again
-		lsr.w	#8,d2					; get upper byte of spread value ($2xx => 2)
-		tst.b	(f_water).w				; does this level have water?
-		beq.s	.airSpeed
-		move.w	(v_waterpos1).w,d6			; get the water surface
-		cmp.w	obY(a0),d6				; is Sonic above the water?
-		bgt.s	.airSpeed
-		asr.w	#1,d0					; scatter rings more slowly underwater
-		asr.w	#1,d1
-.airSpeed:
-		asl.w	d2,d0					; boost X-speed by that value (multiply by 4)
-		asl.w	d2,d1					; boost Y-speed by that value (multiply by 4)
-		move.w	d0,d2					; store X-speed
-		move.w	d1,d3					; store Y-speed
-		addi.b	#$10,d4					; spread lost rings out further (don't affect boost byte)
-		bcc.s	.setRingSpeed				; for the first 7 ring pairs, branch here
-		subi.w	#$80,d4					; after 8 pairs of rings, reset angle (AND decrement boost byte)
-		bcc.s	.setRingSpeed				; has spread value totally underflowed?
-		move.w	#rloss_spread,d4			; if yes, reset it to default (impossible failsafe, can't happen with 32 rings)
-	.setRingSpeed:
-		move.w	d2,obVelX(a1)				; set X-velocity for lost ring
-		move.w	d3,obVelY(a1)				; set Y-velocity for lost ring
-		neg.w	d2					; negate X-velocity for next ring
-		neg.w	d4					; negate ring spill angle for next ring
+		move.l	(a3)+,obVelX(a1)			; exact precomputed X/Y pair
 
 		dbf	d5,.loop				; repeat for number of rings (max 31)
 
@@ -423,3 +409,5 @@ RLoss_Sparkle:	; Routine 6
 RLoss_Delete:	; Routine 8
 		bra.w	DeleteObject				; delete this ring
 
+
+	include "_incObj/Ring Loss Velocities.asm"
