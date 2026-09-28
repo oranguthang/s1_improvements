@@ -505,10 +505,14 @@ KillSonic:
 		move.l	#Map_Sonic,obMap(a0)
 		move.b	#-1,(v_sonframenum).w
 		clr.b	(v_superstars).w
+		clr.b	(v_superstars+obRoutine).w		; restart cleanly if the slot is reused
+		clr.b	(v_superstars+objoff_30).w		; Super stars flag = invincibility stars lag
+		clr.w	(v_shieldartkey).w			; slot may still hold Super stars tiles
 		; The palette copy uses a1/a2. Crushers keep their object pointer in a2,
 		; and the death sound still needs that killing object below.
 		movem.l	a1-a2,-(sp)
 		jsr	(Sonic_RefreshPalettes).l
+		movem.l	(sp)+,a1-a2
 		move.b	#6,obRoutine(a0)			; set Sonic to "Sonic_Death" routine
 		jsr	(Sonic_ResetOnFloor).l			; reset airborne state
 		bset	#1,obStatus(a0)				; force airborne flag again

@@ -229,7 +229,7 @@ v_limittop2:		ds.w	1				; top level boundary
 v_limitbtm2:		ds.w	1				; bottom level boundary
 v_unused11:		ds.w	1				; unused
 v_limitleft3:		ds.w	1				; left level boundary, at the end of an act
-			ds.b	2				; reserved for the shield DPLC key
+v_shieldartkey:		ds.w	1				; current shield/stars DPLC key
 v_squashframe:		ds.w	1				; frame of last squeeze
 v_squashobject:		ds.w	1				; object causing the last squeeze
 v_scrshiftx:		ds.w	1				; x-screen shift (new - last) * $100

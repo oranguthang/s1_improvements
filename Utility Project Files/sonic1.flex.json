@@ -335,8 +335,8 @@
                                 "label": ""
                             },
                             "dplcs": {
-                                "enabled": false,
-                                "path": "",
+                                "enabled": true,
+                                "path": "../_maps/Shield and Invincibility - Dynamic Gfx Script.asm",
                                 "label": ""
                             },
                             "config": {
@@ -362,8 +362,8 @@
                                 "label": ""
                             },
                             "dplcs": {
-                                "enabled": false,
-                                "path": "",
+                                "enabled": true,
+                                "path": "../_maps/Shield and Invincibility - Dynamic Gfx Script.asm",
                                 "label": ""
                             },
                             "config": {

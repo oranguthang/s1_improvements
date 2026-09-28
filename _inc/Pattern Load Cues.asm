@@ -91,8 +91,7 @@ PLC_Main_end:
 ; ---------------------------------------------------------------------------
 PLC_Main2:	plcheader
 		plcm	KosM_Monitors,	ArtTile_Monitor			; monitors
-		plcm	KosM_Shield,	ArtTile_Shield			; shield
-		plcm	KosM_Stars,	ArtTile_Invincibility		; invincibility stars
+		; shield and invincibility stars are DMA-loaded by ShieldStars_LoadGfx
 PLC_Main2_end:
 
 ; ---------------------------------------------------------------------------

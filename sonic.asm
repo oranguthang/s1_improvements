@@ -4074,6 +4074,7 @@ Map_Splats:	include	"_maps/Splats.asm"
 		include	"_incObj/08 LZ Water Splash.asm"
 		include	"_anim/Shield and Invincibility.asm"
 Map_Shield:	include	"_maps/Shield and Invincibility.asm"
+ShieldDynPLC:	include	"_maps/Shield and Invincibility - Dynamic Gfx Script.asm"
 Map_SuperSonicStars:	include	"_maps/Super Sonic Stars.asm"
 		include	"_anim/Special Stage Entry (Unused).asm"
 Map_Vanish:	include	"_maps/Special Stage Entry (Unused).asm"
@@ -4245,10 +4246,29 @@ SuperSonicDynPLC:	include	"_maps/Super Sonic - Dynamic Gfx Script.asm"
 
 Art_SuperSonic:	binclude	"artunc/Super Sonic.unc"
 		even
+; Shield, invincibility stars and Super Sonic stars share the 18-tile slot at
+; ArtTile_Shield; each sheet is a DMA source (see ShieldStars_LoadGfx).
 Art_SuperSonicStars:	binclude	"artunc/Super Sonic Stars.unc"
+Art_SuperSonicStars_End:
 		even
-Art_InvincibilityStarsRestore:	binclude	"artunc/Invincibility Stars Restore.unc"
+Art_InvincibilityStars:	binclude	"artunc/Invincibility Stars Restore.unc"
+Art_InvincibilityStars_End:
 		even
+Art_Shield:	binclude	"artunc/Shield.unc"	; generated shield frames
+Art_Shield_End:
+		even
+	if (Art_SuperSonicStars_End-Art_SuperSonicStars)<>14*tile_size
+		error "artunc/Super Sonic Stars.unc must hold 14 tiles"
+	endif
+	if (Art_InvincibilityStars_End-Art_InvincibilityStars)<>36*tile_size
+		error "artunc/Invincibility Stars Restore.unc must hold 36 tiles"
+	endif
+	if (Art_Shield_End-Art_Shield)<>27*tile_size
+		error "artunc/Shield.unc must hold 27 tiles"
+	endif
+	if (MOMPASS>1)&&((Art_SuperSonicStars>>17)<>((Art_Shield_End-1)>>17))
+		error "Shield/star DMA art crosses a 128kB boundary; the DMA would be corrupted. Move or align it."
+	endif
 Art_SpinDust:	binclude	"artunc/SpinDust.unc"
 		even
 
@@ -4260,14 +4280,6 @@ KosM_Smoke:	binclude	"artkosm/Unused - Smoke.kosm"
 		even
 KosM_SyzSparkle:	binclude	"artkosm/Unused - SYZ Sparkles.kosm"
 		even
-	endif
-
-KosM_Shield:	binclude	"artkosm/Shield.kosm"
-		even
-KosM_Stars:	binclude	"artkosm/Invincibility Stars.kosm"
-		even
-
-	if Revision=0
 KosM_LzSonic:	binclude	"artkosm/Unused - LZ Sonic.kosm" ; Sonic holding his breath
 		even
 KosM_UnkFire:	binclude	"artkosm/Unused - Fireball.kosm" ; unused fireball

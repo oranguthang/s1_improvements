@@ -23,6 +23,8 @@ SuperStars_Init:
 SuperStars_Main:
 		tst.b	(v_supersonic).w
 		beq.w	SuperStars_Delete
+		bsr.w	SuperStars_LoadGfx
+		bmi.w	.waitForArt
 		tst.b	objoff_30(a0)
 		beq.s	.checkSpeed
 		subq.b	#1,obTimeFrame(a0)
@@ -61,6 +63,36 @@ SuperStars_Main:
 	.hide:
 		clr.b	objoff_30(a0)
 		clr.b	objoff_31(a0)
+		rts
+
+	.waitForArt:
+		rts
+
+; A saturated DMA queue must not leave Super stars using shield tiles.
+; Key $4000 is distinct from every shield/invincibility DPLC offset.
+SuperStars_LoadGfx:
+		movem.l	d1-d3/a1,-(sp)
+		cmpi.w	#$4000,(v_shieldartkey).w
+		beq.s	.loaded
+		move.w	sr,-(sp)
+		disableInts
+		movea.w	(VDP_Command_Buffer_Slot).w,a1
+		cmpa.w	#VDP_Command_Buffer_Slot,a1
+		bhs.s	.full
+		move.l	#Art_SuperSonicStars,d1
+		move.w	#ArtTile_SuperSonicStars*tile_size,d2
+		move.w	#14*tile_size/2,d3
+		jsr	(QueueDMATransfer).l
+		move.w	#$4000,(v_shieldartkey).w
+		move.w	(sp)+,sr
+.loaded:
+		moveq	#0,d0
+		movem.l	(sp)+,d1-d3/a1
+		rts
+.full:
+		move.w	(sp)+,sr
+		moveq	#-1,d0
+		movem.l	(sp)+,d1-d3/a1
 		rts
 
 SuperStars_Delete:

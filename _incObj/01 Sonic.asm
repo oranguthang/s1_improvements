@@ -2705,20 +2705,21 @@ Sonic_ActivateSuper:
 		move.b	#id_Transform,obAnim(a0)
 		move.b	#-1,obPrevAni(a0)
 		move.b	#-1,(v_sonframenum).w
-		move.l	#Art_SuperSonicStars,d1
-		move.w	#ArtTile_SuperSonicStars*tile_size,d2
-		move.w	#14*tile_size/2,d3
-		jsr	(QueueDMATransfer).l			; load stars without extending the startup PLC
+		clr.w	(v_shieldartkey).w			; the Super stars object loads its own art with retry
 		clr.b	(v_shoes).w
 		clr.w	shoetime(a0)
 		; A new song sets its own tempo; keep the drowning song's live tempo.
 		clr.b	(v_snddriver_ram.f_speedup).w
 		clr.b	(v_invinc).w
 		clr.w	invtime(a0)
-		clr.b	(v_starsobj1).w
-		clr.b	(v_starsobj2).w
-		clr.b	(v_starsobj3).w
-		clr.b	(v_starsobj4).w
+		; Clear the whole star slots: the Super stars object reuses slot 8 and
+		; must not start in the invincibility stars' routine. These slots run
+		; after Sonic, so none of them has been queued for display yet.
+		lea	(v_starsobj1).w,a1
+		moveq	#(object_size*4)/4-1,d1
+	.clearstars:
+		clr.l	(a1)+
+		dbf	d1,.clearstars
 		move.b	#id_SuperSonicStars,(v_superstars).w
 		clr.b	objoff_3D(a0)
 		move.b	#$80,objoff_3F(a0)
@@ -2798,10 +2799,12 @@ Sonic_ResetSuperState:
 		move.b	#-1,obPrevAni(a0)
 		move.b	#-1,(v_sonframenum).w
 		clr.b	(v_superstars).w
-		move.l	#Art_InvincibilityStarsRestore,d1
-		move.w	#ArtTile_Invincibility*tile_size,d2
-		move.w	#36*tile_size/2,d3
-		jsr	(QueueDMATransfer).l		; restore all invincibility star tiles
+		; Keep its mappings for a sprite already queued this frame, but make a
+		; later invincibility monitor start this slot from Shi_Main with an
+		; even trail lag (the Super stars use objoff_30 as a 0/1 flag).
+		clr.b	(v_superstars+obRoutine).w
+		clr.b	(v_superstars+objoff_30).w
+		clr.w	(v_shieldartkey).w		; the shield reloads its tiles over the Super stars
 		tst.b	(v_shield).w
 		beq.s	.noshield
 		tst.b	(v_shieldobj).w

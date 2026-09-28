@@ -332,11 +332,7 @@ Pow_ChkInvinc:
 		tst.b	(v_supersonic).w			; do not replace Super music with invincibility
 		bne.w	Pow_NoMusic
 
-		move.l	#Art_InvincibilityStarsRestore,d1
-		move.w	#ArtTile_Invincibility*tile_size,d2
-		move.w	#36*tile_size/2,d3
-		jsr	(QueueDMATransfer).l		; refresh stars even after an old save state
-
+		; The stars queue their own tiles into the shared shield/stars slot.
 		move.b	#1,(v_invinc).w				; make Sonic invincible
 		move.w	#20*60,(v_player+invtime).w		; set time limit for invincibility to 20 seconds
 

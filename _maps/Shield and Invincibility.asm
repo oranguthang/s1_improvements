@@ -1,5 +1,7 @@
 ; ---------------------------------------------------------------------------
 ; Sprite mappings - shield and invincibility stars
+; Tile numbers are relative to the 18-tile DPLC slot at ArtTile_Shield; see
+; "Shield and Invincibility - Dynamic Gfx Script.asm" for the art tiles.
 ; ---------------------------------------------------------------------------
 Map_Shield_internal:	mappingsTable
 	mappingsTableEntry.w	.shield1+$B	; This is a nasty hack to render the sprite invisible by pointing at a random 00 byte.
@@ -19,10 +21,10 @@ Map_Shield_internal:	mappingsTable
 .shield1_End
 
 .shield2:	spriteHeader
-	spritePiece	-$17, -$18, 3, 3, $12, 1, 0, 0, 0
-	spritePiece	0, -$18, 3, 3, $12, 0, 0, 0, 0
-	spritePiece	-$17, 0, 3, 3, $12, 1, 1, 0, 0
-	spritePiece	0, 0, 3, 3, $12, 0, 1, 0, 0
+	spritePiece	-$17, -$18, 3, 3, 0, 1, 0, 0, 0
+	spritePiece	0, -$18, 3, 3, 0, 0, 0, 0, 0
+	spritePiece	-$17, 0, 3, 3, 0, 1, 1, 0, 0
+	spritePiece	0, 0, 3, 3, 0, 0, 1, 0, 0
 .shield2_End
 
 .shield3:	spriteHeader
@@ -48,17 +50,17 @@ Map_Shield_internal:	mappingsTable
 .stars2_End
 
 .stars3:	spriteHeader
-	spritePiece	-$18, -$18, 3, 3, $12, 0, 0, 0, 0
-	spritePiece	0, -$18, 3, 3, $1B, 0, 0, 0, 0
-	spritePiece	-$18, 0, 3, 3, $1B, 1, 1, 0, 0
-	spritePiece	0, 0, 3, 3, $12, 1, 1, 0, 0
+	spritePiece	-$18, -$18, 3, 3, 0, 0, 0, 0, 0
+	spritePiece	0, -$18, 3, 3, 9, 0, 0, 0, 0
+	spritePiece	-$18, 0, 3, 3, 9, 1, 1, 0, 0
+	spritePiece	0, 0, 3, 3, 0, 1, 1, 0, 0
 .stars3_End
 
 .stars4:	spriteHeader
-	spritePiece	-$18, -$18, 3, 3, $1B, 1, 0, 0, 0
-	spritePiece	0, -$18, 3, 3, $12, 1, 0, 0, 0
-	spritePiece	-$18, 0, 3, 3, $12, 0, 1, 0, 0
-	spritePiece	0, 0, 3, 3, $1B, 0, 1, 0, 0
+	spritePiece	-$18, -$18, 3, 3, 9, 1, 0, 0, 0
+	spritePiece	0, -$18, 3, 3, 0, 1, 0, 0, 0
+	spritePiece	-$18, 0, 3, 3, 0, 0, 1, 0, 0
+	spritePiece	0, 0, 3, 3, 9, 0, 1, 0, 0
 .stars4_End
 
 	even

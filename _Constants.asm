@@ -611,10 +611,11 @@ ArtTile_Button_Main:		equ ArtTile_Button+4		; Skips over unused red tiles
 ArtTile_Spikes:			equ $51B
 ArtTile_Spring_Horizontal:	equ $523
 ArtTile_Spring_Vertical:	equ $533
-ArtTile_Shield:			equ $541
-ArtTile_Invincibility:		equ $55C
-ArtTile_SuperSonicStars:	equ ArtTile_Invincibility	; shares hidden invincibility stars; restored on reversion
-ArtTile_Game_Over:		equ $55E
+ArtTile_Shield:			equ $541			; 18-tile DPLC slot shared by shield and all stars
+Shield_Slot_Tiles:		equ 18
+ArtTile_Invincibility:		equ ArtTile_Shield		; never shown with the shield
+ArtTile_SuperSonicStars:	equ ArtTile_Shield		; 14 tiles; shield hidden and stars removed while Super
+ArtTile_Game_Over:		equ $55E			; $553-$57F no longer hold shield/stars art
 ArtTile_Title_Card:		equ $580
 ArtTile_Animal_1:		equ $580
 ArtTile_Animal_2:		equ $592
@@ -629,7 +630,8 @@ ArtTile_HUDRings:		equ ArtTile_HUD+$30
 
 ArtTile_Sonic:			equ $780
 Sonic_Slot_Tiles:		equ 32			; Super frames use up to 31 tiles; ends before spin dust
-ArtTile_Points:			equ $797
+ArtTile_Points:			equ ArtTile_Shield+Shield_Slot_Tiles ; $553-$55B, after shield/stars
+Points_Tiles:			equ 9
 ArtTile_Lamppost:		equ $D800/$20			; ten tiles just before the HUD
 ArtTile_SpinDust:		equ $F400/$20
 ArtTile_Ring:			equ $7B2
@@ -701,6 +703,15 @@ ArtTile_Ending_Pig:		equ $593
 ArtTile_Ending_Flicky:		equ $5A5
 ArtTile_Ending_Squirrel:	equ $5B3
 ArtTile_Ending_STH:		equ $5C5
+
+	; The shared shield/stars slot is written by DMA during play; keep it clear
+	; of level-time art that can be on screen at the same time.
+	if ArtTile_Shield+Shield_Slot_Tiles>ArtTile_Game_Over
+		error "Shield/stars DPLC slot overlaps the Game Over art"
+	endif
+	if ArtTile_Shield+Shield_Slot_Tiles>ArtTile_Ending_Rabbit
+		error "Shield/stars DPLC slot overlaps the ending animals"
+	endif
 
 ; Try Again Screen
 ArtTile_Try_Again_Emeralds:	equ $3C5
