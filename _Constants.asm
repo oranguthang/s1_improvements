@@ -632,6 +632,8 @@ ArtTile_Sonic:			equ $780
 Sonic_Slot_Tiles:		equ 32			; Super frames use up to 31 tiles; ends before spin dust
 ArtTile_Points:			equ ArtTile_Shield+Shield_Slot_Tiles ; $553-$55B, after shield/stars
 Points_Tiles:			equ 9
+ArtTile_Debug_Stats:		equ ArtTile_Points+Points_Tiles ; SPR label and decimal sprite count
+Debug_Stats_Tiles:		equ 5
 ArtTile_Lamppost:		equ $D800/$20			; ten tiles just before the HUD
 ArtTile_SpinDust:		equ $F400/$20
 ArtTile_Ring:			equ $7B2			; current ordinary ring frame, 4 tiles (DMA, #42)
@@ -656,6 +658,12 @@ ArtTile_Hidden_Points:		equ $4B6
 ArtTile_Warp:			equ $541
 ArtTile_Mini_Sonic:		equ $551
 ArtTile_Bonuses:		equ $570
+; Debug coordinates share tiles with the Game Over art ($55E-$57F) and the
+; bonus counters. HudDb_ChkHidden keeps them hidden, and their tiles
+; unwritten, while either can be on screen; all 16 are rewritten every
+; frame they are shown.
+ArtTile_Debug_Coords:		equ $570
+Debug_Coords_Tiles:		equ 16
 ArtTile_Signpost:		equ $680
 
 ; Sega Screen
@@ -725,6 +733,21 @@ ArtTile_Ending_STH:		equ $5C5
 	if ArtTile_Shield+Shield_Slot_Tiles>ArtTile_Ending_Rabbit
 		error "Shield/stars DPLC slot overlaps the ending animals"
 	endif
+	if ArtTile_Sonic+Sonic_Slot_Tiles>ArtTile_SpinDust
+		fatal "Sonic DPLC slot overlaps spin dash dust"
+	endif
+	if ArtTile_Points+Points_Tiles>ArtTile_Game_Over
+		fatal "Points must survive Game Over art loading"
+	endif
+	if ArtTile_Debug_Stats+Debug_Stats_Tiles>ArtTile_Debug_Coords
+		fatal "SPR stats overlap debug coordinate digits"
+	endif
+	if ArtTile_Shield+Shield_Slot_Tiles>ArtTile_Debug_Coords
+		error "Shield/stars DPLC slot overlaps the debug coordinates"
+	endif
+	if ArtTile_Debug_Coords+Debug_Coords_Tiles>ArtTile_Title_Card
+		error "Debug coordinates overlap the title cards"
+	endif
 
 ; Try Again Screen
 ArtTile_Try_Again_Emeralds:	equ $3C5
@@ -774,3 +797,28 @@ ArtTile_Error_Handler_Font:	equ $7C0
 	if ArtTile_Splats+Splats_Tiles>ArtTile_MZ_Block
 		fatal "Splats must not overwrite the MZ push block."
 	endif
+
+; Pattern slots must not intersect any active level-mode VDP table. The
+; window is disabled in levels; its reserved address can hold sprite art.
+check_game_art_slot: macro first,tiles
+	if ((first*tile_size)<(vram_fg+$1000))&&(((first+tiles)*tile_size)>vram_fg)
+		fatal "Game art overlaps foreground nametable"
+	endif
+	if ((first*tile_size)<(vram_bg+$1000))&&(((first+tiles)*tile_size)>vram_bg)
+		fatal "Game art overlaps background nametable"
+	endif
+	if ((first*tile_size)<(vram_sprites+sprites_max*8))&&(((first+tiles)*tile_size)>vram_sprites)
+		fatal "Game art overlaps sprite table"
+	endif
+	if ((first*tile_size)<(vram_hscroll+$400))&&(((first+tiles)*tile_size)>vram_hscroll)
+		fatal "Game art overlaps horizontal scroll table"
+	endif
+	endm
+
+	check_game_art_slot ArtTile_Points,Points_Tiles
+	check_game_art_slot ArtTile_Debug_Stats,Debug_Stats_Tiles
+	check_game_art_slot ArtTile_Splats,Splats_Tiles
+	check_game_art_slot ArtTile_Sonic,Sonic_Slot_Tiles
+	check_game_art_slot ArtTile_SpinDust,18
+	check_game_art_slot ArtTile_Shield,Shield_Slot_Tiles
+	check_game_art_slot ArtTile_Debug_Coords,Debug_Coords_Tiles

@@ -257,7 +257,24 @@ BuildHUD:
 		move.w	#$80+$88,d2				; set Y pos (same as HUD_Main's obScreenY)
 		move.w	#$80+$10,d3				; set X pos (same as HUD_Main's obX)
 		movea.w	#ArtTile_HUD,a3				; set art tile (prio flag is set from mappings themselves)
-		bra.w	BuildSpr_Normal				; draw HUD directly to sprite buffer
+		bsr.w	BuildSpr_Normal				; draw HUD directly to sprite buffer
+
+		tst.w	(f_debugmode).w				; is debug mode on?
+		beq.s	.return					; if not, branch
+		jsr	(HudDb_ChkHidden).l			; are the coordinate tiles in use by other art?
+		bne.s	.return					; if yes, hide the coordinates
+		lea	(Map_HUDDebug).l,a1			; set mappings location
+		adda.w	(a1),a1					; get the only frame
+		moveq	#0,d1
+		move.b	(a1)+,d1				; get number of sprite pieces
+		subq.b	#1,d1					; make it 0-based for dbf
+		move.w	#$80+8,d2				; set Y pos (SCORE line)
+		move.w	#$80+320-16-64,d3			; set X pos (upper right, 16px margin like SCORE)
+		movea.w	#0,a3				; debug mappings carry absolute tiles for their separate slots
+		bra.w	BuildSpr_Normal				; draw coordinates directly to sprite buffer
+
+	.return:
+		rts
 ; End of function BuildHUD
 
 

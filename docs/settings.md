@@ -27,3 +27,7 @@ The ROM bank is restored after access, and the routines must remain below `$2000
 ## God Mode
 
 God Mode prevents damage, drowning and time-over death. Crossing the lower death boundary bounces Sonic upward; left/right input can move him back to solid ground. Air countdown and drowning music do not start while protection is active.
+
+## Debug display
+
+Coordinates and the sprite count appear separately in the upper-right corner. SCORE and TIME retain their normal meanings. The overlay is hidden during death, results, Game Over and screens that reuse its graphics slots.

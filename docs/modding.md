@@ -59,3 +59,7 @@ Shield, invincibility and Super stars share the protected `$541–$552` slot and
 ## Ring animation
 
 Ordinary and lost rings stream their animation from `artunc/Ring Frames.unc`; sparkle art remains separately resident. Keep normal pickup bookkeeping and sparkle capacity shared by Light Dash and ordinary contact.
+
+## Debug HUD slots
+
+Coordinate digits use `$570–$57F`; the SPR label/count uses `$55C–$560`. Hide this overlay when another screen owns those tiles, and upload all digits before displaying it again.

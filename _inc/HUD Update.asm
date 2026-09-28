@@ -126,48 +126,12 @@ TimeOver:
 ; ---------------------------------------------------------------------------
 
 HudDebug:
-		bsr.w	HudDb_XY				; update VRAM for the coordinate data overwriting the score counter
-
-		tst.b	(f_ringcount).w				; does the ring counter need updating?
-		beq.s	.spritecounter				; if not, branch
-		bpl.s	.notzero				; should leading digits get reset (flag >= $80)? if not, branch
-		bsr.w	Hud_ResetRings				; reset rings to 0 and clear leading digits (Sonic got hit)
-	.notzero:
-		clr.b	(f_ringcount).w				; clear update flag
-
-		locVRAM	(ArtTile_HUDRings)*tile_size,d0		; set VRAM address
-		moveq	#0,d1					; clear d1
-		move.w	(v_rings).w,d1				; load number of rings
-		bsr.w	Hud_Rings				; write rings digits
-
-.spritecounter:
-		locVRAM	(ArtTile_HUDTimeSecs)*tile_size,d0	; set VRAM address (replacing time seconds)
-		moveq	#0,d1					; clear d1
-		move.b	(v_spritecount).w,d1			; load "number of sprites rendered" count
-		bsr.w	Hud_Secs				; write digits to VRAM
-
-.chklives:
-		tst.b	(f_lifecount).w				; does the lives counter need updating?
-		beq.s	.chkbonus				; if not, branch
-		clr.b	(f_lifecount).w				; clear update flag
-		bsr.w	Hud_Lives				; write lives digits to VRAM
-
-.chkbonus:
-		tst.b	(f_endactbonus).w			; do time/ring bonus counters need updating?
-		beq.s	.finish					; if not, branch
-		clr.b	(f_endactbonus).w			; clear update flag
-
-		locVRAM	ArtTile_Bonuses*tile_size		; set VRAM address
-		moveq	#0,d1					; clear d1
-		move.w	(v_timebonus).w,d1			; load time bonus
-		bsr.w	Hud_TimeRingBonus			; write time bonus digits to VRAM
-
-		moveq	#0,d1					; clear d1
-		move.w	(v_ringbonus).w,d1			; load ring bonus
-		bsr.w	Hud_TimeRingBonus			; write rings bonus digits to VRAM
-
-.finish:
-		rts						; return
+		bsr.w	HudDb_ChkHidden				; may the debug tiles be used now?
+		bne.s	.return
+		bsr.w	HudDb_XY				; camera/player coordinates (upper right)
+		bra.w	HudDb_Sprites				; separate SPR row, without replacing TIME
+.return:
+		rts
 ; End of function HudDebug
 
 
@@ -249,7 +213,7 @@ Hud_Base_End:	even
 ; ---------------------------------------------------------------------------
 
 HudDb_XY:
-		locVRAM	(ArtTile_HUDScore_E)*tile_size		; set VRAM address
+		locVRAM	(ArtTile_Debug_Coords)*tile_size	; set VRAM address (dedicated tiles, see Map_HUDDebug)
 		move.w	(v_screenposx).w,d1			; load camera x-position
 		swap	d1					; move it to upper word
 		move.w	(v_player+obX).w,d1			; load Sonic's x-position to lower word
@@ -282,6 +246,75 @@ HudDb_XY_Write:
 		dbf	d6,.loopdigits				; loop for all 8 digits in a block
 		rts						; return
 ; End of function HudDb_XY
+
+; Draw SPR and a two-digit decimal sprite count into its five separate tiles.
+HudDb_Sprites:
+		locVRAM	ArtTile_Debug_Stats*tile_size
+		lea	(Art_Text).l,a1
+		lea	HudDb_SpriteLabel(pc),a2
+		moveq	#3-1,d6
+.label:
+		moveq	#0,d2
+		move.b	(a2)+,d2
+		bsr.s	HudDb_WriteGlyph
+		dbf	d6,.label
+		moveq	#0,d1
+		move.b	(v_spritecount).w,d1
+		divu.w	#10,d1					; quotient=tens, remainder=ones
+		move.w	d1,d2
+		bsr.s	HudDb_WriteGlyph
+		swap	d1
+		move.w	d1,d2
+		; fall through for the ones digit
+
+HudDb_WriteGlyph:
+		lsl.w	#5,d2
+		lea	(a1,d2.w),a3
+	rept 8
+		move.l	(a3)+,(a6)
+	endr
+		rts
+
+HudDb_SpriteLabel:	dc.b 'S'-'0','P'-'0','R'-'0'
+		even
+
+
+; ---------------------------------------------------------------------------
+; Check whether the debug coordinates may use ArtTile_Debug_Coords. Those
+; tiles also hold the Game Over art, the bonus counters and ending animals.
+; Used by HudDebug (tile writes) and BuildHUD (sprites), so both stop and
+; resume on the same frame.
+;
+; output:
+;	d0 = 0 and Z set if the coordinates are shown, otherwise d0 = 1
+; ---------------------------------------------------------------------------
+
+HudDb_ChkHidden:
+		move.b	(v_gamemode).w,d0
+		andi.b	#$7F,d0					; ignore the pre-level flag
+		cmpi.b	#id_Level,d0				; only levels and demos keep these tiles free
+		beq.s	.level
+		cmpi.b	#id_Demo,d0
+		bne.s	.hide					; Special Stage results, ending, credits
+
+	.level:
+		cmpi.b	#id_GameOverCard,(v_gameovertext1).w	; GAME OVER / TIME OVER card?
+		beq.s	.hide
+		tst.b	(v_endcard).w				; results card with bonus counters?
+		bne.s	.hide
+		tst.w	(v_debuguse).w				; debug placement entered while dying?
+		bne.s	.show					; (Game Over art is only queued after that)
+		cmpi.b	#6,(v_player+obRoutine).w		; is Sonic dying? (Game Over art may load)
+		bhs.s	.hide
+
+	.show:
+		moveq	#0,d0
+		rts
+
+	.hide:
+		moveq	#1,d0
+		rts
+; End of function HudDb_ChkHidden
 
 
 ; ===========================================================================

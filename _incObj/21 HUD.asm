@@ -62,3 +62,4 @@ HUD_Flash:	; Routine 2
 ; ===========================================================================
 
 Map_HUD:	include	"_maps/HUD.asm"
+Map_HUDDebug:	include	"_maps/HUD Debug.asm"
