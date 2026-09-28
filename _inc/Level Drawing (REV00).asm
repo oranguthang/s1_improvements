@@ -109,10 +109,10 @@ LoadTilesAsYouMove:
 
 		; Draw new tiles on the right
 		moveq	#-16,d4					; set X and Y positions to top right of screen
-		move.w	#320,d5					; ''
+		move.w	#320+16,d5					; ''
 		bsr.w	Calc_VRAM_Pos				; get the plane position
 		moveq	#-16,d4					; set X and Y positions to top right of screen
-		move.w	#320,d5					; ''
+		move.w	#320+16,d5					; ''
 		bsr.w	DrawBlocks_TB				; draw a vertical line of blocks to the right of the screen
 
 ; locret_6952:
@@ -197,10 +197,10 @@ DrawBG_Top:
 
 		; Draw new tiles on the right
 		moveq	#-16,d4					; set X and Y positions to top right of screen
-		move.w	#320,d5					; ''
+		move.w	#320+16,d5					; ''
 		bsr.w	Calc_VRAM_Pos				; get the plane position
 		moveq	#-16,d4					; set X and Y positions to top right of screen
-		move.w	#320,d5					; ''
+		move.w	#320+16,d5					; ''
 		move.w	(v_scroll_block_1_size).w,d6		; load scroll block size A
 		move.w	4(a3),d1				; load Y position
 		andi.w	#$FFF0,d1				; keep in multiples of blocks (16 pixels)
@@ -272,10 +272,10 @@ DrawBG_Bottom:
 		andi.w	#$FFF0,d1				; keep in multiples of blocks (16 pixels)
 		sub.w	d1,d4					; get size/position of top scroll block to draw
 		move.w	d4,-(sp)				; store inside the stack
-		move.w	#320,d5					; set X position to the right of the screen
+		move.w	#320+16,d5					; set X position to the right of the screen
 		bsr.w	Calc_VRAM_Pos				; get the plane position
 		move.w	(sp)+,d4				; restore Y plane position
-		move.w	#320,d5					; set X position to the right of the screen
+		move.w	#320+16,d5					; set X position to the right of the screen
 		move.w	(v_scroll_block_1_size).w,d6		; load scroll block size A
 		move.w	4(a3),d1				; load Y position
 		andi.w	#$FFF0,d1				; keep in multiples of blocks (16 pixels)
@@ -337,10 +337,10 @@ DrawBG_Unused_PlaneZ:
 		andi.w	#$FFF0,d1				; keep in multiples of blocks (16 pixels)
 		sub.w	d1,d4					; get size/position of scroll block to draw
 		move.w	d4,-(sp)				; store inside the stack
-		move.w	#320,d5					; set X position to the right of the screen
+		move.w	#320+16,d5					; set X position to the right of the screen
 		bsr.w	Calc_VRAM_Pos_PlaneZ			; get the plane position
 		move.w	(sp)+,d4				; restore Y plane position
-		move.w	#320,d5					; set X position to the right of the screen
+		move.w	#320+16,d5					; set X position to the right of the screen
 		moveq	#3-1,d6					; set number of blocks to draw (3 blocks)
 		bsr.w	DrawBlocks_TB_2				; draw a vertical line of blocks to the right of the screen
 
@@ -371,7 +371,7 @@ DrawBG_Unused_PlaneZ:
 
 ; DrawBlocks_X: DrawRow:
 DrawBlocks_LR:
-		moveq	#((320+16+16)/16)-1,d6			; prepare number of blocks (entire width of the screen + two extra columns)
+		moveq	#((320+16+16+16)/16)-1,d6			; prepare number of blocks (entire width of the screen + three extra columns)
 
 ; DrawBlocks_X_Alt: DrawRow_Partial:
 DrawBlocks_LR_2:

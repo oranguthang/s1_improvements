@@ -115,10 +115,10 @@ LoadTilesAsYouMove:
 
 		; Draw new tiles on the right
 		moveq	#-16,d4					; set X and Y positions to top right of screen
-		move.w	#320,d5					; ''
+		move.w	#320+16,d5					; ''
 		bsr.w	Calc_VRAM_Pos				; get the plane position
 		moveq	#-16,d4					; set X and Y positions to top right of screen
-		move.w	#320,d5					; ''
+		move.w	#320+16,d5					; ''
 		bsr.w	DrawBlocks_TB				; draw a vertical line of blocks to the right of the screen
 
 ; locret_6952:
@@ -189,10 +189,10 @@ DrawBG_Top:
 
 		; Draw new tiles on the right
 		moveq	#-16,d4					; set X and Y positions to top right of screen
-		move.w	#320,d5					; ''
+		move.w	#320+16,d5					; ''
 		bsr.w	Calc_VRAM_Pos				; get the plane position
 		moveq	#-16,d4					; set X and Y positions to top right of screen
-		move.w	#320,d5					; ''
+		move.w	#320+16,d5					; ''
 		bsr.w	DrawBlocks_TB				; draw a vertical line of blocks to the right of the screen
 
 	; locj_6D70:
@@ -261,10 +261,10 @@ DrawBG_Bottom:
 
 		; Draw new tiles on the right
 		move.w	#224/2,d4				; draw the bottom half of the screen
-		move.w	#320,d5					; x coordinate - right of screen
+		move.w	#320+16,d5					; x coordinate - right of screen
 		bsr.w	Calc_VRAM_Pos				; get the plane position
 		move.w	#224/2,d4				; draw the bottom half of the screen
-		move.w	#320,d5					; x coordinate - right of screen
+		move.w	#320+16,d5					; x coordinate - right of screen
 		moveq	#3-1,d6					; draw three Blocks
 		bsr.w	DrawBlocks_TB_2				; draw three blocks vertically to the right of the screen
 
@@ -338,7 +338,7 @@ Draw_SBZ:
 		beq.s	.doMore					; if none are set, branch
 		lsr.b	#1,d0					; shift into bits 6, 4 and 2 respectively
 		move.b	d0,(a2)					; set as new draw flag bits
-		move.w	#320,d5					; x coordinate - right of screen
+		move.w	#320+16,d5					; x coordinate - right of screen
 
 	; locj_6E8C:
 	.doMore:
@@ -377,10 +377,10 @@ DrawBG_Block3:
 
 		; Draw new tiles on the right
 		move.w	#64,d4					; y coordinate - fourth line from top of screen
-		move.w	#320,d5					; x coordinate - right of screen
+		move.w	#320+16,d5					; x coordinate - right of screen
 		bsr.w	Calc_VRAM_Pos				; get the plane position
 		move.w	#64,d4					; y coordinate - fourth line from top of screen
-		move.w	#320,d5					; x coordinate - right of screen
+		move.w	#320+16,d5					; x coordinate - right of screen
 		moveq	#3-1,d6					; draw three blocks
 		bsr.w	DrawBlocks_TB_2				; draw three blocks vertically to the right of the screen
 
@@ -458,7 +458,7 @@ Draw_MZ:
 		beq.s	.doMore					; if none are set, branch
 		lsr.b	#1,d0					; shift into bits 6, 4 and 2 respectively
 		move.b	d0,(a2)					; set as new draw flag bits
-		move.w	#320,d5					; x coordinate - right of screen
+		move.w	#320+16,d5					; x coordinate - right of screen
 
 	; locj_6FC8:
 	.doMore:
@@ -541,7 +541,7 @@ DrawBG_ColumnForBGIndex:
 
 ; DrawBlocks_X: DrawRow:
 DrawBlocks_LR:
-		moveq	#((320+16+16)/16)-1,d6			; prepare number of blocks (entire width of the screen + two extra columns)
+		moveq	#((320+16+16+16)/16)-1,d6			; prepare number of blocks (entire width of the screen + three extra columns)
 
 ; DrawBlocks_X_Alt: DrawRow_Partial:
 DrawBlocks_LR_2:
