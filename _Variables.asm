@@ -229,7 +229,9 @@ v_limittop2:		ds.w	1				; top level boundary
 v_limitbtm2:		ds.w	1				; bottom level boundary
 v_unused11:		ds.w	1				; unused
 v_limitleft3:		ds.w	1				; left level boundary, at the end of an act
-			ds.b	6				; unused
+			ds.b	2				; reserved for the shield DPLC key
+v_squashframe:		ds.w	1				; frame of last squeeze
+v_squashobject:		ds.w	1				; object causing the last squeeze
 v_scrshiftx:		ds.w	1				; x-screen shift (new - last) * $100
 v_scrshifty:		ds.w	1				; y-screen shift (new - last) * $100
 v_lookshift:		ds.w	1				; screen shift when Sonic looks up/down
@@ -320,7 +322,7 @@ v_obj6B:		ds.b	1				; object 6B (SBZ stomper) variable
 f_lockctrl:		ds.b	1				; flag set to lock controls during ending sequence
 f_bigring:		ds.b	1				; flag set when Sonic collects the giant ring
 f_obj56:		ds.b	1				; object 56 flag
-			ds.b	1				; unused
+v_squashbuffer:		ds.b	1				; last small squeeze depth, reset each collision-free frame
 v_itembonus:		ds.w	1				; item bonus from broken enemies, blocks etc.
 v_timebonus:		ds.w	1				; time bonus at the end of an act
 v_ringbonus:		ds.w	1				; ring bonus at the end of an act

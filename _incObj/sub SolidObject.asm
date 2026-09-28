@@ -290,6 +290,8 @@ Solid_TopBtmAir:
 		; See above.
 		sub.w	d3,obY(a1)				; correct Sonic's position
 	endif
+		clr.b	(v_squashbuffer).w
+Solid_TopBtmAir_Return:
 		moveq	#-1,d4					; return top/bottom collision
 		rts
 ; ===========================================================================
@@ -297,10 +299,30 @@ Solid_TopBtmAir:
 Solid_Squash:
 		btst	#1,obStatus(a1)				; is Sonic in the air?
 		bne.s	Solid_TopBtmAir				; if yes, branch
-		move.l	a0,-(sp)				; save address of OST of current object to stack
+		cmpi.w	#-8,d3				; deep penetration still crushes immediately
+		blt.s	.kill
+		cmpa.w	(v_squashobject).w,a0		; only compare against the same object
+		bne.s	.buffer
+		move.w	(v_framecount).w,d0
+		subq.w	#1,d0
+		cmp.w	(v_squashframe).w,d0		; only consecutive frames count
+		bne.s	.buffer
+		tst.b	(v_squashbuffer).w
+		beq.s	.buffer
+		cmp.b	(v_squashbuffer).w,d3		; kill only if the gap got smaller
+		blt.s	.kill
+.buffer:
+		move.w	a0,(v_squashobject).w
+		move.w	(v_framecount).w,(v_squashframe).w
+		move.b	d3,(v_squashbuffer).w
+		bra.s	Solid_TopBtmAir_Return
+.kill:
+		clr.b	(v_squashbuffer).w
+		movem.l	a0/a2,-(sp)				; save current object and caller's a2
+		movea.l	a0,a2					; current object is the killing object
 		movea.l	a1,a0					; temporarily make Sonic the current object
 		jsr	(KillSonic).l				; kill Sonic
-		movea.l	(sp)+,a0				; restore address of OST of current object from stack
+		movem.l	(sp)+,a0/a2				; restore current object and caller's a2
 		moveq	#-1,d4					; return top/bottom collision
 		rts
 ; ===========================================================================
