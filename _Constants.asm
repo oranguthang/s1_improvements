@@ -289,8 +289,8 @@ shoetime:		equ $34					; time left for speed shoes (2 bytes)
 angleright:		equ $36					; angle of floor on Sonic's right side
 angleleft:		equ $37					; angle of floor on Sonic's left side
 sticktoconvex:		equ $38					; flag set while running on an SBZ gear
-spindash_flag:		equ $29				; Spin Dash charging flag
-spindash_count:		equ $2A				; Spin Dash charge (2 bytes)
+spindash_flag:		equ $29				; bit 0 Spin Dash, bit 1 Peel-Out charging
+spindash_count:		equ $2A				; Spin Dash revs / Peel-Out speed charge (2 bytes)
 ;unused:		equ $39					; unused by Sonic
 restartime:		equ $3A					; time left before level restarts after dying (2 bytes)
 jumping:		equ $3C					; flag set while Sonic is jumping
@@ -456,6 +456,9 @@ spec__Last:		equ ((ptr_specend-SpecSoundIndex-4)/4)+spec__First
 
 ext__First:		equ $D1
 sfx_SpinDash:		equ ((ptr_sndD1-ExtSoundIndex)/4)+ext__First
+sfx_PeelCharge: equ ((ptr_sndD2-ExtSoundIndex)/4)+ext__First
+sfx_PeelRelease: equ ((ptr_sndD3-ExtSoundIndex)/4)+ext__First
+sfx_PeelStop: equ ((ptr_sndD4-ExtSoundIndex)/4)+ext__First
 ext__Last:		equ ((ptr_extend-ExtSoundIndex-4)/4)+ext__First
 
 ; Sound commands

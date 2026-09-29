@@ -6,6 +6,8 @@
 Sonic_SpinDash:
 		btst	#0,spindash_flag(a0)		; is Spin Dash flag already set?
 		bne.s	Sonic_UpdateSpindash		; if yes, branch to alternate routine
+		btst #bitDn,(v_jpadhold2).w
+		beq.s .end
 		cmpi.b	#id_Duck,obAnim(a0)		; is Sonic in his ducking animation?
 		bne.s	.end				; if not, branch
 		moveq	#btnABC,d0			; is A, B, or C...

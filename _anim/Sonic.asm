@@ -99,6 +99,25 @@ fr_SpinDash6:	equ $5D
 
 
 ; ---------------------------------------------------------------------------
+
+; Appended CD figure-eight frames; original IDs remain unchanged.
+fr_Figure8_11: equ $5E
+fr_Figure8_12: equ $5F
+fr_Figure8_13: equ $60
+fr_Figure8_14: equ $61
+fr_Figure8_21: equ $62
+fr_Figure8_22: equ $63
+fr_Figure8_23: equ $64
+fr_Figure8_24: equ $65
+fr_Figure8_31: equ $66
+fr_Figure8_32: equ $67
+fr_Figure8_33: equ $68
+fr_Figure8_34: equ $69
+fr_Figure8_41: equ $6A
+fr_Figure8_42: equ $6B
+fr_Figure8_43: equ $6C
+fr_Figure8_44: equ $6D
+
 ; Animation script - Sonic
 ; ---------------------------------------------------------------------------
 
@@ -144,6 +163,7 @@ id_Float3:	sonani	SonAni_Float3	; $1D
 id_Float4:	sonani	SonAni_Float4	; $1E
 id_SpinDash:	sonani	SonAni_SpinDash	; $1F
 id_Transform:	sonani	SonAni_Null	; $20 (Super Sonic only)
+id_Figure8: sonani SonAni_Figure8	; $21
 
 ; ---------------------------------------------------------------------------
 ; --- Special animations (walk/run/roll/push) ---
@@ -327,3 +347,6 @@ SonAni_SpinDash:
 		dc.b fr_SpinDash1, fr_SpinDash4, fr_SpinDash1, fr_SpinDash5
 		dc.b fr_SpinDash1, fr_SpinDash6, afEnd
 		even
+
+SonAni_Figure8: dc.b $FF,fr_Figure8_11,fr_Figure8_12,fr_Figure8_13,fr_Figure8_14,afEnd,afEnd,afEnd
+	even

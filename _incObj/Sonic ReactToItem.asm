@@ -448,7 +448,7 @@ HurtSonic:
 		neg.w	obVelX(a0)				; if Sonic is right of the object, reverse
 
 	.setDamageState:
-		bclr	#0,spindash_flag(a0)		; cancel Spin Dash on damage
+		jsr (Sonic_CancelCharge).l		; stop both charge modes on damage
 		move.w	#0,obInertia(a0)			; cancel ground speed
 		move.b	#id_Hurt,obAnim(a0)			; set Sonic to hurt animation
 		move.w	#2*60,flashtime(a0)			; set temporary invulnerability time to 2 seconds
@@ -502,6 +502,7 @@ KillSonic:
 		tst.b	(v_dev_god).w				; is God Mode on? (crushers, time over)
 		bne.w	KillSonic_God				; if yes, Sonic survives
 
+		jsr (Sonic_CancelCharge).l
 		jsr	(Sonic_SaveDebugDeathMusic).l		; remember music before death clears powerup flags
 		move.b	#0,(v_invinc).w				; remove invincibility
 		clr.b	(v_supersonic).w

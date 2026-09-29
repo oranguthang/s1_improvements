@@ -215,6 +215,8 @@ SuperSonicMap_internal:	mappingsTable
 	mappingsTableEntry.w	SuperMap_Frame0D4
 	mappingsTableEntry.w	SuperMap_Frame0D5
 
+	include "_maps/Super Sonic - Figure8 Map Entries.asm"
+
 SuperMap_Frame000:	spriteHeader
 SuperMap_Frame000_End
 
@@ -1042,3 +1044,5 @@ SuperMap_Frame0D5:	spriteHeader
 SuperMap_Frame0D5_End
 
 	even
+
+	include "_maps/Super Sonic - Figure8 Map.asm"

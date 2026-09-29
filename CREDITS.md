@@ -15,3 +15,7 @@ The independent title resources follow [Make an Alternative Title Screen](https:
 ## MD Debugger
 
 MD Debugger and ConvSym are by [Vladikcomper](https://github.com/vladikcomper/md-modules). The included MIT license is in `_debug/md-debugger/LICENSE`.
+
+## Movement artwork
+
+Figure-eight and spring poses use resources from the [Sonic CD disassembly](https://github.com/sonicretro/scddisasm). Indexed pixels and mapping origins are preserved by the import tools.

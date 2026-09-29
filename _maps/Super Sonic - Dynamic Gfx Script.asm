@@ -215,6 +215,8 @@ SuperSonicDynPLC_internal:	mappingsTable
 	mappingsTableEntry.w	SuperPLC_Frame0D4
 	mappingsTableEntry.w	SuperPLC_Frame0D5
 
+	include "_maps/Super Sonic - Figure8 DPLC Entries.asm"
+
 SuperPLC_Frame000:	dplcHeader
 SuperPLC_Frame000_End
 
@@ -839,3 +841,5 @@ SuperPLC_Frame0D5:	dplcHeader
 SuperPLC_Frame0D5_End
 
 	even
+
+	include "_maps/Super Sonic - Figure8 DPLC.asm"

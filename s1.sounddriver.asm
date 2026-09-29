@@ -2784,6 +2784,9 @@ ptr_specend
 
 ExtSoundIndex:
 ptr_sndD1:	dc.l SoundD1
+ptr_sndD2: dc.l SoundD2
+ptr_sndD3: dc.l SoundD3
+ptr_sndD4: dc.l SoundD4
 ptr_extend
 
 ; ---------------------------------------------------------------------------
@@ -2893,6 +2896,12 @@ SoundD0:	include "sound/sfx/SndD0 - Waterfall.asm"
 		even
 
 SoundD1:	include "sound/sfx/SndD1 - Spin Dash Rev.asm"
+		even
+SoundD2: include "sound/sfx/SndD2 - Peelout Charge.asm"
+		even
+SoundD3: include "sound/sfx/SndD3 - Peelout Release.asm"
+		even
+SoundD4: include "sound/sfx/SndD4 - Peelout Stop.asm"
 		even
 
 ; ---------------------------------------------------------------------------

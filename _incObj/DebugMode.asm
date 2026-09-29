@@ -25,6 +25,7 @@ Debug_Init:	; Routine 0
 .rescue:
 		jsr	(Sonic_RecoverFromDebugDeath).l
 .alive:
+		jsr (Sonic_CancelCharge).l
 		addq.b	#2,(v_debuguse).w			; set to Debug_Action
 
 		move.w	(v_limittop2).w,(v_limittopdb).w	; buffer level x-boundary

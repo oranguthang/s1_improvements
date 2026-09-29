@@ -334,6 +334,7 @@ Sonic_Water:
 ; Obj01_MdNormal:
 Sonic_MdNormal:	; While Sonic is on the ground and not rolling
 		bsr.w	Sonic_SpinDash				; start or update Spin Dash charge
+		bsr.w Sonic_PeelOut
 		bsr.w	Sonic_Jump				; check if we need to jump
 		bsr.w	Sonic_SlopeResistWalk			; handle resistance from running up slopes
 		bsr.w	Sonic_Move				; handle Sonic's left/right movement
@@ -347,7 +348,7 @@ Sonic_MdNormal:	; While Sonic is on the ground and not rolling
 
 ; Obj01_MdJump:
 Sonic_MdJump:	; While Sonic is in the air but not rolling
-		bclr	#0,spindash_flag(a0)		; cancel charging when airborne
+		jsr (Sonic_CancelCharge).l		; cancel either grounded charge
 		bsr.w	Sonic_AirRoll				; allow a second button press to curl in midair
 		bsr.w	Sonic_JumpHeight			; handle Sonic's jump height based on whether the jump button is still held
 		bsr.w	Sonic_JumpDirection			; handle midair direction adjustments while jumping
@@ -379,7 +380,7 @@ Sonic_MdRoll:	; While Sonic is on the ground and rolling
 ; Obj01_MdJump2:
 Sonic_MdJump2:	; While Sonic is in the air and rolling (usually, but not limited to, jumping)
 		bsr.w	Sonic_ToggleSuper			; toggle Super Sonic with a jump-button combo
-		bclr	#0,spindash_flag(a0)		; cancel charging when airborne
+		jsr (Sonic_CancelCharge).l		; cancel either grounded charge
 		bsr.w	Sonic_HomingAttack			; trigger a homing dash on a new button press
 		bsr.w	Sonic_JumpHeight			; handle Sonic's jump height based on whether the jump button is still held
 		bsr.w	Sonic_JumpDirection			; handle midair direction adjustments while jumping
@@ -2277,7 +2278,8 @@ Sonic_Animate:
 		bra.s	.normalanimations
 	.superanimations:
 		lea	(Ani_SuperSonic).l,a1			; use Sonic 2's Super Sonic animation scripts
-		btst	#0,spindash_flag(a0)		; preserve the charging animation at obstacles
+		move.b spindash_flag(a0),d0
+		andi.b #3,d0			; preserve either charging animation at obstacles
 		bne.s	.normalanimations
 		btst	#2,obStatus(a0)				; a released Spin Dash is rolling, not pushing
 		bne.s	.normalanimations
@@ -2399,19 +2401,33 @@ Sonic_Animate:
 		eor.b	d1,d2					; invert flip flags depending on current angle
 		or.b	d2,obRender(a0)				; set new flip flags
 
+		btst #1,spindash_flag(a0)
+		bne.s .noChargePush
 		btst	#5,obStatus(a0)				; is Sonic pushing something?
 		bne.w	.push					; if yes, branch
-
+.noChargePush:
 		lsr.b	#4,d0					; divide angle by $10
 		andi.b	#6,d0					; angle must be 0, 2, 4 or 6 (this is now the octant modifier)
 		move.w	obInertia(a0),d2			; get Sonic's ground speed
-		bpl.s	.nomodspeed				; if it's positive, branch
+		bpl.s .chargeAnimSpeed			; if positive, still apply display-only charge speed
 		neg.w	d2					; otherwise, make it positive
+
+ .chargeAnimSpeed:
+		btst #1,spindash_flag(a0)
+		beq.s .nomodspeed
+		move.w spindash_count(a0),d2	; animate charge without moving through solids
 
 ; loc_13A9C:
 .nomodspeed:
-		tst.b	(v_supersonic).w
-		bne.w	.superwalkrun
+        tst.b (v_supersonic).w           ; Super Sonic keeps his Sonic 2 flying run at every speed
+        bne.w .superwalkrun
+        move.w #$A00,d1                  ; CD mach-speed threshold, halved underwater
+        btst #6,obStatus(a0)
+        beq.s .figureThreshold
+        lsr.w #1,d1
+.figureThreshold:
+        cmp.w d1,d2
+        bhs.w .figure8
 		lea	(SonAni_Run).l,a1			; use running animation
 		cmpi.w	#$600,d2				; is Sonic at running speed?
 		bhs.s	.running				; if yes, branch
@@ -2437,6 +2453,32 @@ Sonic_Animate:
 		bsr.w	.loadframe				; update current frame
 		add.b	d3,obFrame(a0)				; modify frame number
 		rts						; return
+; ===========================================================================
+
+ .figure8:
+        lea (SonAni_Figure8).l,a1
+        add.b d0,d0                     ; offsets 0,4,8,12 in Sonic's appended table
+        move.b d0,d3
+        moveq #0,d1
+        move.b obAniFrame(a0),d1
+        andi.w #3,d1
+        move.b 1(a1,d1.w),d0
+        add.b d3,d0
+        move.b d0,obFrame(a0)
+        subq.b #1,obTimeFrame(a0)
+        bpl.s .figureReturn
+        neg.w d2
+        addi.w #$800,d2
+        bpl.s .figureDelay
+        moveq #0,d2
+.figureDelay:
+        lsr.w #8,d2
+        move.b d2,obTimeFrame(a0)
+        addq.b #1,d1
+        andi.b #3,d1
+        move.b d1,obAniFrame(a0)
+.figureReturn:
+        rts
 ; ===========================================================================
 
 ; Sonic 2 Super Sonic has eight walk frames per orientation and four run
@@ -3219,7 +3261,8 @@ Sonic_HomingTargetY:
 ; Pan the camera ahead when Sonic moves quickly, then ease back to center.
 Sonic_PanCamera:
 		move.w	(v_camera_pan).w,d1
-		tst.b	spindash_flag(a0)			; pan toward the charging direction
+		move.b spindash_flag(a0),d0
+		andi.b #3,d0			; pan toward either charging direction
 		beq.s	.readSpeed
 		btst	#0,obStatus(a0)
 		bne.s	.panLeft

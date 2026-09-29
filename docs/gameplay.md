@@ -71,3 +71,7 @@ Level Select can choose Special Stage 1–6 directly. Replaying an already earne
 ## Controllers
 
 Three-button and six-button pads are supported. X, Y, Z and Mode are read but have no assigned gameplay actions.
+
+## Peel-Out
+
+Hold Up on the ground and press A/B/C to charge. Release Up to launch an upright run. Normal Sonic uses figure-eight running; Super Sonic keeps his flying run at every speed. Release feedback uses the Spin Dash release sound.
