@@ -2447,15 +2447,11 @@ Level_NoMusicFade:
 		bsr.w	QuickPLC				; decompress PLC list now and return once done
 		enable_ints					; enable interrupts again
 
-		moveq	#0,d0					; clear d0
-		move.b	(v_zone).w,d0				; get current Zone ID
-		lsl.w	#4,d0					; multiply by $10 (number of bytes per level header entry)
-		lea	(LevelHeaders).l,a2			; load level headers
-		lea	(a2,d0.w),a2				; get relevant header for current level
-		moveq	#0,d0					; clear d0
-		move.b	(a2),d0					; get first PLC entry
-		beq.s	Level_NoPLC				; if it's null, branch (never the case)
-		bsr.w	AddPLC					; load level patterns for current Zone
+        jsr (GetLevelHeader).l
+        movea.l LevelHeader_MainPLC(a2),a1
+        move.l a1,d0
+        beq.s Level_NoPLC
+        jsr (AddPLCFromAddress).l
 ; loc_37FC:
 Level_NoPLC:
 		moveq	#plcid_Main2,d0				; load secondary standard patterns (monitors, etc.)
@@ -2510,10 +2506,9 @@ Level_LoadPal:
 		bsr.w	PalLoad					; ...directly to active palette (for title cards)
 		cmpi.b	#id_LZ,(v_zone).w			; is level LZ?
 		bne.s	Level_GetBgm				; if not, branch
-		moveq	#palid_LZSonWater,d0			; palette number $F (LZ)
-		cmpi.b	#act4,(v_act).w				; check if on act 4 (for SBZ3/LZ4)?
-		bne.s	Level_WaterPal				; if not, branch
-		moveq	#palid_SBZ3SonWat,d0			; palette number $10 (SBZ3)
+        jsr (GetLevelHeader).l
+        moveq #0,d0
+        move.b LevelHeader_WaterSonic(a2),d0
 
 Level_WaterPal:
 		bsr.w	PalLoad_Fade_Water			; load underwater palette
@@ -2708,10 +2703,9 @@ Level_Demo:
 Level_ChkWaterPal:
 		cmpi.b	#id_LZ,(v_zone).w			; is level LZ/SBZ3?
 		bne.s	Level_Delay				; if not, branch
-		moveq	#palid_LZWater,d0			; palette $B (LZ underwater)
-		cmpi.b	#act4,(v_act).w				; check if on act 4 (for SBZ3/LZ4)
-		bne.s	Level_WtrNotSbz				; if not, branch
-		moveq	#palid_SBZ3Water,d0			; palette $D (SBZ3 underwater)
+        jsr (GetLevelHeader).l
+        moveq #0,d0
+        move.b LevelHeader_WaterPalette(a2),d0
 
 Level_WtrNotSbz:
 		bsr.w	PalLoad_Water				; load underwater palette to active palette
@@ -2934,26 +2928,10 @@ Level_FDLoop_NoDim:
 ; ---------------------------------------------------------------------------
 
 ColIndexLoad:
-		moveq	#0,d0					; clear d0
-		move.b	(v_zone).w,d0				; get current zone ID
-		lsl.w	#2,d0					; multiply by 4 for long-based indexing
-		move.l	ColPointers(pc,d0.w),(v_collindex).w	; set collision index pointer for current zone
-		rts						; return
+        jsr (GetLevelHeader).l
+        move.l LevelHeader_Collision(a2),(v_collindex).w
+        rts
 ; End of function ColIndexLoad
-
-; ---------------------------------------------------------------------------
-; Collision index pointers
-; ---------------------------------------------------------------------------
-
-ColPointers:	dc.l Col_GHZ
-		dc.l Col_LZ
-		dc.l Col_MZ
-		dc.l Col_SLZ
-		dc.l Col_SYZ
-		dc.l Col_SBZ
-		zonewarning ColPointers,4
-		; The ending doesn't get an entry, as it's hardcoded to use Col_GHZ
-		even
 
 ; ===========================================================================
 ; >>> Routines to set and update values that change on a fixed timer
@@ -3760,15 +3738,11 @@ GM_Credits:
 
 		bsr.w	EndingDemoLoad				; prepare loading the next ending demo
 
-		moveq	#0,d0					; clear d0
-		move.b	(v_zone).w,d0				; get zone ID for next credits demo
-		lsl.w	#4,d0					; multiply by $10 (number of bytes per level header entry)
-		lea	(LevelHeaders).l,a2			; load level headers
-		lea	(a2,d0.w),a2				; get relevant header for next credits demo
-		moveq	#0,d0					; clear d0
-		move.b	(a2),d0					; get first PLC entry
-		beq.s	Cred_SkipObjGfx				; if it's null, branch (never the case)
-		bsr.w	AddPLC					; load level patterns for next credits demo
+        jsr (GetLevelHeader).l
+        movea.l LevelHeader_MainPLC(a2),a1
+        move.l a1,d0
+        beq.s Cred_SkipObjGfx
+        jsr (AddPLCFromAddress).l
 
 Cred_SkipObjGfx:
 		moveq	#plcid_Main2,d0				; load secondary standard patterns

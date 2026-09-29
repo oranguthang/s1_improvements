@@ -8,6 +8,12 @@ AddPLC:
         add.w   d0,d0
         move.w  (a1,d0.w),d0
         lea     (a1,d0.w),a1
+        bra.s   PLC_AppendList
+
+; Input a1=PLC list pointer. Same append/overflow policy as AddPLC by numeric ID.
+AddPLCFromAddress:
+        movem.l a1-a2,-(sp)
+PLC_AppendList:
         lea     (v_plc_buffer).w,a2
 .findspace:
         cmpa.l  #v_plc_buffer_only_end,a2

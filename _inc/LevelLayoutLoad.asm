@@ -4,53 +4,21 @@
 ; ---------------------------------------------------------------------------
 
 LevelDataLoad:
-	; --- Load Level Header ---
-		moveq	#0,d0					; clear d0
-		move.b	(v_zone).w,d0				; get zone ID to load
-		lsl.w	#4,d0					; multiply by $10 (size per level header entry)
-		lea	(LevelHeaders).l,a2			; load level header data
-		lea	(a2,d0.w),a2				; advance to level header for current zone
-		move.l	a2,-(sp)				; remember header address for later
-		addq.l	#4,a2					; skip 1st PLC and level gfx entry (handled in GM_Level)
-
-	; --- 16x16 Block Mappings ---
-		move.l	(a2)+,(v_rom_blocks).w			; set pointer to uncompressed 16x16 block data in ROM
-
-	; --- 256x256 Chunk Mappings ---
-		move.l	(a2)+,(v_rom_chunks).w			; set pointer to uncompressed 256x256 chunk data in ROM
-
-	; --- Level Layout (FG/BG) ---
-		bsr.w	LevelLayoutLoad				; load FG and BG layout
-
-	; --- Music (unused) ---
-		move.w	(a2)+,d0				; load music (unused)
-
-	; --- Palette ---
-		move.w	(a2),d0					; load palette ID
-		andi.w	#$FF,d0					; only use lower byte (palette ID is duplicated in headers)
-
-		cmpi.w	#id_LZ_act4,(v_zone_act).w		; is level SBZ3 (LZ4)?
-		bne.s	.notSBZ3				; if not, branch
-		moveq	#palid_SBZ3,d0				; use SB3 palette instead
-	.notSBZ3:
-		cmpi.w	#id_SBZ_act2,(v_zone_act).w		; is level SBZ2?
-		beq.s	.isSBZorFZ				; if yes, branch
-		cmpi.w	#id_FZ,(v_zone_act).w			; is level FZ?
-		bne.s	.normalpal				; if not, branch
-	.isSBZorFZ:
-		moveq	#palid_SBZ2,d0				; use SBZ2/FZ palette instead
-	.normalpal:
-		bsr.w	PalLoad_Fade				; load specified palette into fade-in buffer
-
-	; --- 2nd PLC ---
-		movea.l	(sp)+,a2				; restore base level header pointer
-		addq.w	#4,a2					; advance to 2nd PLC entry
-		moveq	#0,d0
-		move.b	(a2),d0					; load 2nd PLC entry from level headers
-		beq.s	.skipPLC				; if 2nd PLC is 0 (i.e. the ending sequence), branch
-		bsr.w	AddPLC					; load secondary pattern load cues
-	.skipPLC:
-		rts
+        jsr (GetLevelHeader).l
+        move.l a2,-(sp)
+        move.l LevelHeader_Blocks(a2),(v_rom_blocks).w
+        move.l LevelHeader_Chunks(a2),(v_rom_chunks).w
+        bsr.w LevelLayoutLoad
+        moveq #0,d0
+        move.b LevelHeader_Palette(a2),d0
+        bsr.w PalLoad_Fade
+        movea.l (sp)+,a2
+        movea.l LevelHeader_SecondPLC(a2),a1
+        move.l a1,d0
+        beq.s .skipPLC
+        jsr (AddPLCFromAddress).l
+.skipPLC:
+        rts
 ; End of function LevelDataLoad
 
 ; ===========================================================================
