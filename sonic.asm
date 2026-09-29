@@ -2399,24 +2399,6 @@ LevelMenuText:
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
-; Music playlist for the start of a level. Note that restarting the music
-; after invincibility has worn off is controlled in MusicList2 (part of
-; Sonic's object). Bosses have the post-defeat music hardcoded.
-; ---------------------------------------------------------------------------
-
-MusicList:
-		dc.b bgm_GHZ		; GHZ
-		dc.b bgm_LZ		; LZ
-		dc.b bgm_MZ		; MZ
-		dc.b bgm_SLZ		; SLZ
-		dc.b bgm_SYZ		; SYZ
-		dc.b bgm_SBZ		; SBZ
-		zonewarning MusicList,1
-		dc.b bgm_FZ		; Ending
-		even
-
-; ===========================================================================
-; ---------------------------------------------------------------------------
 ; Level
 ; ---------------------------------------------------------------------------
 
@@ -2520,20 +2502,8 @@ Level_GetBgm:
 		tst.w	(f_demo).w				; is this a credits demo?
 		bmi.w	Level_SkipTtlCard			; if yes, don't load title cards or change music
 
-		moveq	#0,d0					; clear d0
-		move.b	(v_zone).w,d0				; get current Zone ID
-		cmpi.w	#id_LZ_act4,(v_zone_act).w		; is level SBZ3 (LZ4)?
-		bne.s	Level_BgmNotLZ4				; if not, branch
-		moveq	#5,d0					; use 5th music (SBZ)
-
-Level_BgmNotLZ4:
-		cmpi.w	#id_FZ,(v_zone_act).w			; is level FZ?
-		bne.s	Level_PlayBgm				; if not, branch
-		moveq	#6,d0					; use 6th music (FZ)
-
 Level_PlayBgm:
-		lea	(MusicList).l,a1			; load music playlist
-		move.b	(a1,d0.w),d0				; get music ID for current level
+        jsr (GetActMusic).l
 		bsr.w	QueueSound1				; play music
 		move.b	#id_TitleCard,(v_titlecard).w		; load title card object
 		move.w	#2*60,(v_generictimer).w		; preserve the intro duration with faster PLCs
@@ -4234,6 +4204,7 @@ Art_LivesNums:	binclude "artunc/Lives Counter Numbers.unc" ; 8x8 pixel numbers o
 ; ===========================================================================
 ; >>> Level definitions
 		include	"_inc/LevelHeaders.asm"
+		include "_inc/Act Music.asm"
 		include	"_inc/Pattern Load Cues.asm"
 
 

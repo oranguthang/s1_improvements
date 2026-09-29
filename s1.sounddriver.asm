@@ -795,6 +795,7 @@ Sound_PlayBGM:
 ; loc_7202C:
 .bgm_loadMusic:
 		jsr	InitMusicPlayback(pc)
+		move.b	d7,SMPS_RAM.v_current_music(a6) ; record only music actually started
 		movea.l	(Go_SpeedUpIndex).l,a4
 		subi.b	#bgm__First,d7
 		move.b	(a4,d7.w),SMPS_RAM.v_speeduptempo(a6)
@@ -2796,7 +2797,7 @@ SoundA0:	include "sound/sfx/SndA0 - Jump.asm"
 		even
 SoundA1:	include "sound/sfx/SndA1 - Lamppost.asm"
 		even
-SoundA2:	include "sound/sfx/SndA2.asm"
+SoundA2:	include "sound/sfx/SndA2 - Super Transform.asm"
 		even
 SoundA3:	include "sound/sfx/SndA3 - Death.asm"
 		even

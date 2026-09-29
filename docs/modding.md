@@ -71,3 +71,7 @@ The GHZ purple rock has an optional Smashable subtype in both SonLVL definitions
 ## Resources per act
 
 `_inc/LevelHeaders.asm` holds four header pointers per zone. Each 24-byte header selects primary/secondary PLC addresses, raw blocks/chunks, collision index, normal palette, underwater level/player palettes and music. SBZ3 is internally LZ act 4; Final Zone is SBZ act 3. Change an act header to select independent resources. Keep custom VRAM layouts explicit and synchronize both SonLVL revisions.
+
+## Music per act
+
+The final act-header field selects the level song. Restoration considers drowning, boss state, Super and invincibility. Boss completion clears the boss override; speed shoes adjust tempo without restarting an ordinary track.

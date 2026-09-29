@@ -55,6 +55,7 @@ Header_Ending: lhead 0,0,Blk16_GHZ,Blk256_GHZ,Col_GHZ,palid_Ending,0,0,bgm_Endin
 GetLevelHeader:
     moveq #0,d0
     move.w (v_zone_act).w,d0
+GetLevelHeaderFor:             ; d0.w=explicit zone/act, for cutscenes/tools
     ror.b #2,d0
     lsr.w #4,d0
     lea (LevelHeaderIndex).l,a2

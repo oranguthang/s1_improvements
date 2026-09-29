@@ -146,24 +146,6 @@ Sonic_Modes:	dc.w Sonic_MdNormal-Sonic_Modes			; 0 - while on the ground and not
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
-; Music to play after invincibility wears off
-; (This is pretty much identical to the first MusicList, so it doesn't
-; really make any sense as to why invincibility gets a separate one...)
-; ---------------------------------------------------------------------------
-MusicList2:
-		dc.b bgm_GHZ					; 00 - Green Hill Zone
-		dc.b bgm_LZ					; 01 - Labyrinth Zone
-		dc.b bgm_MZ					; 02 - Marble Zone
-		dc.b bgm_SLZ					; 03 - Star Light Zone
-		dc.b bgm_SYZ					; 04 - Spring Yard Zone
-		dc.b bgm_SBZ					; 05 - Scrap Brain Zone
-		zonewarning MusicList2,1
-		; The ending doesn't get an entry
-		even
-
-
-; ===========================================================================
-; ---------------------------------------------------------------------------
 ; Subroutine to display Sonic and set music
 ; ---------------------------------------------------------------------------
 
@@ -186,26 +168,12 @@ Sonic_Display:
 		beq.s	.chkshoes				; if no time remains, branch
 		subq.w	#1,invtime(a0)				; subtract 1 from time
 		bne.s	.chkshoes				; if time remains, branch
-		cmpi.w	#12,(v_air).w				; is drowning countdown active?
-		bls.s	.removeinvincible			; if yes, don't change music
-		move.w	#bgm_FZ,d0				; FZ keeps its own track during the boss
-		cmpi.w	#id_FZ,(v_zone_act).w			; is level FZ?
-		beq.s	.playmusic				; if yes, branch
-		tst.b	(f_bossmusic).w			; is boss music active?
-		bne.s	.removeinvincible			; if yes, don't change music
-
-		moveq	#0,d0					; clear d0
-		move.b	(v_zone).w,d0				; get current zone ID
-		cmpi.w	#id_LZ_act4,(v_zone_act).w		; check if level is SBZ3 (LZ4)
-		bne.s	.music					; if not, branch
-		moveq	#5,d0					; play SBZ music instead of LZ
-
-; Obj01_PlayMusic:
-.music:
-		lea	(MusicList2).l,a1			; load music list for post-invincibility
-		move.b	(a1,d0.w),d0				; get entry for current zone
-.playmusic:
-		jsr	(QueueSound1).l				; resume normal level music
+        clr.b (v_invinc).w
+        cmpi.w #12,(v_air).w
+        bls.s .removeinvincible      ; countdown keeps playing
+        tst.b (f_bossmusic).w
+        bne.s .removeinvincible      ; combat already owns the track
+        jsr (Sonic_RefreshMusic).l
 
 ; Obj01_RmvInvin:
 .removeinvincible:
@@ -3113,50 +3081,12 @@ Sonic_RefreshPalettes:
 ; ---------------------------------------------------------------------------
 
 Sonic_RefreshMusic:
-		cmpi.w	#12,(v_air).w		; drowning countdown starts at 12 seconds
-		bls.s	.return			; keep its music through Super toggles
-		tst.b	(v_supersonic).w	; does Sonic have Super Sonic music?
-		beq.s	.chkinvincmusic		; if not, branch
-		move.w	#bgm_Super,d0
-		bra.s	.play
-
-.chkinvincmusic:
-		tst.b	(v_invinc).w		; does Sonic have invincibility?
-		beq.s	.chkshoesmusic		; if not, branch
-		move.w	#bgm_Invincible,d0
-		bra.s	.play
-
-.chkshoesmusic:
-		tst.b	(v_shoes).w		; does Sonic have speed shoes?
-		beq.s	.levelmusic		; if not, branch
-		move.w	#bgm_Speedup,d0
-		bra.s	.play
-
-.levelmusic:
-		moveq	#0,d0
-		move.b	(v_zone).w,d0
-		cmpi.w	#(id_LZ<<8)+3,(v_zone).w ; check if level is SBZ3
-		bne.s	.musicselected
-		moveq	#5,d0			; play SBZ music
-
-.musicselected:
-		lea	(MusicList2).l,a1
-		move.b	(a1,d0.w),d0
-		cmpi.w	#id_FZ,(v_zone_act).w	; is level FZ?
-		bne.s	.chkbossmusic		; if not, branch
-		move.w	#bgm_FZ,d0		; FZ keeps its own track during the boss
-		bra.s	.play
-
-.chkbossmusic:
-		tst.b	(f_bossmusic).w		; is boss music active?
-		beq.s	.play			; if not, branch
-		move.w	#bgm_Boss,d0
-
-.play:
-		jsr	(QueueSound1).l
-
+        cmpi.w #12,(v_air).w
+        bls.s .return               ; toggles never requeue/retempo drowning music
+        jsr (GetSonicMusic).l
+        jsr (QueueMusicIfChanged).l
 .return:
-		rts
+        rts
 ; End of function Sonic_RefreshMusic
 
 ; Curl into a ball in midair when a jump button is pressed again.

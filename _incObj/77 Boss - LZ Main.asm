@@ -313,8 +313,7 @@ BLZ_ShipWait:
 ; loc_18112:
 .startEscape:
 		clr.b	(f_bossmusic).w			; music returns to the act while camera bounds recover
-		move.w	#bgm_LZ,d0
-		jsr	(QueueSound1).l				; play LZ music
+		jsr (PlayActMusic).l		; configured act track; preserve drowning
 	if Revision<>0
 		clr.b	(f_lockscreen).w
 	endif

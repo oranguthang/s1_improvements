@@ -37,7 +37,7 @@ v_main_tempo_timeout:	ds.b	1	; Counts down to zero; when zero, resets to next va
 v_main_tempo:		ds.b	1	; Used for music only
 f_pausemusic:		ds.b	1	; flag set to stop music when paused
 v_fadeout_counter:	ds.b	1
-			ds.b	1	; unused
+v_current_music:	ds.b	1	; active BGM ID; backed up and restored with the 1-up state
 v_fadeout_delay:	ds.b	1
 v_communication_byte:	ds.b	1	; used in Ristar to sync with a boss' attacks; unused here
 f_updating_dac:		ds.b	1	; $80 if updating DAC, $00 otherwise
