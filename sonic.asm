@@ -4144,6 +4144,7 @@ Map_Splats:	include	"_maps/Splats.asm"
 		include	"_incObj/sub SpinDash.asm"
 		include "_incObj/sub PeelOut.asm"
 		include "_incObj/sub Air Poses.asm"
+		include "_incObj/sub Light Dash.asm"
 		include	"_incObj/05 Spindash Dust.asm"
 
 

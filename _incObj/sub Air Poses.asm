@@ -4,6 +4,8 @@
 ; animation themselves, so only the spring and its following fall are handled.
 ; ---------------------------------------------------------------------------
 Sonic_UpdateAirPose:
+        tst.b (v_lightdash).w
+        bne.s .return
         cmpi.b #2,obRoutine(a0)
         bne.s .return
         tst.b (f_playerctrl).w

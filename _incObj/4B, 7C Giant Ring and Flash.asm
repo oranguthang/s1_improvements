@@ -147,6 +147,10 @@ GRing_Collect:	; Routine 4
 		bset	#sprite_xflip_bit,obRender(a1)		; set X-flip flag for flash object
 
 	.noFlip:
+        move.l a0,-(sp)
+        lea (v_player).w,a0
+        jsr (Sonic_CancelCharge).l        ; cancel movement before freezing/hiding the player
+        movea.l (sp)+,a0
 		move.b	#$81,(f_playerctrl).w	; freeze Sonic and ignore objects during the flash
 		clr.w	(v_player+obVelX).w
 		clr.w	(v_player+obVelY).w

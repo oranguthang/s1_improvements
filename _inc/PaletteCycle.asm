@@ -32,7 +32,7 @@ PalCycle_SuperSonic:
 		move.b	(v_superpal_state).w,d0
 		beq.w	PCSuper_Return
 		bmi.w	PCSuper_Normal
-		cmpi.b	#3,d0					; transformation fade with the ground pose restored
+		cmpi.b	#3,d0					; transformation fade after the pose has ended
 		beq.w	PCSuper_Transform
 		subq.b	#1,d0
 		bne.w	PCSuper_Revert

@@ -65,7 +65,35 @@ v_colqueue:		ds.w	colqueue_entries		; collision response queue: level objects wi
 v_colqueue_end:
 v_ringart_static:	ds.b	1				; ordinary ring frame queued into ArtTile_Ring, -1 = slot not valid (#42)
 v_ringart_lost:		ds.b	1				; lost ring frame queued into ArtTile_Ring_Lost, -1 = slot not valid (#42)
-			ds.b	$200-4-colqueue_entries*2-2	; unused after queues
+; Light Dash consumes queue padding; all following historical addresses stay fixed.
+v_lightdash_start:
+v_lightdash_ringbase: ds.l 1
+v_lightdash: ds.b 1
+v_lightdash_hitframe: ds.b 1
+v_lightdash_target_state: ds.w 1
+v_lightdash_target_rom: ds.l 1
+v_lightdash_act: ds.w 1
+v_lightdash_timer: ds.w 1
+v_lightdash_probe_x: ds.w 1
+v_lightdash_probe_y: ds.w 1
+v_lightdash_full_x: ds.w 1
+v_lightdash_full_y: ds.w 1
+v_lightdash_step_x: ds.w 1
+v_lightdash_step_y: ds.w 1
+v_lightdash_exclude_first: ds.l 1
+v_lightdash_exclude_second: ds.l 1
+v_lightdash_last_x: ds.w 1
+v_lightdash_last_y: ds.w 1
+v_lightdash_last_ring_x: ds.w 1
+v_lightdash_last_ring_y: ds.w 1
+v_lightdash_exit_x: ds.w 1
+v_lightdash_exit_y: ds.w 1
+v_lightdash_initial_search: ds.b 1
+v_lightdash_stall: ds.b 1
+v_lightdash_have_last_ring: ds.b 1
+v_lightdash_near_ground: ds.b 1
+v_lightdash_end:
+                    ds.b $200-4-colqueue_entries*2-2-(v_lightdash_end-v_lightdash_start)
 v_tracksonic:		ds.b	$100				; position tracking data for Sonic
 v_hscrolltablebuffer:	ds.b	$380				; scrolling table data
 v_hscrolltablebuffer_end:
@@ -496,7 +524,7 @@ v_bg2_scroll_flags_dup:	ds.w	1
 v_bg3_scroll_flags_dup:	ds.w	1
 v_superpal_frame:	ds.w	1				; byte offset in the Super Sonic palette cycle
 v_superpal_timer:	ds.b	1				; frames until the next palette step
-v_superpal_state:	ds.b	1				; 0=off, 1=transform, 2=revert, 3=transform after landing, $FF=cycle
+v_superpal_state:	ds.b	1				; 0=off, 1=transform, 2=revert, 3=transform fade without pose, $FF=cycle
 			ds.b	$44				; unused
 v_timingandscreenvariables_end:
 

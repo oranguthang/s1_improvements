@@ -95,6 +95,7 @@ Sonic_PeelOut:
 ; All interruption paths share this cleanup. Preserve registers: death/solid
 ; callers may retain their killing-object pointer and collision parameters.
 Sonic_CancelCharge:
+        jsr (Sonic_CancelLightDash).l
         btst    #1,spindash_flag(a0)
         beq.s   .clear
         movem.l d0-d1/a0-a1,-(sp)

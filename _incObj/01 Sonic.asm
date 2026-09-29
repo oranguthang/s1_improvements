@@ -57,6 +57,7 @@ Sonic_Main:	; Routine 0
 
 ; Obj01_Control:
 Sonic_Control:	; Routine 2
+		clr.b	(v_lightdash_hitframe).w		; attack only during frames moved by Light Dash
 		bsr.w	Sonic_PanCamera				; adjust horizontal camera focus
 		bsr.w	Sonic_ChkDebugToggle			; let airborne Super combos take priority over B
 		beq.s	.nodebug				; no standalone debug toggle
@@ -73,6 +74,18 @@ Sonic_Control:	; Routine 2
 
 ; loc_12C64:
 .ignorecontrols:
+        tst.b (v_lightdash).w
+        beq.s .normalModeControl
+        move.b obStatus(a0),d0
+        andi.b #6,d0
+        cmpi.b #6,d0
+        bne.s .updateLightDash
+        bsr.w Sonic_ToggleSuper          ; all Super combos retain priority during a dash
+.updateLightDash:
+        jsr (Sonic_LightDashUpdate).l
+        tst.b d0
+        bne.s .ignoremodes
+.normalModeControl:
 		btst	#0,(f_playerctrl).w			; is control override flag set?
 		bne.s	.ignoremodes				; if yes, don't run Sonic_Modes
 
@@ -106,6 +119,7 @@ Sonic_Control:	; Routine 2
 		bsr.w Sonic_UpdateAirPose
 		bsr.w	Sonic_UpdateTransformPose
 		bsr.w	Sonic_Animate				; run Sonic's animation scripts
+		jsr (Sonic_LightDashPose).l		; face the dash vector without changing collision angle
 		tst.b	(f_playerctrl).w			; is object interactions ignore flag set?
 		bmi.s	.ignoreobjcoll				; if yes, branch
 		jsr	(ReactToItem).l				; handle object interaction with Sonic
@@ -350,6 +364,7 @@ Sonic_MdNormal:	; While Sonic is on the ground and not rolling
 ; Obj01_MdJump:
 Sonic_MdJump:	; While Sonic is in the air but not rolling
 		jsr (Sonic_CancelCharge).l		; cancel either grounded charge
+		jsr (Sonic_LightDashStart).l
 		bsr.w	Sonic_AirRoll				; allow a second button press to curl in midair
 		bsr.w	Sonic_JumpHeight			; handle Sonic's jump height based on whether the jump button is still held
 		bsr.w	Sonic_JumpDirection			; handle midair direction adjustments while jumping
@@ -382,6 +397,7 @@ Sonic_MdRoll:	; While Sonic is on the ground and rolling
 Sonic_MdJump2:	; While Sonic is in the air and rolling (usually, but not limited to, jumping)
 		bsr.w	Sonic_ToggleSuper			; toggle Super Sonic with a jump-button combo
 		jsr (Sonic_CancelCharge).l		; cancel either grounded charge
+		jsr (Sonic_LightDashStart).l
 		bsr.w	Sonic_HomingAttack			; trigger a homing dash on a new button press
 		bsr.w	Sonic_JumpHeight			; handle Sonic's jump height based on whether the jump button is still held
 		bsr.w	Sonic_JumpDirection			; handle midair direction adjustments while jumping

@@ -281,6 +281,8 @@ React_Enemy:
 		bne.s	.checkBossHit				; if yes, branch
 		tst.b	(v_supersonic).w			; Super Sonic damages badniks on contact
 		bne.s	.checkBossHit
+		tst.b	(v_lightdash_hitframe).w		; Light Dash attacks during its movement frame
+		bne.s	.checkBossHit
 		cmpi.b	#id_SpinDash,obAnim(a0)		; treat charging Sonic as a ball
 		beq.s	.checkBossHit
 		cmpi.b	#id_Roll,obAnim(a0)			; is Sonic rolling/jumping?

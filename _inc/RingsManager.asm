@@ -37,6 +37,7 @@ EnableAttractRings:		equ 0	; attract rings if Sonic has a shield (v_shield, sinc
 RingsManager_Init:
 		; clear ring manager RAM
 		clearRAM v_ringmanager,(v_ringmanager+v_ringmanager_size)
+		clearRAM v_lightdash_start,v_lightdash_end
 
 		; load ring positions for this level
 		moveq	#0,d0					; clear d0
@@ -46,6 +47,7 @@ RingsManager_Init:
 		lea	(RingPos_Index).l,a1			; load ring position data from ROM
 		movea.l	(a1,d0.w),a1				; get ring position data for current level
 		move.l	a1,(v_ringwindow_start).w		; set starting address in ROM
+		move.l a1,(v_lightdash_ringbase).w
 ; ---------------------------------------------------------------------------
 
 RingsManager_FindStartAndEnd_Init:
@@ -186,6 +188,8 @@ RingsManager_FindEnd_Backwards:
 ; ---------------------------------------------------------------------------
 
 Touch_Rings:
+		tst.b (v_lightdash).w
+		bne.w Touch_Rings_return		; dash uses the same one-ring collector at its target
 		cmpi.w	#90,flashtime(a0)			; has Sonic recently been hurt and is still flashing? (1.5 seconds left)
 		bhs.w	Touch_Rings_return			; if yes, prevent picking up rings
 
@@ -265,13 +269,19 @@ Touch_Rings_Collect_CheckShield:
 	endif
 
 Touch_Rings_Collect:
+        bsr.w RingsManager_CollectRing
+        bra.s Touch_Rings_Next
+
+RingsManager_CollectRing:
+		tst.b (a4)
+		bne.s .return			; never award an already collected state
 		move.b	#$64,(a4)				; set initial sparkle animation delay (6) and sparkle frame ID (4)
 		bsr.w	CollectRing				; add 1 ring
 
 		cmpi.w	#$3F,(v_ringanimqueue_count).w	; animation queue has 63 slots
 		blo.s	.queueSparkle
 		move.b	#-1,(a4)				; still award the ring if all slots are occupied
-		bra.s	Touch_Rings_Next
+		bra.s .return
 .queueSparkle:
 		; queue ring sparkle animation
 		lea	(v_ringanimqueue).w,a3			; load animation data for recently collected rings (for sparkle)
@@ -279,6 +289,10 @@ Touch_Rings_Collect:
 		bne.s	.loop					; if not, loop until free slot is found
 		move.w	a4,-(a3)				; store ring address for animation slot
 		addq.w	#1,(v_ringanimqueue_count).w		; increase count for currently sparkling rings
+
+
+.return:
+		rts
 
 Touch_Rings_Next:
 		addq.w	#4,a1					; load next ring from ROM
