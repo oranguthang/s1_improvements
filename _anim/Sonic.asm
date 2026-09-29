@@ -100,6 +100,17 @@ fr_SpinDash6:	equ $5D
 
 ; ---------------------------------------------------------------------------
 
+; Appended shared air poses, no legacy IDs moved.
+fr_SpringTwirl1: equ $6E
+fr_SpringTwirl2: equ $6F
+fr_SpringTwirl3: equ $70
+fr_SpringTwirl4: equ $71
+fr_SpringTwirl5: equ $72
+fr_Fall1: equ $73
+fr_Fall2: equ $74
+fr_SuperSpringTwirl1: equ $E6
+fr_SuperFall1: equ $EB
+fr_SuperAirPosesEnd: equ $ED
 ; Appended CD figure-eight frames; original IDs remain unchanged.
 fr_Figure8_11: equ $5E
 fr_Figure8_12: equ $5F
@@ -164,6 +175,7 @@ id_Float4:	sonani	SonAni_Float4	; $1E
 id_SpinDash:	sonani	SonAni_SpinDash	; $1F
 id_Transform:	sonani	SonAni_Null	; $20 (Super Sonic only)
 id_Figure8: sonani SonAni_Figure8	; $21
+id_Fall: sonani SonAni_Fall	; $22
 
 ; ---------------------------------------------------------------------------
 ; --- Special animations (walk/run/roll/push) ---
@@ -264,10 +276,9 @@ SonAni_Float2:	dc.b 7
 		dc.b afEnd
 		even
 
-SonAni_Spring:	dc.b 47
-		dc.b fr_Spring
-		dc.b afChange, id_Walk
-		even
+SonAni_Spring: dc.b 3
+        dc.b fr_SpringTwirl1,fr_SpringTwirl2,fr_SpringTwirl3,fr_SpringTwirl4,fr_SpringTwirl5,afEnd
+        even
 
 SonAni_Hang:	dc.b 4
 		dc.b fr_Hang1, fr_Hang2
@@ -349,4 +360,7 @@ SonAni_SpinDash:
 		even
 
 SonAni_Figure8: dc.b $FF,fr_Figure8_11,fr_Figure8_12,fr_Figure8_13,fr_Figure8_14,afEnd,afEnd,afEnd
+	even
+
+SonAni_Fall: dc.b 3,fr_Fall1,fr_Fall2,afEnd
 	even

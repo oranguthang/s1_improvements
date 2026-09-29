@@ -19,3 +19,5 @@ MD Debugger and ConvSym are by [Vladikcomper](https://github.com/vladikcomper/md
 ## Movement artwork
 
 Figure-eight and spring poses use resources from the [Sonic CD disassembly](https://github.com/sonicretro/scddisasm). Indexed pixels and mapping origins are preserved by the import tools.
+
+Falling frames are supplied by the [Sonic Retro falling-sprite tutorial](https://info.sonicretro.org/SCHG_How-to:Add_a_Falling_Animation). The original source images accompany the import inputs.

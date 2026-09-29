@@ -4143,6 +4143,7 @@ Map_Splats:	include	"_maps/Splats.asm"
 		include	"_incObj/01 Sonic.asm"
 		include	"_incObj/sub SpinDash.asm"
 		include "_incObj/sub PeelOut.asm"
+		include "_incObj/sub Air Poses.asm"
 		include	"_incObj/05 Spindash Dust.asm"
 
 
@@ -4319,12 +4320,15 @@ Map_Sonic:	include	"_maps/Sonic.asm"
 
 SonicDynPLC:	include	"_maps/Sonic - Dynamic Gfx Script.asm"
 
-Art_Sonic:	binclude	"artunc/Sonic.unc"
-Art_SonicFigure8: binclude "artunc/Sonic Figure8.unc"
-		even
+; Keep the two mapping/DPLC tables together: shared signed-word offsets must fit.
 Map_SuperSonic:	include	"_maps/Super Sonic.asm"
 
 SuperSonicDynPLC:	include	"_maps/Super Sonic - Dynamic Gfx Script.asm"
+
+Art_Sonic:	binclude	"artunc/Sonic.unc"
+Art_SonicFigure8: binclude "artunc/Sonic Figure8.unc"
+Art_SonicAirPoses: binclude "artunc/Sonic Air Poses.unc"
+		even
 
 Art_SuperSonic:	binclude	"artunc/Super Sonic.unc"
 Art_SuperSonicFigure8: binclude "artunc/Super Sonic Figure8.unc"

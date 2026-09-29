@@ -75,3 +75,7 @@ Three-button and six-button pads are supported. X, Y, Z and Mode are read but ha
 ## Peel-Out
 
 Hold Up on the ground and press A/B/C to charge. Release Up to launch an upright run. Normal Sonic uses figure-eight running; Super Sonic keeps his flying run at every speed. Release feedback uses the Spin Dash release sound.
+
+## Spring poses
+
+Spring launches can use twirling and falling poses. The falling pose is limited to a spring launch and ends on landing.

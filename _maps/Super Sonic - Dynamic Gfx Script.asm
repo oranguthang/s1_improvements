@@ -216,6 +216,7 @@ SuperSonicDynPLC_internal:	mappingsTable
 	mappingsTableEntry.w	SuperPLC_Frame0D5
 
 	include "_maps/Super Sonic - Figure8 DPLC Entries.asm"
+	include "_maps/Sonic - Air Poses DPLC Entries.asm"
 
 SuperPLC_Frame000:	dplcHeader
 SuperPLC_Frame000_End

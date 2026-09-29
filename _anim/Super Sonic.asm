@@ -39,6 +39,7 @@ Ani_SuperSonic:
 		dc.w SupSonAni_SpinDash-Ani_SuperSonic	; 1F
 		dc.w SupSonAni_Transform-Ani_SuperSonic	; 20
 		dc.w SupSonAni_Figure8-Ani_SuperSonic	; 21
+		dc.w SupSonAni_Fall-Ani_SuperSonic	; 22
 
 ; Walk, run, roll and push are handled by Sonic_Animate's speed-sensitive path.
 SupSonAni_Walk:	dc.b $FF,$77,$78,$79,$7A,$7B,$7C,$75,$76,$FF
@@ -74,7 +75,7 @@ SupSonAni_Float1:	dc.b 7,$54,$59,$FF
 		even
 SupSonAni_Float2:	dc.b 7,$54,$55,$56,$57,$58,$FF
 		even
-SupSonAni_Spring:	dc.b 47,$5B,$FD,id_Walk
+SupSonAni_Spring:	dc.b 3,$E6,$E7,$E8,$E9,$EA,$FF
 		even
 SupSonAni_Hang:	dc.b 4,$50,$51,$FF
 		even
@@ -110,4 +111,7 @@ SupSonAni_Transform:	dc.b 2,$6D,$6D,$6E,$6E,$6F,$70,$71,$70,$71,$70,$71,$70,$71,
 		even
 
 SupSonAni_Figure8: dc.b $FF,$D6,$D7,$D8,$D9,$FF,$FF,$FF
+	even
+
+SupSonAni_Fall: dc.b 3,$EB,$EC,$FF
 	even

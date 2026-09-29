@@ -98,6 +98,7 @@ SonicDynPLC_internal:	mappingsTable
 	mappingsTableEntry.w	SonPLC_SpinDash_6
 
 	include "_maps/Sonic - Figure8 DPLC Entries.asm"
+	include "_maps/Sonic - Air Poses DPLC Entries.asm"
 
 SonPLC_Null:	dplcHeader
 SonPLC_Null_End
@@ -632,3 +633,5 @@ SonPLC_SpinDash_6_End
 	even
 
 	include "_maps/Sonic - Figure8 DPLC.asm"
+
+	include "_maps/Sonic - Air Poses DPLC.asm"

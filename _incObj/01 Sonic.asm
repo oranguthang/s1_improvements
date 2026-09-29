@@ -103,6 +103,7 @@ Sonic_Control:	; Routine 2
 
 ; loc_12CA6:
 	.nowindtunnel:
+		bsr.w Sonic_UpdateAirPose
 		bsr.w	Sonic_UpdateTransformPose
 		bsr.w	Sonic_Animate				; run Sonic's animation scripts
 		tst.b	(f_playerctrl).w			; is object interactions ignore flag set?
@@ -2632,6 +2633,11 @@ Sonic_LoadGfx:
 		beq.s	.gotart
 		lea	(SuperSonicDynPLC).l,a2
 		move.l	#Art_SuperSonic,d6			; source Sonic 2 Super art in ROM
+        cmpi.b #fr_SuperSpringTwirl1,d0
+        blo.s .gotart
+        cmpi.b #fr_SuperAirPosesEnd,d0
+        bhs.s .gotart
+        move.l #Art_Sonic,d6             ; shared air poses use one original art source
 	.gotart:
 		add.w	d0,d0					; double current frame for word-based indexing
 		adda.w	(a2,d0.w),a2				; find relevant DPLC definition for new frame

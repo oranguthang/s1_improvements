@@ -98,6 +98,7 @@ Map_Sonic_internal:	mappingsTable
 	mappingsTableEntry.w MS_SpinDash
 
 	include "_maps/Sonic - Figure8 Map Entries.asm"
+	include "_maps/Sonic - Air Poses Map Entries.asm"
 
 MS_Null:	spriteHeader
 MS_Null_End
@@ -631,3 +632,5 @@ MS_SpinDash_End
 	even
 
 	include "_maps/Sonic - Figure8 Map.asm"
+
+	include "_maps/Sonic - Air Poses Map.asm"
