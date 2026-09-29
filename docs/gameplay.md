@@ -67,3 +67,7 @@ Every 100 rings awards an extra life, including 200, 300 and later thresholds. L
 ## Special Stage selection
 
 Level Select can choose Special Stage 1–6 directly. Replaying an already earned emerald does not duplicate it.
+
+## Controllers
+
+Three-button and six-button pads are supported. X, Y, Z and Mode are read but have no assigned gameplay actions.

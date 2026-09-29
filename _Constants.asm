@@ -214,7 +214,17 @@ btnC:			equ 1<<bitC				; ($20)
 btnA:			equ 1<<bitA				; ($40)
 btnStart:		equ 1<<bitStart				; ($80)
 btnDir:			equ btnUp|btnDn|btnL|btnR		; ($0F)
-btnABC:			equ btnA|btnB|btnC			; ($70)
+btnABC:		equ btnA|btnB|btnC
+; Separate extra-input bytes; never OR these bits into SACBRLDU.
+bitZ: equ 0
+bitY: equ 1
+bitX: equ 2
+bitMode: equ 3
+btnZ: equ 1<<bitZ
+btnY: equ 1<<bitY
+btnX: equ 1<<bitX
+btnMode: equ 1<<bitMode
+Joypad6_Connected: equ $80
 
 ; Flags used by obRender and BuildSprites
 sprite_xflip_bit:	equ 0					; flip sprite mappings horizontally (X-axis)

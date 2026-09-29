@@ -154,9 +154,14 @@ v_gamemode:		ds.b	1				; game mode (00=Sega; 04=Title; 08=Demo; 0C=Level; 10=SS;
 			ds.b	1				; unused
 v_jpadhold2:		ds.b	1				; joypad input - held, duplicate
 v_jpadpress2:		ds.b	1				; joypad input - pressed, duplicate
-v_jpadhold1:		ds.b	1				; joypad input - held
-v_jpadpress1:		ds.b	1				; joypad input - pressed
-			ds.b	6				; unused
+v_jpadhold1:		ds.b	1				; P1 base buttons held
+v_jpadpress1:		ds.b	1				; P1 base buttons newly pressed
+v_jpadhold_6btn:	ds.b 1				; bit 7 = detected, bits 0..3 = Z/Y/X/Mode
+v_jpadpress_6btn:	ds.b 1				; new extra presses, low four bits only
+v_jpadhold_p2:	ds.b 1				; P2 base held, not Sonic's overridden copy
+v_jpadpress_p2:	ds.b 1
+v_jpadhold_6btn_p2: ds.b 1
+v_jpadpress_6btn_p2: ds.b 1
 v_vdp_buffer1:		ds.w	1				; VDP instruction buffer of register $81 (used for enabling/disabling display)
 			ds.b	6				; unused
 v_generictimer:		ds.w	1				; generic timer, decrements to 0 in VBlank (word)
