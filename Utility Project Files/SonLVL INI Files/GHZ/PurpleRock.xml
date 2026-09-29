@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<ObjDef xmlns="http://www.sonicretro.org" Name="Purple rock" RememberState="true" Image="rock">
+  <Images>
+    <ImageFromMappings id="rock">
+      <ArtFile filename="../../artkosm/GHZ Purple Rock.kosm"/>
+      <MapFile type="ASM" filename="../../_maps/Purple Rock.asm" frame="0" startpal="3"/>
+    </ImageFromMappings>
+  </Images>
+  <Subtypes>
+    <Subtype id="00" name="Solid" image="rock"/>
+    <Subtype id="01" name="Smashable" image="rock"/>
+  </Subtypes>
+  <Properties>
+    <BitsProperty name="Smashable" type="bool" startbit="0" length="1"/>
+  </Properties>
+</ObjDef>

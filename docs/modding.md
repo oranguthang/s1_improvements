@@ -63,3 +63,7 @@ Ordinary and lost rings stream their animation from `artunc/Ring Frames.unc`; sp
 ## Debug HUD slots
 
 Coordinate digits use `$570–$57F`; the SPR label/count uses `$55C–$560`. Hide this overlay when another screen owns those tiles, and upload all digits before displaying it again.
+
+## Smashable rocks
+
+The GHZ purple rock has an optional Smashable subtype in both SonLVL definitions. Ordinary placements retain their solid behaviour. Destruction checks rolling and speed, emits debris/points, and retains respawn bookkeeping.
