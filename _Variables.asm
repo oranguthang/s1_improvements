@@ -520,6 +520,7 @@ v_title_codepos: ds.b 1			; transient unlock code progress
 v_submenu_pending: equ v_title_codepos	; high bit requests an atomic title-to-submenu VBlank switch
 v_ss_selected: ds.b 1			; transient SS selector (0..5)
 v_ss_override: ds.b 1			; one-shot SS selector (1..6; 0 = automatic)
+v_ss_manual: ds.b 1			; return a manually selected SS to title after results
 v_endring_bonus: ds.b 1			; end ring already collected in this act
 v_dev_settings_end:
 			ds.b	$1C-(v_dev_settings_end-v_dev_settings) ; unused

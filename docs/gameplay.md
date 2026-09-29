@@ -63,3 +63,7 @@ Free rings can enter a Special Stage from within an act. Act-end rings require 5
 ## Extra lives
 
 Every 100 rings awards an extra life, including 200, 300 and later thresholds. Losing the rings resets those thresholds: collecting another 100 awards another life. The HUD counters remain bounded.
+
+## Special Stage selection
+
+Level Select can choose Special Stage 1–6 directly. Replaying an already earned emerald does not duplicate it.

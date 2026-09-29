@@ -87,6 +87,7 @@ Settings_Load:
 		clr.b	(v_title_codepos).w
 		clr.b	(v_ss_selected).w
 		clr.b	(v_ss_override).w
+		clr.b	(v_ss_manual).w
 		suba.w	#settings_sram_size,sp
 		lea	(sram_start).l,a0
 		movea.l	sp,a1

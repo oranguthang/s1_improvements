@@ -1741,6 +1741,8 @@ Tit_LoadText:
 		dbf	d1,Tit_LoadText				; loop until it's fully loaded
 		jsr	(TitleMenu_LoadTextGraphics).l	; copy three strings into their reserved sprite slot
 		clr.b	(v_title_codepos).w
+		clr.b	(v_ss_manual).w
+		clr.b	(v_ss_override).w
 		cmpi.b	#3,(v_title_menuitem).w
 		blo.s	Tit_MenuCursorReady
 		clr.b	(v_title_menuitem).w
@@ -1970,17 +1972,7 @@ LevSel_Level_SS:
 		bmi.w	LevelSelect				; if it's an invalid entry, branch back to main loop
 		cmpi.w	#id_SS<<8,d0				; check if selected level Special Stage (0700 is used as dummy value)
 		bne.s	LevSel_Level				; if not, branch
-		move.b	#id_Special,(v_gamemode).w		; set screen mode to $10 (Special Stage)
-		clr.w	(v_zone_act).w				; clear level
-		move.b	#3,(v_lives).w				; set lives to 3
-		moveq	#0,d0					; set d0 to 0
-		move.w	d0,(v_rings).w				; clear rings
-		move.l	d0,(v_time).w				; clear time
-		move.l	d0,(v_score).w				; clear score
-	if Revision<>0
-		move.l	#5000,(v_scorelife).w			; extra life is awarded at 50000 points
-	endif
-		rts
+		jmp	(LevSel_StartSpecial).l		; explicit one-shot selection, preserve real emeralds
 ; ===========================================================================
 
 LevSel_Level:
@@ -1988,6 +1980,8 @@ LevSel_Level:
 		move.w	d0,(v_zone_act).w			; set new level number (zone and act)
 
 PlayLevel:
+		clr.b	(v_ss_manual).w
+		clr.b	(v_ss_override).w
 		move.b	#id_Level,(v_gamemode).w		; set screen mode to $0C (level)
 		move.b	#3,(v_lives).w				; set lives to 3
 		moveq	#0,d0					; set d0 to 0
@@ -2215,6 +2209,8 @@ LevSel_Refresh:
 ; ===========================================================================
 
 LevSel_SndTest:
+		cmpi.w	#levsel_ss_row,(v_levselitem).w
+		beq.w	LevSel_SSControls
 		cmpi.w	#levsel_sndtest_row,(v_levselitem).w	; is sound test row selected?
 		bne.s	LevSel_NoMove				; if not, branch
 		move.b	(v_jpadpress1).w,d1			; get currently pressed buttons
@@ -2265,6 +2261,8 @@ LevSel_NoMove:
 
 levsel_line_count:	equ 21	; total number of lines
 levsel_line_length:	equ 24	; characters per line
+levsel_ss_row: equ levsel_line_count-2
+levsel_ss_col: equ 14
 levsel_sndtest_row:	equ levsel_line_count-1  ; row index of the sound test
 levsel_sndtest_col:	equ levsel_line_length-8 ; column offset for the sound test number
 
@@ -2327,7 +2325,7 @@ LevSel_DrawSnd:
 		bsr.w	LevSel_ChgSnd				; draw 1st digit
 		move.b	d2,d0					; restore backup
 		bsr.w	LevSel_ChgSnd				; draw 2nd digit
-		rts
+		jmp	(LevSel_DrawSSNumber).l
 ; ===========================================================================
 
 LevSel_ChgSnd:
@@ -2429,6 +2427,7 @@ LevelMenuText:
 	include	"_inc/Developer Menu.asm"
 	include	"_inc/Settings SRAM.asm"
 	include	"_inc/Title Menu.asm"
+	include	"_inc/Special Stage Selector.asm"
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -3364,7 +3363,7 @@ SS_NormalExit:		; Special Stage results screen loop
 		move.w	#sfx_EnterSS,d0				; play special stage exit sound
 		bsr.w	QueueSound2 				; play it
 		bsr.w	PaletteWhiteOut				; fade-out to white
-		rts						; return to MainGameLoop
+		jmp	(SS_ManualReturn).l			; normal ring entries retain the original destination
 ; ===========================================================================
 
 SS_ToSegaScreen:

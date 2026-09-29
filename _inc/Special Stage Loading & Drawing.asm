@@ -564,6 +564,21 @@ SS_StartLoc:
 ; ---------------------------------------------------------------------------
 
 SS_Load:
+		moveq	#0,d0
+		move.b	(v_ss_override).w,d0
+		clr.b	(v_ss_override).w			; consume even malformed/demo overrides
+		tst.w	(f_demo).w
+		beq.s	.checkOverride
+		clr.b	(v_ss_manual).w
+		bra.s	.automatic
+	.checkOverride:
+		tst.b	d0
+		beq.s	.automatic
+		cmpi.b	#ss_emeralds_num,d0
+		bhi.s	.automatic
+		subq.b	#1,d0
+		bra.w	SS_LoadData			; explicit stage ignores the collected list
+	.automatic:
 		moveq	#0,d0					; clear d0
 		move.b	(v_lastspecial).w,d0			; load number of last special stage entered (0-5)
 		addq.b	#1,(v_lastspecial).w			; remember new last-visited special stage number
@@ -585,7 +600,7 @@ SS_FindUnbeatenStage:
 	.chkEmldLoop:
 		cmp.b	(a3,d1.w),d0				; does this collected emerald belong to the selected stage?
 		bne.s	.chkNext				; if not, check the next entry
-		bra.s	SS_Load					; repeat SS_Load, increase v_lastspecial, try another stage
+		bra.w	SS_Load					; repeat SS_Load, increase v_lastspecial, try another stage
 	.chkNext:
 		dbf	d1,.chkEmldLoop				; check all collected emeralds
 
@@ -595,12 +610,14 @@ SS_FindUnbeatenStage:
 SS_LoadData:
 	; --- Load start positions for Sonic ---
 		lsl.w	#2,d0					; multiply by 4 for long-based indexing
-		lea	SS_StartLoc(pc,d0.w),a1			; load Sonic's start location for this stage
+		lea	(SS_StartLoc).l,a1
+		adda.w	d0,a1			; load Sonic's start location for this stage
 		move.w	(a1)+,(v_player+obX).w			; set start X-position
 		move.w	(a1)+,(v_player+obY).w			; set start Y-position
 
 	; --- Decompress Enigma-compressed special stage layout to a temporary buffer ---
-		movea.l	SS_LayoutIndex(pc,d0.w),a0		; load compressed special stage layout
+		lea	(SS_LayoutIndex).l,a0
+		movea.l	(a0,d0.w),a0		; load compressed special stage layout
 		lea	(v_sslayout_decompress).l,a1		; set decompression buffer for layout
 		move.w	#0,d0					; no added art tile settings
 		jsr	(EniDec).l				; decompress special stage layout to buffer
