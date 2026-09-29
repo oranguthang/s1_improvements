@@ -4,6 +4,13 @@
 ; ---------------------------------------------------------------------------
 
 GlassBlock:
+		cmpi.b	#1,obFrame(a0)			; sheen belongs to a live glass pillar
+		bne.s	.run
+		movea.l	glass_parent(a0),a1
+		cmpi.b	#id_GlassBlock,obID(a1)
+		bne.w	.delete				; remove an orphan before reading parent state
+		bclr	#7,obGfx(a0)			; let high-priority foreground pixels cover the sheen
+.run:
 		moveq	#0,d0
 		move.b	obRoutine(a0),d0
 		move.w	Glass_Index(pc,d0.w),d1
