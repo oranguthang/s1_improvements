@@ -83,3 +83,7 @@ Spring launches can use twirling and falling poses. The falling pose is limited 
 ## Light Dash
 
 Press A in the air facing a chain of at least three ordinary placed rings. Both forms follow curved chains and can continue across ground contact. Grounded A still jumps. Initial range is 64 pixels, maximum inter-ring gap 72 pixels. Speed is 12 pixels/frame, or 6 underwater. Exit momentum follows the final two distinct rings at dash speed. Sonic attacks badniks during the dash; ordinary Sonic is vulnerable after it ends unless curled again. An unreachable target cancels the dash after three stationary frames.
+
+## Good ending
+
+With six effective emeralds, Sonic approaches as Super using the original cutscene timing and Ending music. When the emeralds glow, the regular reversion cycle fades him back to blue. Animals, logo and enlarged ending sprites then use their normal palette.

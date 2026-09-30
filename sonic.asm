@@ -3492,7 +3492,7 @@ End_LoadSonic:
 		move.b	d0,(v_shield).w				; clear shield
 		move.b	d0,(v_invinc).w				; clear invincibility
 		move.b	d0,(v_shoes).w				; clear speed shoes
-		move.b	d0,(v_unused1).w			; clear unused flag (goggles?)
+		; v_unused1 aliases v_supersonic; preserve the cinematic form.
 		move.w	d0,(v_debuguse).w			; exit debug mode if necessary
 		move.w	d0,(f_restart).w			; clear level restart flag
 		move.w	d0,(v_framecount).w			; reset frames since level start to 0
@@ -3614,6 +3614,32 @@ End_SlowFade:
 ; Once you understand these concepts, Sonic 1's game logic will make a lot more sense to you!
 ; ---------------------------------------------------------------------------
 
+; Good-ending Super presentation uses the normal cutscene movement constants.
+; Do not call Sonic_ActivateSuper: it changes physics, music and star objects.
+End_InitSuper:
+		jsr	(HasAllEmeralds).l
+		bne.s	.return
+		move.b	#1,(v_supersonic).w
+		move.l	#Map_SuperSonic,obMap(a0)
+		move.b	#-1,obPrevAni(a0)
+		move.b	#-1,(v_sonframenum).w
+		bsr.s	End_SuperFadePalette
+.return:
+		rts
+
+; The initial fade-in targets gold. ESon_MakeEmeralds restores blue later.
+; Only the four fur colours change; ending scenery and skin keep their palette.
+End_SuperFadePalette:
+		tst.b	(v_supersonic).w
+		beq.s	.return
+		move.b	#-1,(v_superpal_state).w
+		move.b	#7,(v_superpal_timer).w
+		move.w	#$38,(v_superpal_frame).w
+		move.l	(Pal_SuperSonicCycle+$30).l,(v_palette_fading+4).w
+		move.l	(Pal_SuperSonicCycle+$34).l,(v_palette_fading+8).w
+.return:
+		rts
+
 End_MoveSonic:
 		move.b	(v_sonicend).w,d0			; get ending cutscene routine number
 		bne.s	End_MoveSon2				; if it's non-zero, branch to second script
@@ -3642,6 +3668,10 @@ End_MoveSon2:
 		move.b	#$81,(f_playerctrl).w			; set control ignore and disabled object interaction flags
 
 		move.b	#fr_Wait2,(v_player+obFrame).w		; force Sonic to a specific waiting frame
+		tst.b	(v_supersonic).w
+		beq.s	.normalWait
+		move.b	(SupSonAni_Stand+1).l,(v_player+obFrame).w ; frame from the Super mapping table
+.normalWait:
 		move.w	#(id_Wait<<8)+id_Wait,(v_player+obAnim).w ; use "standing" animation and prevent it from getting immediately restarted
 		move.b	#3,(v_player+obTimeFrame).w		; set a bit of an animation interval so Sonic keeps looking when he gets replaced on the next frame
 		rts						; return
@@ -3679,6 +3709,8 @@ GM_Credits:
 		; fading out from previous game mode (music gets already started before this)
 		bsr.w	ClearPLC				; stop any potential in-progress PLC
 		bsr.w	PaletteFadeOut				; fade-out previous game mode
+		clr.b	(v_supersonic).w		; credits/demo use ordinary Sonic
+		clr.b	(v_superpal_state).w
 ; ---------------------------------------------------------------------------
 
 		; screen setup and loading patterns

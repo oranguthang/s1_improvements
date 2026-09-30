@@ -55,6 +55,16 @@ ESon_MakeEmeralds:
 		subq.w	#1,eson_time(a0)			; decrement timer to stare at hands
 		bne.s	.return					; if time remains, branch
 
+		; Start the normal Super-to-blue palette fade with the emerald glow.
+		; Keep the cinematic mappings, movement and Ending music untouched.
+		clr.b	(v_supersonic).w
+		move.b	#2,(v_superpal_state).w
+		move.b	#3,(v_superpal_timer).w
+		move.w	#$28,(v_superpal_frame).w
+		clr.w	(v_superframe).w
+		move.l	(Pal_Sonic+4).l,(v_palette_fading+4).w
+		move.l	(Pal_Sonic+8).l,(v_palette_fading+8).w
+
 		addq.b	#2,ob2ndRout(a0)			; advance to ESon_Animate ($4)
 		move.w	#(0<<8)+1,obAnim(a0)			; set to "hold" animation and restart it immediately
 		move.b	#id_EndChaos,(v_endemeralds).w		; load ending sequence chaos emeralds objects
