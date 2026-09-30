@@ -19,3 +19,12 @@ Any and all content presented in this repository is presented for informational 
 `make build` includes the MD Debugger and symbol table. `make build-debug` writes the same configuration to `s1built.debug.bin`. Use `SYMBOLS=0` to omit symbol names; numeric error diagnostics remain. ROMs are padded with `$FF` to a power of two, at least 1 MiB, after any symbol table; the checksum and ROM-end header are then updated.
 
 Symbols require ConvSym. Windows and Linux binaries are bundled. On other platforms build ConvSym and set `CONVSYM` to its path. See the [debugger guide](_debug/md-debugger/README.md) for controls and tool requirements.
+
+## Guides and tools
+
+- [Gameplay and controls](docs/gameplay.md)
+- [Menu, settings and SRAM](docs/settings.md)
+- [Engine formats and modding](docs/modding.md)
+- [Reproducible resource tools](docs/tools.md)
+
+Install optional resource tools with `python -m pip install -e ".[dev]"`. Run `python -m s1tools --help` for command groups. Python 3.11 or newer is required for these tools, not for ROM assembly.

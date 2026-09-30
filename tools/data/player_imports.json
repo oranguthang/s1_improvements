@@ -1,0 +1,478 @@
+{
+  "super": {
+    "water_palette_preset": "ice",
+    "water_palette_cycles": {
+      "lz": "blue_pulse",
+      "sbz3": "rose_pulse"
+    },
+    "source_files": {
+      "art": {
+        "path": "art/uncompressed/Sonic's art.bin",
+        "sha256": "75ee80865f4d01f8695ceecabea4e99282cab09ed883d72981ce06e64647c502"
+      },
+      "mappings": {
+        "path": "mappings/sprite/Sonic.asm",
+        "sha256": "97871fa285558e851e9a10b17d91d1f8a02521b32306b0d8f6699a5f67ff7149"
+      },
+      "dplc": {
+        "path": "mappings/spriteDPLC/Sonic.asm",
+        "sha256": "6ed4c5181035a3179bb269127e1662809dfa57078f27d2e68002f1c2e828f332"
+      },
+      "palette": {
+        "path": "art/palettes/Super Sonic transformation.bin",
+        "sha256": "56bdbd6517d193b87001bd9da7b932306e7a1f4437044de066ff6d654c5509df"
+      },
+      "stars_art": {
+        "path": "art/nemesis/Super Sonic stars.nem",
+        "sha256": "a9d9ffe9da2ba22fdcf79315f254c064940678453da855e40db3ba9bc9ab2f02"
+      },
+      "stars_map": {
+        "path": "mappings/sprite/obj7E.asm",
+        "sha256": "db836ac61baff038663b55baeb9bb71cc592433b70804e1bfeb658d469d92370"
+      },
+      "transform_sfx": {
+        "path": "sound/sfx/DF - Super Transform.asm",
+        "sha256": "ef57ff22658d0492b6fbd703dc262d52728e82ff3c4197a49bc8a9bf309ecb5a"
+      }
+    },
+    "used_frames": [
+      "0x00",
+      "0x0B",
+      "0x0C",
+      "0x11",
+      "0x12",
+      "0x3D",
+      "0x3E",
+      "0x3F",
+      "0x40",
+      "0x41",
+      "0x42",
+      "0x43",
+      "0x44",
+      "0x45",
+      "0x46",
+      "0x47",
+      "0x4E",
+      "0x4F",
+      "0x50",
+      "0x51",
+      "0x52",
+      "0x53",
+      "0x54",
+      "0x55",
+      "0x56",
+      "0x57",
+      "0x58",
+      "0x59",
+      "0x5A",
+      "0x5B",
+      "0x5C",
+      "0x5D",
+      "0x5E",
+      "0x6B",
+      "0x6C",
+      "0x6D",
+      "0x6E",
+      "0x6F",
+      "0x70",
+      "0x71",
+      "0x72",
+      "0x73",
+      "0x74",
+      "0x75",
+      "0x76",
+      "0x77",
+      "0x78",
+      "0x79",
+      "0x7A",
+      "0x7B",
+      "0x7C",
+      "0x7D",
+      "0x7E",
+      "0x7F",
+      "0x80",
+      "0x81",
+      "0x82",
+      "0x83",
+      "0x84",
+      "0x85",
+      "0x86",
+      "0x87",
+      "0x88",
+      "0x89",
+      "0x8A",
+      "0x8B",
+      "0x8C",
+      "0x8D",
+      "0x8E",
+      "0x8F",
+      "0x90",
+      "0x91",
+      "0x92",
+      "0x93",
+      "0x94",
+      "0x95",
+      "0x96",
+      "0x97",
+      "0x98",
+      "0x99",
+      "0x9A",
+      "0x9B",
+      "0x9C",
+      "0x9D",
+      "0x9E",
+      "0x9F",
+      "0xA0",
+      "0xA1",
+      "0xA2",
+      "0xA3",
+      "0xA4",
+      "0xA5",
+      "0xA6",
+      "0xA7",
+      "0xA8",
+      "0xA9",
+      "0xAA",
+      "0xAB",
+      "0xAC",
+      "0xAD",
+      "0xAE",
+      "0xAF",
+      "0xB0",
+      "0xB1",
+      "0xB2",
+      "0xB3",
+      "0xB4",
+      "0xB5",
+      "0xB6",
+      "0xB7",
+      "0xB8",
+      "0xB9",
+      "0xBA",
+      "0xBB",
+      "0xBC",
+      "0xBD",
+      "0xBE",
+      "0xBF",
+      "0xC0",
+      "0xC1",
+      "0xC2",
+      "0xC3",
+      "0xC4",
+      "0xC5",
+      "0xC6",
+      "0xC7",
+      "0xD2",
+      "0xD3",
+      "0xD4",
+      "0xD5"
+    ]
+  },
+  "figure8": {
+    "normal_base_frame": 94,
+    "super_base_frame": 214,
+    "frames": [
+      {
+        "form": "Sonic",
+        "id": 94,
+        "tiles": 19,
+        "pieces": 2,
+        "pixels_sha256": "1cf408181abeb94c4858224bc0fa8c1e7ec3720962ccd2089e1c5b5824188582"
+      },
+      {
+        "form": "Sonic",
+        "id": 95,
+        "tiles": 19,
+        "pieces": 2,
+        "pixels_sha256": "6edb400a25fef365a902cd19b7144ca258c2138c5d936075c25ac9a2ef2b20b0"
+      },
+      {
+        "form": "Sonic",
+        "id": 96,
+        "tiles": 19,
+        "pieces": 2,
+        "pixels_sha256": "5426626f689a658e686d7eb4fb793da2f624182de77819d87adc1162346400e1"
+      },
+      {
+        "form": "Sonic",
+        "id": 97,
+        "tiles": 18,
+        "pieces": 2,
+        "pixels_sha256": "2b4b890cc87426e08a1b35e7fea5ccda6e16635845e4f380cbc6a31ea9084b38"
+      },
+      {
+        "form": "Sonic",
+        "id": 98,
+        "tiles": 23,
+        "pieces": 5,
+        "pixels_sha256": "e809283f6d7997eda7064fd6c3e8ac527fcc04da9e2ecf3d438a9c0fe27d8164"
+      },
+      {
+        "form": "Sonic",
+        "id": 99,
+        "tiles": 21,
+        "pieces": 3,
+        "pixels_sha256": "704458df78278a51e13e803b3c6632444fd977e302ec75a725633f799a5c66ea"
+      },
+      {
+        "form": "Sonic",
+        "id": 100,
+        "tiles": 23,
+        "pieces": 5,
+        "pixels_sha256": "ab1a1a6e275ce079a7355841077ef38d6989de035beaed46a7d691c0c3db6e6a"
+      },
+      {
+        "form": "Sonic",
+        "id": 101,
+        "tiles": 21,
+        "pieces": 3,
+        "pixels_sha256": "e8eeca0e8a894f3f47600e89512f8b1b1ce1e4f58d6cd018200fcce33c871c3a"
+      },
+      {
+        "form": "Sonic",
+        "id": 102,
+        "tiles": 19,
+        "pieces": 2,
+        "pixels_sha256": "7043e5d4f19cbf753ab09780efa45b94d8dc8e10f8532ad1d460bfb82e78fdcd"
+      },
+      {
+        "form": "Sonic",
+        "id": 103,
+        "tiles": 19,
+        "pieces": 2,
+        "pixels_sha256": "419f775936622e116f08bdc53e79e08d6671628ed1996221e6d27e09d32cd2a5"
+      },
+      {
+        "form": "Sonic",
+        "id": 104,
+        "tiles": 19,
+        "pieces": 2,
+        "pixels_sha256": "64be07371f8b9b412c16379ec9d58829ed71a1b8d99d25a59b060f8ef4cdcbe9"
+      },
+      {
+        "form": "Sonic",
+        "id": 105,
+        "tiles": 18,
+        "pieces": 2,
+        "pixels_sha256": "eabee97d4a2487f429f0ef0587db48317fd0a7dd6ac149b4b27af332266aff70"
+      },
+      {
+        "form": "Sonic",
+        "id": 106,
+        "tiles": 23,
+        "pieces": 4,
+        "pixels_sha256": "dfebf07e7aa3eb8f457b2d58223cc778d6f5ddfbf286119824fa40cab66716fc"
+      },
+      {
+        "form": "Sonic",
+        "id": 107,
+        "tiles": 21,
+        "pieces": 3,
+        "pixels_sha256": "4f7c45a0ad8bca082b78393cf0cc1890bf38070a73e449fb7656bfea823f1342"
+      },
+      {
+        "form": "Sonic",
+        "id": 108,
+        "tiles": 23,
+        "pieces": 5,
+        "pixels_sha256": "474be217b2baee19239d95722ce2fc32fa132d76db9bed2a54604a3536af55a7"
+      },
+      {
+        "form": "Sonic",
+        "id": 109,
+        "tiles": 21,
+        "pieces": 3,
+        "pixels_sha256": "e7796f66e8db65ff7e33b66df729c509f62d003a119239193fad26f57f310c82"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 214,
+        "tiles": 20,
+        "pieces": 2,
+        "pixels_sha256": "d374646a746fec8998236ed872f1669f9eb00d6cd6dff976dfbc2876d782d5db"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 215,
+        "tiles": 23,
+        "pieces": 3,
+        "pixels_sha256": "5265288edbb42736b79420c31ae21e80fb93afe816cf2ab9e713c9c33f454ce4"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 216,
+        "tiles": 20,
+        "pieces": 2,
+        "pixels_sha256": "20372710d93f122ee2fa0c6bbd7aab3223f1f2679a5f97b5fc7e5b94ef8f48a7"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 217,
+        "tiles": 22,
+        "pieces": 3,
+        "pixels_sha256": "ef7584ab31373c27e4327fe2568a0b1e4bd56b350e81fa69a94565f0c94f515a"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 218,
+        "tiles": 24,
+        "pieces": 3,
+        "pixels_sha256": "ddf3fd2cf427c4a3d0e42c120cdf41bcbbe27299c3dde3ca0551dc464b1c509a"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 219,
+        "tiles": 24,
+        "pieces": 2,
+        "pixels_sha256": "359f8a583fd37d59c028f8f6c1ca01c4871d0691eee115a4b8ab497465789587"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 220,
+        "tiles": 26,
+        "pieces": 3,
+        "pixels_sha256": "1dd664dbafdf9ae1f8932f34bf0070eb27080399ba9a80b161bb40e6fe527af2"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 221,
+        "tiles": 24,
+        "pieces": 3,
+        "pixels_sha256": "c6973d33a656a077ab354d495dea0c22e0b42e588c5f9e25d11732e582bacfd0"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 222,
+        "tiles": 20,
+        "pieces": 2,
+        "pixels_sha256": "d84aea70c5997656d58a5441394e5c9f8047a687098eca83ae3f3f8c7d62d7ec"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 223,
+        "tiles": 23,
+        "pieces": 3,
+        "pixels_sha256": "c75c711e01ddb0599bcf47273beb3397896b3d6077d6918a5b6b3d04f1bc3b50"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 224,
+        "tiles": 20,
+        "pieces": 2,
+        "pixels_sha256": "910fd0c1c0585496b010e7cc590bf7407a18d92f153498d6ea6607939c434353"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 225,
+        "tiles": 21,
+        "pieces": 3,
+        "pixels_sha256": "62659eb431c22a2030e59f0e936474d6ac024782e1f3848283449143b6b84245"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 226,
+        "tiles": 24,
+        "pieces": 3,
+        "pixels_sha256": "3559544054f35e72cedaa8caf88f92f9969d2e8af77ece154e034f43144c4429"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 227,
+        "tiles": 24,
+        "pieces": 2,
+        "pixels_sha256": "8f2bae5c2ae201beeed5eff92778353449b9fda91df5bcffd3cdef6f7f3424b3"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 228,
+        "tiles": 27,
+        "pieces": 3,
+        "pixels_sha256": "0ec7e1bd256d3b496a3e53bc545fb07b4263aa7068c72d0a6c2bd12c042b3e29"
+      },
+      {
+        "form": "Super Sonic",
+        "id": 229,
+        "tiles": 24,
+        "pieces": 3,
+        "pixels_sha256": "621045c867dbd6fcd54eed589dc1250bb395da33a6bcf7fd0419bb10c4c84928"
+      }
+    ],
+    "source_files": {
+      "Art.bin": "5160ff8ea26ed050cd3f41aaf1689d4e05a58cf15f090c0ca910932e7f629955",
+      "Mappings.asm": "604a1a7c475579abea7e4b856b2c61d02ae1ff9d2897bc8d93180734cb79ecdb",
+      "DPLCs.asm": "4b8cb37eb0666f1102762b2682a6d80acfd9cdc7488982e14cfa600df10189cc"
+    }
+  },
+  "air": {
+    "fall_source": "https://info.sonicretro.org/images/3/33/Fall_Sprites.zip",
+    "fall_source_hashes": {
+      "Fall.png": "9110d90d556fb6b19cb28ff09724f9e33d998386e603caa4b59a129bc811b9a8",
+      "Fall1.png": "fe992220009e96212d67bbb23319757d6f6e7834052e5b66e7c40f8d172a44a9"
+    },
+    "frames": [
+      {
+        "normal_id": 110,
+        "super_id": 230,
+        "tiles": 16,
+        "pieces": 3,
+        "pixels_sha256": "4cb977b44e99591f435efa9dfb09cdeb027b82371b10131407200a2c81fc8040"
+      },
+      {
+        "normal_id": 111,
+        "super_id": 231,
+        "tiles": 16,
+        "pieces": 2,
+        "pixels_sha256": "3e900ef74e961f28e8f6f1b3ae29b3545c3bcf9fa4793d68b323f2b684e2f6cc"
+      },
+      {
+        "normal_id": 112,
+        "super_id": 232,
+        "tiles": 19,
+        "pieces": 4,
+        "pixels_sha256": "677d38345ee28a54a696570301df6692a1ce81acad16c13bd9e225217c929a88"
+      },
+      {
+        "normal_id": 113,
+        "super_id": 233,
+        "tiles": 19,
+        "pieces": 4,
+        "pixels_sha256": "fc5183a573ed39476422559407f8d8f52cb63e6072d3a0a29bff13ed7a2d2e1d"
+      },
+      {
+        "normal_id": 114,
+        "super_id": 234,
+        "tiles": 16,
+        "pieces": 2,
+        "pixels_sha256": "b8d7d2667550d99d0b42519faa4a7fa73549290b501b282a7384bd2785c0aa5b"
+      },
+      {
+        "normal_id": 115,
+        "super_id": 235,
+        "tiles": 24,
+        "pieces": 3,
+        "pixels_sha256": "f0fdf7b2b00d0256b6775d1522b2f4dce4e669b141036e4e8a533b29a3921ad7"
+      },
+      {
+        "normal_id": 116,
+        "super_id": 236,
+        "tiles": 24,
+        "pieces": 3,
+        "pixels_sha256": "12dbcb283500d69c87a46a5f98a51fbc9cfd824ed0b9908455b4287226417a73"
+      }
+    ]
+  },
+  "input_files": {
+    "s2/art/uncompressed/Sonic's art.bin": "75ee80865f4d01f8695ceecabea4e99282cab09ed883d72981ce06e64647c502",
+    "s2/mappings/sprite/Sonic.asm": "97871fa285558e851e9a10b17d91d1f8a02521b32306b0d8f6699a5f67ff7149",
+    "s2/mappings/spriteDPLC/Sonic.asm": "6ed4c5181035a3179bb269127e1662809dfa57078f27d2e68002f1c2e828f332",
+    "s2/art/palettes/Super Sonic transformation.bin": "56bdbd6517d193b87001bd9da7b932306e7a1f4437044de066ff6d654c5509df",
+    "s2/art/nemesis/Super Sonic stars.nem": "a9d9ffe9da2ba22fdcf79315f254c064940678453da855e40db3ba9bc9ab2f02",
+    "s2/mappings/sprite/obj7E.asm": "db836ac61baff038663b55baeb9bb71cc592433b70804e1bfeb658d469d92370",
+    "s2/sound/sfx/DF - Super Transform.asm": "ef57ff22658d0492b6fbd703dc262d52728e82ff3c4197a49bc8a9bf309ecb5a",
+    "cd/CD-Art.bin": "5160ff8ea26ed050cd3f41aaf1689d4e05a58cf15f090c0ca910932e7f629955",
+    "cd/CD-Mappings.asm": "604a1a7c475579abea7e4b856b2c61d02ae1ff9d2897bc8d93180734cb79ecdb",
+    "cd/CD-DPLCs.asm": "4b8cb37eb0666f1102762b2682a6d80acfd9cdc7488982e14cfa600df10189cc",
+    "cd/Fall.png": "9110d90d556fb6b19cb28ff09724f9e33d998386e603caa4b59a129bc811b9a8",
+    "cd/Fall1.png": "fe992220009e96212d67bbb23319757d6f6e7834052e5b66e7c40f8d172a44a9"
+  }
+}
