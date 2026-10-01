@@ -78,6 +78,10 @@ plcid_Points:		plcptr	PLC_Points
 plcid_PlayerHUD:		plcptr	PLC_PlayerHUD
 plcid_TailsHUD: plcptr PLC_TailsHUD
 plcid_KnucklesHUD: plcptr PLC_KnucklesHUD
+plcid_TailsSignpost: plcptr PLC_TailsSignpost
+plcid_KnucklesSignpost: plcptr PLC_KnucklesSignpost
+plcid_TailsMonitors: plcptr PLC_TailsMonitors
+plcid_KnucklesMonitors: plcptr PLC_KnucklesMonitors
 
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - standard block 1
@@ -95,6 +99,16 @@ PLC_Main2:	plcheader
 		plcm	KosM_Monitors,	ArtTile_Monitor			; monitors
 		; shield and invincibility stars are DMA-loaded by ShieldStars_LoadGfx
 PLC_Main2_end:
+
+; Only the four 1UP portrait tiles differ between solo characters.
+PLC_TailsMonitors: plcheader
+        plcm KosM_Monitors,ArtTile_Monitor
+        plcm KosM_TailsMonitor,ArtTile_Monitor+$1C
+PLC_TailsMonitors_end:
+PLC_KnucklesMonitors: plcheader
+        plcm KosM_Monitors,ArtTile_Monitor
+        plcm KosM_KnucklesMonitor,ArtTile_Monitor+$1C
+PLC_KnucklesMonitors_end:
 
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - explosion
@@ -308,6 +322,18 @@ PLC_Signpost:	plcheader
 		plcm	KosM_Bonus,	ArtTile_Hidden_Points		; hidden bonus points
 PLC_Signpost_end:
 
+; Keep the original sign and pole, replacing only the 24-tile player face.
+PLC_TailsSignpost: plcheader
+        plcm KosM_SignPost,ArtTile_Signpost
+        plcm KosM_Bonus,ArtTile_Hidden_Points
+        plcm KosM_TailsSignpost,ArtTile_Signpost+$20
+PLC_TailsSignpost_end:
+PLC_KnucklesSignpost: plcheader
+        plcm KosM_SignPost,ArtTile_Signpost
+        plcm KosM_Bonus,ArtTile_Hidden_Points
+        plcm KosM_KnucklesSignpost,ArtTile_Signpost+$20
+PLC_KnucklesSignpost_end:
+
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - beta special stage warp effect
 ; ---------------------------------------------------------------------------
@@ -405,6 +431,7 @@ PLC_SSResult_end:
 ; Pattern load cues - ending sequence
 ; ---------------------------------------------------------------------------
 PLC_Ending:	plcheader
+		plcm	KosM_Lives,	ArtTile_Lives_Counter		; Sonic icon, independent of the preceding player
 		plcm	KosM_GHZ_1st,	ArtTile_Level			; GHZ main patterns
 		plcm	KosM_GHZ_2nd,	ArtTile_Level+$1CD		; GHZ secondary patterns
 		plcm	KosM_Stalk,	ArtTile_GHZ_Flower_Stalk	; flower stalk

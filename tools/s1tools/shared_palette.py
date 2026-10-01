@@ -9,8 +9,6 @@ from s1tools.codecs.kosinski import decode_moduled, encode_moduled
 from s1tools.codecs.nemesis import decode, encode_with_table
 from s1tools.common import get_root, get_source, load_data, write_outputs
 
-LEGACY = {8: 7, 14: 13, 15: 14}
-
 
 def remap_art(path: str, raw: bytes) -> bytes:
     """Remap only audited player-line tiles; other palette lines stay intact."""
@@ -18,8 +16,11 @@ def remap_art(path: str, raw: bytes) -> bytes:
     if asset is None:
         return raw
     output = bytearray(raw)
-    lookup = {int(k): v for k, v in asset.get("colours", LEGACY).items()}
-    for start, end in asset["ranges"]:
+    rules = [{"tiles": tiles, "colours": asset.get("colours", {})} for tiles in asset["ranges"]]
+    rules.extend(asset.get("colour_overrides", []))
+    for rule in rules:
+        lookup = {int(k): v for k, v in rule["colours"].items()}
+        start, end = rule["tiles"]
         if not 0 <= start <= end <= len(raw) // 32:
             raise ValueError(f"Shared palette tile range outside {path}")
         for position in range(start * 32, end * 32):
@@ -49,7 +50,7 @@ def player_palettes(
     water: tuple[int, ...],
     sbz3: tuple[int, ...],
 ) -> dict[Path, bytes]:
-    """Replace only the selected solo player's protected fur ramp."""
+    """Replace only the selected solo player's protected colour slots."""
     root = get_root()
     outputs = {}
     for suffix, ramp in (("", dry), (" - LZ Underwater", water), (" - SBZ3 Underwater", sbz3)):
@@ -65,14 +66,19 @@ def expected_outputs() -> dict[Path, bytes]:
     source, root = get_source("shared"), get_root()
     config = load_data("shared_player_palette.json")
     outputs = {}
+    sources = {"shared": source}
     for name, asset in config["assets"].items():
-        data = (source / asset["source"]).read_bytes()
+        group = asset.get("source_group", "shared")
+        if group not in sources:
+            sources[group] = get_source(group)
+        data = (sources[group] / asset["source"]).read_bytes()
         suffix = Path(name).suffix
+        input_suffix = Path(asset["source"]).suffix
         raw = (
             decode(data)
-            if suffix == ".nem"
+            if input_suffix == ".nem"
             else decode_moduled(data)
-            if suffix == ".kosm"
+            if input_suffix == ".kosm"
             else data
         )
         changed = remap_art(name, raw)
@@ -85,14 +91,7 @@ def expected_outputs() -> dict[Path, bytes]:
         )
         outputs[root / name] = packed
     for name, asset in config["palettes"].items():
-        data = bytearray((source / asset["source"]).read_bytes())
-        for index, colour in (
-            (8, asset["green"]),
-            (14, asset["orange"][0]),
-            (15, asset["orange"][1]),
-        ):
-            data[index * 2 : index * 2 + 2] = colour.to_bytes(2, "big")
-        outputs[root / name] = bytes(data)
+        outputs[root / name] = (source / asset["source"]).read_bytes()
     return outputs
 
 

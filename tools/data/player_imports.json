@@ -628,6 +628,11 @@
     "shared/artnem/8x8 - MZ.nem": "08629f1ec5c47fa95ed53e85da251d276a5d622cfcabbfbe355ffd47f65dbd65",
     "shared/artkosm/8x8 - MZ.kosm": "e55637e4cbc535728d409491cfd878693ff0a79c54b7551cbfff01b0dcf28dcd",
     "shared/artnem/8x8 - SLZ.nem": "b3f5f5a8061b3372d8b6bbc810057ed4edfb91bc50e9ea420fb719cb6c329d12",
-    "shared/artkosm/8x8 - SLZ.kosm": "d4ab89bacd288464ff11aedca7fde4cbf5c1ebf65f7b519e30abeba01028b6a2"
+    "shared/artkosm/8x8 - SLZ.kosm": "d4ab89bacd288464ff11aedca7fde4cbf5c1ebf65f7b519e30abeba01028b6a2",
+    "s1/artnem/Title Cards.nem": "f292fa60bd0928d2604c672e164ae7ae365b315ef1f434a503d60c7db3bd9bc8",
+    "s1/artkosm/Title Cards.kosm": "5da1e3f21fc13192c43939992d646e6dd06a063ca72146ff1fa4ecbab87aa744",
+    "sk/General/Sprites/Signpost/End Signs.bin": "f7bde4e6f77a21a9747df2476ec176d9fd6f1b1ce73b5bcd3178b8210b74b218",
+    "sk/General/Sprites/Signpost/Map - End Signs.asm": "9b2326a154e3182dba1afe00a8395de4586ad427091f263a0804fa1f1027ab7f",
+    "sk/General/Sprites/Signpost/DPLC - End Signs.asm": "55ad4c53ad6f4b7c034388d2e2d75e4f6b144edcb75d537df510258e112ffb8e"
   }
 }

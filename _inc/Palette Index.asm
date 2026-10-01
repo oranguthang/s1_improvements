@@ -83,14 +83,14 @@ Pal_KnucklesSBZ3Water: bincludeEndMarker "palette/Knuckles - SBZ3 Underwater.bin
 
 Pal_SuperSonic:
 		dc.w $0000, $0000, $04AA, $0ACA, $0ECC, $0EEE, $0EEE, $0CC0
-		dc.w $0080, $0444, $08AE, $046A, $000E, $0008, $00AE, $008E
+		dc.w $0888, $0444, $08AE, $046A, $000E, $0008, $0004, $00EE
 Pal_SuperSonic_end:
 
 Pal_SuperSonicWater:
 		dc.w $0000, $0000, $0842, $0A64, $0C86, $0EA8, $0EEE, $0AAA
-		dc.w $0442, $0444, $06AA, $0266, $0048, $0024, $068A, $0468
+		dc.w $0888, $0444, $06AA, $0266, $0048, $0024, $0002, $00EE
 Pal_SuperSonicWater_end:
 Pal_SuperSonicSBZ3Water:
 		dc.w $0000, $0000, $0A46, $0C68, $0E8A, $0EAC, $0ECE, $0CAC
-		dc.w $0646, $0646, $0CAE, $086C, $060C, $0426, $08AC, $066A
+		dc.w $0868, $0646, $0CAE, $086C, $060C, $0426, $0004, $00EE
 Pal_SuperSonicSBZ3Water_end:

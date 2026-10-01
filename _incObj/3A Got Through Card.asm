@@ -33,6 +33,16 @@ Got_ChkPLC:	; Routine 0
 
 Got_Main:
 		movea.l	a0,a1					; set this root object to become the level name card
+		lea	(Map_Got).l,a3
+		cmpi.b	#Character_Tails,(v_character_p1).w
+		bne.s	.knuckles
+		lea	(Map_Got_Tails).l,a3
+		bra.s	.items
+.knuckles:
+		cmpi.b	#Character_Knuckles,(v_character_p1).w
+		bne.s	.items
+		lea	(Map_Got_Knuckles).l,a3
+.items:
 
 		lea	(Got_ItemData).l,a2			; load card item data
 		moveq	#7-1,d1					; set to affect all seven end-of-level card objects
@@ -53,7 +63,7 @@ Got_Loop:
 	.setFrame:
 		move.b	d0,obFrame(a1)				; set final frame ID for object
 
-		move.l	#Map_Got,obMap(a1)			; set mappings pointer
+		move.l	a3,obMap(a1)				; active character name, shared result elements
 		move.w	#ArtTile_Title_Card|Tile_Prio,obGfx(a1)	; set art tile and sprite priority flag
 		move.b	#sprite_cam_screen,obRender(a1)		; set to screen-positioned sprite mode
 		lea	object_size(a1),a1			; advance to next card object (all elements are back-to-back in RAM)

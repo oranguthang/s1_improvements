@@ -23,7 +23,7 @@ Options_ReadInput:
         andi.b #btnL+btnR+btnABC,d1
         beq.s .unchanged
         moveq #0,d0
-        move.b (v_character_p1).w,d0
+        move.b (v_character_selected).w,d0
         btst #bitL,d1
         beq.s .next
         subq.w #1,d0
@@ -36,7 +36,7 @@ Options_ReadInput:
         blo.s .store
         moveq #0,d0
 .store:
-        move.b d0,(v_character_p1).w
+        move.b d0,(v_character_selected).w
         jsr (Settings_Save).l
         moveq #1,d0
         rts
@@ -57,7 +57,7 @@ Options_Draw:
         moveq #16-1,d2
         bsr.w DevMenu_DrawText
         moveq #0,d0
-        move.b (v_character_p1).w,d0
+        move.b (v_character_selected).w,d0
         mulu.w #8,d0
         lea Options_Names(pc),a1
         adda.w d0,a1

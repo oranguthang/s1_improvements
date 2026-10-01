@@ -12,6 +12,8 @@ Character resource selection adapts Selbi's [Adding Extra Characters](https://in
 
 Solo Tails body/tail art and Knuckles art, mappings, DPLC and lives icons originate from the [Sonic 3 & Knuckles disassembly](https://github.com/sonicretro/skdisasm), using the resource versions in [sk_improvements](https://github.com/oranguthang/sk_improvements). The importer repacks the frames and adapts palette indices and origins for Sonic 1. Flight uses the ascent-pulse and endurance approach from Sonic 3 & Knuckles. Knuckles gliding, climbing and ledge transitions adapt its movement rules to Sonic 1 terrain collision.
 
+Tails and Knuckles signpost portraits also use the original S3K end-sign art and DPLC. The 1UP monitor portraits reuse the S3K lives icons. Act-clear character names reuse the Sonic 1 title-card alphabet.
+
 ## Title resources
 
 The independent title resources follow [Make an Alternative Title Screen](https://info.sonicretro.org/SCHG_How-to:Make_an_Alternative_Title_Screen). The source archive is retained with the resource inputs for repeatable extraction.

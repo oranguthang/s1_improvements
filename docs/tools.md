@@ -37,6 +37,7 @@ python -m s1tools player air --verify
 python -m s1tools player tails
 python -m s1tools player knuckles
 python -m s1tools player palette
+python -m s1tools player ui
 ```
 
 Use `--apply` instead of `--verify` to regenerate. Order matters: Super base assets, then figure-eight, then air poses. Player importers retain the appended mapping/DPLC hooks. They preserve palette indices, frame IDs and sprite geometry; they do not use image quantization. The ordinary Sonic base art remains an input when computing appended tile offsets.
@@ -46,6 +47,8 @@ Use `--apply` instead of `--verify` to regenerate. Order matters: Super base ass
 `player knuckles` verifies the solo Knuckles art, mappings, DPLC and lives icon; `--apply` regenerates them. It adapts S3K walk/run frame counts and includes glide, fall, slide, climbing and ledge poses. Both solo importers apply explicit colour-index maps into the common player palette.
 
 `player palette` verifies the common dry/underwater palette and reindexed Sonic, HUD, object and level resources; `--apply` regenerates them from the bundled `shared/` inputs. The range manifest retains mixed-palette sheet boundaries and records the mappings or tilemaps used for selection. Reindex the common resources before generating player imports and remaps; those recipes already target the shared indices.
+
+`player ui` verifies title-card gray ovals and the Tails/Knuckles signpost and 1UP monitor portraits; `--apply` regenerates them after the player palette import. It retains the original title-card font and numbers, and converts the S3K end-sign DPLC into two 24-tile portraits that replace only the Sonic face in the shared S1 signpost sheet. The four-tile 1UP monitor portraits reuse the original S3K lives icons; the other monitor tiles remain shared.
 
 For a separate output project:
 

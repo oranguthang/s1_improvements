@@ -2,7 +2,7 @@
 
 ## Title menu and controls
 
-The title initially shows START GAME and OPTIONS. OPTIONS contains one CHARACTER setting (SONIC, TAILS or KNUCKLES). Left/Right/A/B/C changes the character, and Start returns to the title. Up/Down does nothing on this screen. SRAM remembers the character selection. Multiplayer and Competition modes are not supported.
+The title initially shows START GAME and OPTIONS. OPTIONS contains one CHARACTER setting (SONIC, TAILS or KNUCKLES). Left/Right/A/B/C changes the character, and Start returns to the title. Up/Down does nothing on this screen. SRAM remembers the character selection. Sonic Team Presents, the title, attract demos, Continue, the ending, credits and credit demos always use Sonic and his palettes; returning to gameplay restores the saved character. Special Stage results use Sonic's fixed presentation artwork and HUD. Multiplayer and Competition modes are not supported.
 
 Enter Up, Down, Down, Down, Left, Right on the title to reveal LEVEL SELECT and CHEATS as two additional choices. SRAM remembers the unlock. Old title cheat sequences are disabled. With the secret menu unlocked, pause and press A to return directly to the title. Debug alone does not unlock this shortcut.
 
@@ -40,7 +40,7 @@ Tails has no Super form, even with all emeralds granted. Giant-ring bonuses stil
 
 Select KNUCKLES in OPTIONS. Jump with A/B/C, then hold B or C after a second press to glide. Release to fall. Gliding into a vertical terrain wall grabs it; Up/Down climbs, B/C jumps away, and holding away releases the wall. At the top Knuckles climbs onto the ledge. His jump is lower than Sonic's. Gliding can defeat badniks and break monitors and compatible walls. A retains Light Dash; standalone B retains its debug-placement function when debug is enabled.
 
-Knuckles has no Super form. His fur uses the same protected palette slots as Sonic and Tails, with a separate red/pink ramp and underwater tints; his shoes retain their green panels. The lives label uses the S3K KTE abbreviation. Large title/ending illustrations and Continue counters remain Sonic artwork. Only one playable character is supported.
+Knuckles has no Super form. His fur uses protected palette slots 2/4/5, with a separate red/pink ramp and underwater tints; green shoe panels use protected slot 3. Objects retain their three gray shades independently of the selected character. The lives label uses the S3K KTE abbreviation. Large title/ending illustrations and Continue counters remain Sonic artwork. Only one playable character is supported.
 
 ## Debug display
 

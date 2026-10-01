@@ -34,7 +34,18 @@ def test_knuckles_gameplay_pose_sources() -> None:
 
 @pytest.mark.parametrize("suffix", ["", " - LZ Underwater", " - SBZ3 Underwater"])
 def test_solo_character_palettes_protect_object_colours(suffix: str) -> None:
+    from s1tools.common import get_source
+    from s1tools.knuckles import COLOURS
+
     reference = (ROOT / f"palette/Sonic{suffix}.bin").read_bytes()
+    original = (get_source("shared") / f"palette/Sonic{suffix}.bin").read_bytes()
+    # All shared shades, including Crabmeat's dark red and yellow, stay original.
+    assert reference[:4] == original[:4]
+    assert reference[12:] == original[12:]
+    green = {"": 0x0080, " - LZ Underwater": 0x0442, " - SBZ3 Underwater": 0x0646}
+    knuckles = (ROOT / f"palette/Knuckles{suffix}.bin").read_bytes()
+    assert COLOURS[5] == 3
+    assert knuckles[6:8] == green[suffix].to_bytes(2, "big")
     for name in ("Tails", "Knuckles"):
         palette = (ROOT / f"palette/{name}{suffix}.bin").read_bytes()
         assert palette[:4] == reference[:4]
@@ -82,6 +93,7 @@ def test_nemesis_pixels_preserve_template(name: str) -> None:
         ("player", "tails"),
         ("player", "knuckles"),
         ("player", "palette"),
+        ("player", "ui"),
         ("palettes", "badniks", "--verify"),
         ("palettes", "objects", "--verify"),
         ("palettes", "water", "--check"),
@@ -147,7 +159,7 @@ def test_palette_preview_is_portable(tmp_path: Path) -> None:
 def test_shared_palette_preserves_unselected_tiles() -> None:
     from s1tools.common import get_source, load_data
 
-    source = get_source("shared")
+    sources = {group: get_source(group) for group in ("shared", "s1")}
     for name, asset in load_data("shared_player_palette.json")["assets"].items():
         suffix = Path(name).suffix
         decode = (
@@ -157,8 +169,22 @@ def test_shared_palette_preserves_unselected_tiles() -> None:
             if suffix == ".kosm"
             else bytes
         )
-        before = decode((source / asset["source"]).read_bytes())
+        input_suffix = Path(asset["source"]).suffix
+        input_decode = (
+            nemesis.decode
+            if input_suffix == ".nem"
+            else kosinski.decode_moduled
+            if input_suffix == ".kosm"
+            else bytes
+        )
+        asset_source = sources[asset.get("source_group", "shared")]
+        before = input_decode((asset_source / asset["source"]).read_bytes())
         after = decode((ROOT / name).read_bytes())
+        for before_byte, after_byte in zip(before, after, strict=True):
+            if before_byte >> 4 == 8:
+                assert after_byte >> 4 == 8, name
+            if before_byte & 15 == 8:
+                assert after_byte & 15 == 8, name
         selected = {tile for start, end in asset["ranges"] for tile in range(start, end)}
         assert len(before) == len(after), name
         for tile in range(len(before) // 32):
@@ -176,3 +202,14 @@ def test_score_label_uses_the_same_yellow_for_dynamic_e() -> None:
     for glyph in (hud[: 8 * 32], numbers[22 * 32 : 24 * 32]):
         colours = {n for b in glyph for n in (b >> 4, b & 15)}
         assert 12 in colours and colours <= {0, 1, 12}
+
+
+def test_title_card_ovals_do_not_use_character_colours() -> None:
+    from s1tools.common import get_source
+
+    before = nemesis.decode((get_source("s1") / "artnem/Title Cards.nem").read_bytes())
+    after = kosinski.decode_moduled((ROOT / "artkosm/Title Cards.kosm").read_bytes())
+    assert len(after) == len(before) == 128 * 32
+    assert after[: 0x6E * 32] == before[: 0x6E * 32]
+    colours = {n for b in after[0x6E * 32 :] for n in (b >> 4, b & 15)}
+    assert colours <= {0, 1, 6, 7, 8, 9}

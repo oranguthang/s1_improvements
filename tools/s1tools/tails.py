@@ -14,7 +14,7 @@ from s1tools.shared_palette import life_icon, player_palettes
 
 BASE = "General/Sprites/Tails/"
 # The selected solo player's fur uses protected colours 2..5.
-COLOURS = (0, 6, 5, 4, 2, 9, 12, 13, 5, 4, 10, 11, 7, 7, 9, 1)
+COLOURS = (0, 6, 5, 4, 2, 9, 12, 13, 5, 4, 10, 11, 7, 8, 9, 1)
 FRAME_COUNT = 151
 
 

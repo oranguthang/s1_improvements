@@ -25,7 +25,13 @@
           0,
           14
         ]
-      ]
+      ],
+      "colours": {
+        "2": 14,
+        "3": 13,
+        "4": 12,
+        "5": 12
+      }
     },
     "artkosm/Animal Flicky.kosm": {
       "source": "artkosm/Animal Flicky.kosm",
@@ -34,7 +40,13 @@
           0,
           14
         ]
-      ]
+      ],
+      "colours": {
+        "2": 14,
+        "3": 13,
+        "4": 12,
+        "5": 12
+      }
     },
     "artnem/Animal Penguin.nem": {
       "source": "artnem/Animal Penguin.nem",
@@ -589,8 +601,32 @@
       "ranges": [
         [
           0,
-          64
+          24
+        ],
+        [
+          40,
+          44
         ]
+      ],
+      "colours": {
+        "2": 9,
+        "3": 8,
+        "4": 7,
+        "5": 6
+      },
+      "colour_overrides": [
+        {
+          "tiles": [
+            0,
+            24
+          ],
+          "colours": {
+            "2": 9,
+            "3": 8,
+            "4": 7,
+            "5": 7
+          }
+        }
       ]
     },
     "artkosm/Monitors.kosm": {
@@ -598,8 +634,32 @@
       "ranges": [
         [
           0,
-          64
+          24
+        ],
+        [
+          40,
+          44
         ]
+      ],
+      "colours": {
+        "2": 9,
+        "3": 8,
+        "4": 7,
+        "5": 6
+      },
+      "colour_overrides": [
+        {
+          "tiles": [
+            0,
+            24
+          ],
+          "colours": {
+            "2": 9,
+            "3": 8,
+            "4": 7,
+            "5": 7
+          }
+        }
       ]
     },
     "artnem/Prison Capsule.nem": {
@@ -968,7 +1028,12 @@
           0,
           36
         ]
-      ]
+      ],
+      "colours": {
+        "8": 7,
+        "14": 13,
+        "15": 14
+      }
     },
     "artkosm/Hidden Bonuses.kosm": {
       "source": "artkosm/Hidden Bonuses.kosm",
@@ -977,7 +1042,12 @@
           0,
           36
         ]
-      ]
+      ],
+      "colours": {
+        "8": 7,
+        "14": 13,
+        "15": 14
+      }
     },
     "artnem/LZ Wheel.nem": {
       "source": "artnem/LZ Wheel.nem",
@@ -1113,7 +1183,14 @@
           0,
           27
         ]
-      ]
+      ],
+      "colours": {
+        "2": 9,
+        "3": 9,
+        "4": 8,
+        "5": 8,
+        "6": 7
+      }
     },
     "artunc/Invincibility Stars Restore.unc": {
       "source": "artunc/Invincibility Stars Restore.unc",
@@ -1406,72 +1483,66 @@
         ]
       ],
       "tilemap": "map16/SLZ.bin"
+    },
+    "artnem/Shield.nem": {
+      "source": "artnem/Shield.nem",
+      "source_group": "s1",
+      "ranges": [
+        [
+          0,
+          27
+        ]
+      ],
+      "colours": {
+        "2": 9,
+        "3": 9,
+        "4": 8,
+        "5": 8,
+        "6": 7
+      }
+    },
+    "artkosm/Shield.kosm": {
+      "source": "artnem/Shield.nem",
+      "source_group": "s1",
+      "ranges": [
+        [
+          0,
+          27
+        ]
+      ],
+      "colours": {
+        "2": 9,
+        "3": 9,
+        "4": 8,
+        "5": 8,
+        "6": 7
+      }
     }
   },
   "palettes": {
     "palette/Sonic.bin": {
-      "source": "palette/Sonic.bin",
-      "green": 128,
-      "orange": [
-        174,
-        142
-      ]
+      "source": "palette/Sonic.bin"
     },
     "palette/Sonic - LZ Underwater.bin": {
-      "source": "palette/Sonic - LZ Underwater.bin",
-      "green": 1090,
-      "orange": [
-        1674,
-        1128
-      ]
+      "source": "palette/Sonic - LZ Underwater.bin"
     },
     "palette/Sonic - SBZ3 Underwater.bin": {
-      "source": "palette/Sonic - SBZ3 Underwater.bin",
-      "green": 1606,
-      "orange": [
-        2220,
-        1642
-      ]
+      "source": "palette/Sonic - SBZ3 Underwater.bin"
     },
     "palette/Labyrinth Zone Underwater.bin": {
-      "source": "palette/Labyrinth Zone Underwater.bin",
-      "green": 1090,
-      "orange": [
-        1674,
-        1128
-      ]
+      "source": "palette/Labyrinth Zone Underwater.bin"
     },
     "palette/SBZ Act 3 Underwater.bin": {
-      "source": "palette/SBZ Act 3 Underwater.bin",
-      "green": 1606,
-      "orange": [
-        2220,
-        1642
-      ]
+      "source": "palette/SBZ Act 3 Underwater.bin"
     },
     "palette/Special Stage.bin": {
-      "source": "palette/Special Stage.bin",
-      "green": 128,
-      "orange": [
-        174,
-        142
-      ]
+      "source": "palette/Special Stage.bin"
     },
     "palette/Special Stage Continue Bonus.bin": {
-      "source": "palette/Special Stage Continue Bonus.bin",
-      "green": 128,
-      "orange": [
-        174,
-        142
-      ]
+      "source": "palette/Special Stage Continue Bonus.bin"
     },
     "palette/Ending.bin": {
-      "source": "palette/Ending.bin",
-      "green": 128,
-      "orange": [
-        174,
-        142
-      ]
+      "source": "palette/Ending.bin"
     }
   }
 }

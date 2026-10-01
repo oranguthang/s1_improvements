@@ -58,9 +58,9 @@ Settings_Normalize:
 	.noDrain:
 		clr.b	(v_dev_superdrain).w
 	.done:
-		cmpi.b #Character_Count,(v_character_p1).w
+		cmpi.b #Character_Count,(v_character_selected).w
 		blo.s .characterValid
-		clr.b (v_character_p1).w
+		clr.b (v_character_selected).w
 .characterValid:
 		move.b #Character_Off,(v_character_p2).w ; legacy SRAM field stays $FF
 		movem.l	(sp)+,d0-d1/a0-a1
@@ -73,7 +73,7 @@ Settings_Fields:
 		dc.w v_title_unlocked&$FFFF, v_dev_all_emeralds&$FFFF
 		dc.w v_dev_debug&$FFFF, v_dev_superrings&$FFFF
 		dc.w v_dev_superdrain&$FFFF, v_dev_god&$FFFF
-		dc.w v_character_p1&$FFFF, v_character_p2&$FFFF
+		dc.w v_character_selected&$FFFF, v_character_p2&$FFFF
 
 ; d0.w = sum of 14 bytes at a0. Clobbers d1/a0.
 Settings_Checksum:

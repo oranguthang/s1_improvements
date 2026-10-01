@@ -194,6 +194,54 @@ M_Got_SonicHas:	spriteHeader	; SONIC HAS
 	spritePiece	$30, -8, 2, 2, $3E, 0, 0, 0, 0	; S
 M_Got_SonicHas_End
 
+
+; Solo names use the original S1 title-card alphabet.
+Map_Got_Tails: mappingsTable
+        mappingsTableEntry.w M_Got_TailsHas
+        mappingsTableEntry.w M_Got_Passed
+        mappingsTableEntry.w M_Got_Score
+        mappingsTableEntry.w M_Got_TBonus
+        mappingsTableEntry.w M_Got_RBonus
+        mappingsTableEntry.w M_Card_Oval
+        mappingsTableEntry.w M_Card_Act1
+        mappingsTableEntry.w M_Card_Act2
+        mappingsTableEntry.w M_Card_Act3
+M_Got_TailsHas: spriteHeader
+        spritePiece -72,-8,2,2,$42,0,0,0,0 ; T
+        spritePiece -56,-8,2,2,$0,0,0,0,0 ; A
+        spritePiece -40,-8,1,2,$20,0,0,0,0 ; I
+        spritePiece -32,-8,2,2,$26,0,0,0,0 ; L
+        spritePiece -16,-8,2,2,$3E,0,0,0,0 ; S
+        spritePiece 16,-8,2,2,$1C,0,0,0,0 ; H
+        spritePiece 32,-8,2,2,$0,0,0,0,0 ; A
+        spritePiece 48,-8,2,2,$3E,0,0,0,0 ; S
+M_Got_TailsHas_End
+        even
+Map_Got_Knuckles: mappingsTable
+        mappingsTableEntry.w M_Got_KnucklesHas
+        mappingsTableEntry.w M_Got_Passed
+        mappingsTableEntry.w M_Got_Score
+        mappingsTableEntry.w M_Got_TBonus
+        mappingsTableEntry.w M_Got_RBonus
+        mappingsTableEntry.w M_Card_Oval
+        mappingsTableEntry.w M_Card_Act1
+        mappingsTableEntry.w M_Card_Act2
+        mappingsTableEntry.w M_Card_Act3
+M_Got_KnucklesHas: spriteHeader
+        spritePiece -100,-8,2,2,$22,0,0,0,0 ; K
+        spritePiece -84,-8,2,2,$2E,0,0,0,0 ; N
+        spritePiece -68,-8,2,2,$46,0,0,0,0 ; U
+        spritePiece -52,-8,2,2,$8,0,0,0,0 ; C
+        spritePiece -36,-8,2,2,$22,0,0,0,0 ; K
+        spritePiece -20,-8,2,2,$26,0,0,0,0 ; L
+        spritePiece -4,-8,2,2,$10,0,0,0,0 ; E
+        spritePiece 12,-8,2,2,$3E,0,0,0,0 ; S
+        spritePiece 44,-8,2,2,$1C,0,0,0,0 ; H
+        spritePiece 60,-8,2,2,$0,0,0,0,0 ; A
+        spritePiece 76,-8,2,2,$3E,0,0,0,0 ; S
+M_Got_KnucklesHas_End
+        even
+
 M_Got_Passed:	spriteHeader	; PASSED
 	spritePiece	-$30, -8, 2, 2, $36, 0, 0, 0, 0	; P
 	spritePiece	-$20, -8, 2, 2, 0, 0, 0, 0, 0	; A
@@ -204,8 +252,8 @@ M_Got_Passed:	spriteHeader	; PASSED
 M_Got_Passed_End
 
 M_Got_Score:	spriteHeader	; Score tally
-	spritePiece	-$50, -8, 4, 2, $14A, 0, 0, 0, 0; "SCOR"
-	spritePiece	-$30, -8, 1, 2, $162, 0, 0, 0, 0; "E"
+	spritePiece	-$50, -8, 4, 2, $14A, 0, 0, 1, 0; "SCOR"
+	spritePiece	-$30, -8, 1, 2, $162, 0, 0, 1, 0; "E"
 	spritePiece	$18, -8, 3, 2, $164, 0, 0, 0, 0	; Tally (first four digits)
 	spritePiece	$30, -8, 4, 2, $16A, 0, 0, 0, 0	; Tally (second four digits)
 	spritePiece	-$33, -9, 2, 1, $6E, 0, 0, 0, 0	; Small oval (upper half)
@@ -213,9 +261,9 @@ M_Got_Score:	spriteHeader	; Score tally
 M_Got_Score_End
 
 M_Got_TBonus:	spriteHeader	; Time Bonus tally
-	spritePiece	-$50, -8, 4, 2, $15A, 0, 0, 0, 0; "TIME"
+	spritePiece	-$50, -8, 4, 2, $15A, 0, 0, 1, 0; "TIME"
 	spritePiece	-$27, -8, 4, 2, $66, 0, 0, 0, 0	; "BONU"
-	spritePiece	-7, -8, 1, 2, $14A, 0, 0, 0, 0	; "S"
+	spritePiece	-7, -8, 1, 2, $14A, 0, 0, 1, 0	; "S"
 	spritePiece	-$A, -9, 2, 1, $6E, 0, 0, 0, 0	; Small oval (upper half)
 	spritePiece	-$A, -1, 2, 1, $6E, 1, 1, 0, 0	; Small oval (lower half)
 	spritePiece	$28, -8, 4, 2, -$10, 0, 0, 0, 0	; Tally (first four digits)
@@ -223,9 +271,9 @@ M_Got_TBonus:	spriteHeader	; Time Bonus tally
 M_Got_TBonus_End
 
 M_Got_RBonus:	spriteHeader	; Ring Bonus tally
-	spritePiece	-$50, -8, 4, 2, $152, 0, 0, 0, 0; "RING"
+	spritePiece	-$50, -8, 4, 2, $152, 0, 0, 1, 0; "RING"
 	spritePiece	-$27, -8, 4, 2, $66, 0, 0, 0, 0	; "BONU"
-	spritePiece	-7, -8, 1, 2, $14A, 0, 0, 0, 0	; "S"
+	spritePiece	-7, -8, 1, 2, $14A, 0, 0, 1, 0	; "S"
 	spritePiece	-$A, -9, 2, 1, $6E, 0, 0, 0, 0	; Small oval (upper half)
 	spritePiece	-$A, -1, 2, 1, $6E, 1, 1, 0, 0	; Small oval (lower half)
 	spritePiece	$28, -8, 4, 2, -8, 0, 0, 0, 0	; Tally (first four digits)
@@ -269,16 +317,16 @@ M_SSR_Score:	spriteHeader	; Score tally
 	spritePiece	-$30, -8, 1, 2, $162, 0, 0, 0, 0; "E"
 	spritePiece	$18, -8, 3, 2, $164, 0, 0, 0, 0	; Tally (first four digits)
 	spritePiece	$30, -8, 4, 2, $16A, 0, 0, 0, 0	; Tally (second four digits)
-	spritePiece	-$33, -9, 2, 1, $6E, 0, 0, 0, 0	; Small oval (upper half)
-	spritePiece	-$33, -1, 2, 1, $6E, 1, 1, 0, 0	; Small oval (lower half)
+	spritePiece	-$33, -9, 2, 1, $6E, 0, 0, 1, 0	; Small oval (upper half)
+	spritePiece	-$33, -1, 2, 1, $6E, 1, 1, 1, 0	; Small oval (lower half)
 M_SSR_Score_End
 
 M_SSR_Ring:	spriteHeader	; Ring Bonus tally
 	spritePiece	-$50, -8, 4, 2, $152, 0, 0, 0, 0; "RING"
 	spritePiece	-$27, -8, 4, 2, $66, 0, 0, 0, 0	; "BONU"
 	spritePiece	-7, -8, 1, 2, $14A, 0, 0, 0, 0	; "S"
-	spritePiece	-$A, -9, 2, 1, $6E, 0, 0, 0, 0	; Small oval (upper half)
-	spritePiece	-$A, -1, 2, 1, $6E, 1, 1, 0, 0	; Small oval (lower half)
+	spritePiece	-$A, -9, 2, 1, $6E, 0, 0, 1, 0	; Small oval (upper half)
+	spritePiece	-$A, -1, 2, 1, $6E, 1, 1, 1, 0	; Small oval (lower half)
 	spritePiece	$28, -8, 4, 2, -8, 0, 0, 0, 0	; Tally (first four digits)
 	spritePiece	$48, -8, 1, 2, $170, 0, 0, 0, 0	; Tally (second four digits)
 M_SSR_Ring_End

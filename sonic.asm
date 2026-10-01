@@ -441,6 +441,7 @@ GameInit:
 	endif
 
 MainGameLoop:
+		jsr	(UpdateSceneCharacter).l		; separate playable selection from Sonic-only scenes
 		move.b	(v_gamemode).w,d0			; load Game Mode
 		andi.w	#$1C,d0					; limit Game Mode value to $1C max (change to a maximum of 7C to add more game modes)
 		jsr	GameModeArray(pc,d0.w)			; jump to apt location in ROM
@@ -2434,8 +2435,7 @@ Level_NoMusicFade:
         jsr (AddPLCFromAddress).l
 ; loc_37FC:
 Level_NoPLC:
-		moveq	#plcid_Main2,d0				; load secondary standard patterns (monitors, etc.)
-		bsr.w	AddPLC					; (these can be overwritten by stuff like the sign post art)
+		jsr (LoadPlayerMonitors).l			; shared monitors and selected 1UP portrait
 		jsr (LoadPlayerHUD).l			; selection may have changed since the title
 
 Level_ClrRam:
@@ -3048,7 +3048,7 @@ SignpostArtLoad:
 		cmp.w	(v_limitleft2).w,d1			; has left boundary already been locked?
 		beq.s	.return					; if yes, branch
 		move.w	d1,(v_limitleft2).w			; lock left level boundary to current screen position
-		moveq	#plcid_Signpost,d0			; load signpost, hidden points, giant ring flash patterns
+		jsr	(GetPlayerSignpostPLC).l		; select the active player's signpost portrait
 		bra.w	NewPLC					; add to new PLC queue
 
 .return:
@@ -3226,6 +3226,7 @@ SS_FinLoop_NoBrighten:
 ; ---------------------------------------------------------------------------
 
 		; Fade-out done, load Special Stage Results screen
+		clr.b	(v_character_p1).w			; fixed results artwork and HUD use Sonic
 		disable_ints					; disable interrupts
 		lea	(vdp_control_port).l,a6			; load VDP control port
 		move.w	#vreg_fgvram|(vram_fg>>10),(a6)		; set foreground nametable address
@@ -3754,8 +3755,7 @@ GM_Credits:
         jsr (AddPLCFromAddress).l
 
 Cred_SkipObjGfx:
-		moveq	#plcid_Main2,d0				; load secondary standard patterns
-		bsr.w	AddPLC					; (monitors, etc.)
+		jsr (LoadPlayerMonitors).l			; shared monitors and selected 1UP portrait
 ; ---------------------------------------------------------------------------
 
 		; fade-in palette and enter wait loop
@@ -4606,6 +4606,8 @@ KosM_KnucklesLives: binclude "artkosm/HUD - Knuckles Life Counter Icon.kosm"
 KosM_RingSparkles:	binclude	"artkosm/Ring Sparkles.kosm" ; resident sparkle tiles; ring frames are DMA'd (#42)
 		even
 KosM_Monitors:	binclude	"artkosm/Monitors.kosm"
+KosM_TailsMonitor: binclude "artkosm/Monitor - Tails 1UP.kosm"
+KosM_KnucklesMonitor: binclude "artkosm/Monitor - Knuckles 1UP.kosm"
 		even
 KosM_Explode:	binclude	"artkosm/Explosion.kosm"
 		even
@@ -4618,6 +4620,11 @@ KosM_HSpring:	binclude	"artkosm/Spring Horizontal.kosm"
 KosM_VSpring:	binclude	"artkosm/Spring Vertical.kosm"
 		even
 KosM_SignPost:	binclude	"artkosm/Signpost.kosm" ; end of level signpost
+KosM_TailsSignpost: binclude "artkosm/Signpost - Tails Portrait.kosm"
+KosM_KnucklesSignpost: binclude "artkosm/Signpost - Knuckles Portrait.kosm"
+        if ArtTile_Signpost+$38>ArtTile_Lamppost
+        fatal "Signpost portrait overlaps the lamppost slot"
+        endif
 		even
 KosM_Lamp:	binclude	"artkosm/Lamppost.kosm"
 		even

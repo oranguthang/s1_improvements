@@ -12,8 +12,9 @@ from s1tools.shared_palette import life_icon, player_palettes
 from s1tools.tails import emit_frames, frame, raw_table
 
 BASE = "General/Sprites/Knuckles/"
-# Fur owns the protected 2..5 ramp; shoes retain stable red/orange/green.
-COLOURS = (0, 6, 5, 4, 2, 8, 12, 13, 14, 15, 10, 11, 7, 7, 9, 1)
+# Fur uses protected 2/4/5; green shoe panels use the remaining protected 3.
+# Yellow cuffs use shared yellow and tan, preserving objects' dark red at E.
+COLOURS = (0, 6, 5, 4, 2, 3, 12, 13, 15, 11, 10, 11, 7, 8, 9, 1)
 GLIDE = 0x75
 FALL = 0x7A
 SLIDE = 0x7C
@@ -114,9 +115,9 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
     outputs.update(
         player_palettes(
             "Knuckles",
-            (0x0206, 0x020A, 0x020C, 0x064E),
-            (0x0024, 0x0246, 0x0468, 0x068A),
-            (0x0426, 0x0648, 0x086A, 0x0CAE),
+            (0x0206, 0x0080, 0x020C, 0x064E),
+            (0x0024, 0x0442, 0x0468, 0x068A),
+            (0x0426, 0x0646, 0x086A, 0x0CAE),
         )
     )
     return outputs

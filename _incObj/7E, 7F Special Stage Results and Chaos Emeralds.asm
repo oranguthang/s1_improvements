@@ -50,6 +50,10 @@ SSR_Loop:
 		move.b	(a2)+,obFrame(a1)			; load frame ID
 		move.l	#Map_SSR,obMap(a1)			; set mappings
 		move.w	#ArtTile_Title_Card|Tile_Prio,obGfx(a1)	; set art tile and sprite priority flag
+		cmpi.b	#3,obFrame(a1)			; shared oval uses the neutral player grays
+		bne.s	.setRender
+		ori.w	#make_art_tile(0,1,0),obGfx(a1)
+.setRender:
 		move.b	#sprite_cam_screen,obRender(a1)		; set to screen-positioned sprite mode
 		lea	object_size(a1),a1			; advance to next card object (all elements are back-to-back in RAM)
 		dbf	d1,SSR_Loop				; repeat sequence 3 or 4 times

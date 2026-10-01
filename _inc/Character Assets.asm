@@ -2,6 +2,27 @@
 ; https://info.sonicretro.org/SCHG_How-to:Add_Extra_Characters
 ; ROM pointers avoid a shared RAM cache that would mix two player selections.
 
+; Apply the saved choice only to interactive levels and Special Stages.
+; Presentation scenes and recorded demos always use Sonic. Clobbers d0.
+UpdateSceneCharacter:
+        move.b #-1,(v_sonframenum).w ; reload art even if the new character uses the same frame
+        clr.b (v_character_p1).w
+        tst.w (f_demo).w
+        bne.s .return
+        move.b (v_gamemode).w,d0
+        andi.b #$1C,d0
+        cmpi.b #id_Level,d0
+        beq.s .playable
+        cmpi.b #id_Special,d0
+        bne.s .return
+.playable:
+        move.b (v_character_selected).w,d0
+        cmpi.b #Character_Count,d0
+        bhs.s .return
+        move.b d0,(v_character_p1).w
+.return:
+        rts
+
 ; d0.w = slot (0/1), d1.b = form (0 normal/nonzero Super), output a3.
 ; Invalid slots/IDs fall back to Sonic. Preserve all other registers and CCR.
 GetCharacterAssets:
@@ -88,6 +109,34 @@ LoadPlayerHUD:
         move.b CharacterAsset_HUD(a3),d0
         movea.l (sp)+,a3
         jmp (AddPLC).l
+
+; Queue the shared monitor sheet followed by the selected 1UP portrait.
+LoadPlayerMonitors:
+        moveq #plcid_Main2,d0
+        cmpi.b #Character_Tails,(v_character_p1).w
+        bne.s .knuckles
+        moveq #plcid_TailsMonitors,d0
+        bra.s .queue
+.knuckles:
+        cmpi.b #Character_Knuckles,(v_character_p1).w
+        bne.s .queue
+        moveq #plcid_KnucklesMonitors,d0
+.queue:
+        jmp (AddPLC).l
+
+; Output d0.w = the active player's signpost PLC, preserving other registers.
+GetPlayerSignpostPLC:
+        moveq #plcid_Signpost,d0
+        cmpi.b #Character_Tails,(v_character_p1).w
+        bne.s .knuckles
+        moveq #plcid_TailsSignpost,d0
+        rts
+.knuckles:
+        cmpi.b #Character_Knuckles,(v_character_p1).w
+        bne.s .return
+        moveq #plcid_KnucklesSignpost,d0
+.return:
+        rts
 
 ; Screens with their own palettes retain the shared colours and tint only fur.
 ApplyPlayerFadeColours:

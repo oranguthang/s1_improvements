@@ -35,6 +35,7 @@ DevMenu_ChkDefaults:
 		cmpi.b	#devmenu_magic,(v_dev_magic).w
 		beq.w	Settings_Normalize
 Settings_Defaults:
+		clr.b (v_character_selected).w
 		clr.b (v_character_p1).w
 		move.b #Character_Off,(v_character_p2).w
 		clr.b (v_options_menuitem).w
