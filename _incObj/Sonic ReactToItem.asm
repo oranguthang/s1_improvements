@@ -512,7 +512,7 @@ KillSonic:
 		clr.w	(v_superpal_frame).w
 		clr.b	(v_superpal_timer).w
 		clr.b	(v_superpal_state).w
-		move.l	#Map_Sonic,obMap(a0)
+		character_asset CharacterAsset_Map,obMap(a0),GetPlayer1Assets_Normal
 		move.b	#-1,(v_sonframenum).w
 		clr.b	(v_superstars).w
 		clr.b	(v_superstars+obRoutine).w		; restart cleanly if the slot is reused

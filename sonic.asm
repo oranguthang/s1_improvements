@@ -1676,7 +1676,7 @@ GM_Title:		; fading out from previous game mode
 		bsr.w	EniDec					; decompress Enigma-compressed mappings to RAM buffer
 		copyTilemap v_ram_start,vram_fg,40,28		; transfer decompressed patterns from RAM buffer to VRAM
 
-		moveq	#palid_Sonic,d0				; load Sonic's palette...
+		jsr (GetPlayerPaletteID).l				; load Sonic's palette...
 		bsr.w	PalLoad_Fade				; ...into fade-in buffer
 		move.b	#id_CreditsText,(v_sonicteam).w		; load "SONIC TEAM PRESENTS" object
 		jsr	(ExecuteObjects).l			; execute objects to load STP object
@@ -1808,6 +1808,7 @@ Tit_SonicTeamFaded:
 		jsr	(TitleMaskSprites).l
 		moveq	#plcid_Main,d0				; load main patterns (rings, etc.)
 		bsr.w	NewPLC					; (these get loaded once for the title screen and then never again, except when exiting Special Stages)
+		jsr (LoadPlayerHUD).l
 
 ; ---------------------------------------------------------------------------
 
@@ -1844,22 +1845,18 @@ Tit_MainLoop:
 ; ===========================================================================
 
 Tit_ChkRegion:
-		tst.b	(v_title_unlocked).w		; only the new unlocked title menu opens submenus
-		bne.w	Tit_CheckMenuButtons
-		tst.w	(v_generictimer).w		; otherwise Start begins the game normally
-		beq.w	GotoDemo
-		btst	#bitStart,(v_jpadpress1).w
-		beq.w	Tit_MainLoop
-		bra.w	PlayLevel
+		bra.w Tit_CheckMenuButtons
 ; ===========================================================================
 
 Tit_CheckMenuButtons:
 		jsr	(TitleMenu_Confirm).l
 		cmpi.b	#1,d0
 		beq.w	PlayLevel
-		cmpi.b	#2,d0
-		beq.s	Tit_EnterLevelSelect
-		cmpi.b	#3,d0
+		cmpi.b #2,d0
+		beq.w Tit_EnterOptions
+		cmpi.b #3,d0
+		beq.s Tit_EnterLevelSelect
+		cmpi.b #4,d0
 		beq.w	Tit_EnterDevMenu
 		tst.w	(v_generictimer).w
 		beq.w	GotoDemo
@@ -2394,6 +2391,7 @@ LevelMenuText:
 
 	include	"_inc/Developer Menu.asm"
 	include	"_inc/Settings SRAM.asm"
+	include "_inc/Player Options.asm"
 	include	"_inc/Title Menu.asm"
 	include	"_inc/Special Stage Selector.asm"
 
@@ -2438,6 +2436,7 @@ Level_NoMusicFade:
 Level_NoPLC:
 		moveq	#plcid_Main2,d0				; load secondary standard patterns (monitors, etc.)
 		bsr.w	AddPLC					; (these can be overwritten by stuff like the sign post art)
+		jsr (LoadPlayerHUD).l			; selection may have changed since the title
 
 Level_ClrRam:
 		move.w	(v_zone_act).w,d0			; free ring flags belong to one act
@@ -2484,13 +2483,13 @@ Level_LoadPal:
 		move.w	#30,(v_air).w				; set Sonic's air timer to 30 seconds
 		enable_ints					; enable interrupts
 
-		moveq	#palid_Sonic,d0				; load Sonic's palette...
+		jsr (GetPlayerPaletteID).l				; load Sonic's palette...
 		bsr.w	PalLoad					; ...directly to active palette (for title cards)
 		cmpi.b	#id_LZ,(v_zone).w			; is level LZ?
 		bne.s	Level_GetBgm				; if not, branch
         jsr (GetLevelHeader).l
         moveq #0,d0
-        move.b LevelHeader_WaterSonic(a2),d0
+        jsr (GetPlayerWaterPaletteID).l
 
 Level_WaterPal:
 		bsr.w	PalLoad_Fade_Water			; load underwater palette
@@ -2564,7 +2563,7 @@ Level_CheckTtlCard:
 		jsr	(Hud_Base).l				; load basic HUD graphics (only in levels, not in the ending demos)
 
 Level_SkipTtlCard:
-		moveq	#palid_Sonic,d0				; load Sonic's palette to fade-in buffer
+		jsr (GetPlayerPaletteID).l				; load Sonic's palette to fade-in buffer
 		bsr.w	PalLoad_Fade				; (doesn't actually do anything, the PalFadeIn_Alt call below skips the first palette line)
 		bsr.w	LevelSizeLoad				; load level size and set default level boundaries
 		bsr.w	DeformLayers				; initialize background deformation
@@ -3102,6 +3101,7 @@ GM_Special:		; white fade-out from previous game mode
 		moveq	#palid_Special,d0			; load special stage palette...
 		bsr.w	PalLoad_Fade				; ...into the palette fade-in buffer
 		jsr	(SS_Load).l				; load SS layout data (based on last stage entered and collected emeralds)
+		jsr (ApplyPlayerFadeColours).l
 
 	if FixBugs
 		; Set custom level boundaries so that the fixed
@@ -3243,6 +3243,7 @@ SS_FinLoop_NoBrighten:
 		bsr.w	PalLoad					; ...directly to active palette
 		moveq	#plcid_Main,d0				; load main patterns (rings, etc.)
 		bsr.w	NewPLC					; add to new PLC queue
+		jsr (LoadPlayerHUD).l
 		moveq	#plcid_SSResult,d0			; load Special Stage results screen patterns
 		bsr.w	AddPLC					; add to PLC queue
 
@@ -3328,6 +3329,7 @@ GM_Continue:
 
 		moveq	#palid_Continue,d0			; load continue screen palette...
 		bsr.w	PalLoad_Fade				; ...into fade-in buffer
+		jsr (ApplyPlayerFadeColours).l
 		move.b	#bgm_Continue,d0			; play continue screen music
 		bsr.w	QueueSound1				; play it
 
@@ -3459,7 +3461,7 @@ End_LoadData:
 		lea	(v_ending_flowers).w,a1			; decompress to the ending flower buffer in RAM ($FF9400-$FFA3FF)
 		bsr.w	KosDec					; decompress Kosinski-compressed chunks mappings to buffer
 
-		moveq	#palid_Sonic,d0				; load Sonic's palette...
+		jsr (GetPlayerPaletteID).l				; load Sonic's palette...
 		bsr.w	PalLoad_Fade				; ...to fade-in buffer
 		move.w	#bgm_Ending,d0				; play ending sequence music
 		bsr.w	QueueSound1				; play it
@@ -3617,10 +3619,12 @@ End_SlowFade:
 ; Good-ending Super presentation uses the normal cutscene movement constants.
 ; Do not call Sonic_ActivateSuper: it changes physics, music and star objects.
 End_InitSuper:
+		cmpi.b #Character_Sonic,(v_character_p1).w
+		bne.s .return
 		jsr	(HasAllEmeralds).l
 		bne.s	.return
 		move.b	#1,(v_supersonic).w
-		move.l	#Map_SuperSonic,obMap(a0)
+		character_asset CharacterAsset_Map,obMap(a0),GetPlayer1Assets_Super
 		move.b	#-1,obPrevAni(a0)
 		move.b	#-1,(v_sonframenum).w
 		bsr.s	End_SuperFadePalette
@@ -3635,8 +3639,9 @@ End_SuperFadePalette:
 		move.b	#-1,(v_superpal_state).w
 		move.b	#7,(v_superpal_timer).w
 		move.w	#$38,(v_superpal_frame).w
-		move.l	(Pal_SuperSonicCycle+$30).l,(v_palette_fading+4).w
-		move.l	(Pal_SuperSonicCycle+$34).l,(v_palette_fading+8).w
+		character_asset CharacterAsset_Cycle,a1,GetPlayer1Assets_Super
+		move.l $30(a1),(v_palette_fading+4).w
+		move.l $34(a1),(v_palette_fading+8).w
 .return:
 		rts
 
@@ -3645,7 +3650,7 @@ End_MoveSonic:
 		bne.s	End_MoveSon2				; if it's non-zero, branch to second script
 
 		cmpi.w	#(320/2)-16,(v_player+obX).w		; has Sonic passed $90 on the X-axis (from the right)?
-		bhs.s	End_MoveSonExit				; if not, branch
+		bhs.w	End_MoveSonExit				; if not, branch
 
 		addq.b	#2,(v_sonicend).w			; advance ending cutscene routine number
 		move.b	#1,(f_lockctrl).w			; lock player's controls (redundant, already locked)
@@ -3670,7 +3675,9 @@ End_MoveSon2:
 		move.b	#fr_Wait2,(v_player+obFrame).w		; force Sonic to a specific waiting frame
 		tst.b	(v_supersonic).w
 		beq.s	.normalWait
-		move.b	(SupSonAni_Stand+1).l,(v_player+obFrame).w ; frame from the Super mapping table
+		character_asset CharacterAsset_Anim,a1,GetPlayer1Assets_Super
+		move.w id_Wait*2(a1),d0
+		move.b 1(a1,d0.w),(v_player+obFrame).w
 .normalWait:
 		move.w	#(id_Wait<<8)+id_Wait,(v_player+obAnim).w ; use "standing" animation and prevent it from getting immediately restarted
 		move.b	#3,(v_player+obTimeFrame).w		; set a bit of an animation interval so Sonic keeps looking when he gets replaced on the next frame
@@ -3731,7 +3738,7 @@ GM_Credits:
 		bsr.w	QuickPLC				; decompress PLC list now and return once done
 
 		clearRAM v_palette_fading			; set palette fade-in buffer to all-black
-		moveq	#palid_Sonic,d0				; load Sonic's palette...
+		jsr (GetPlayerPaletteID).l				; load Sonic's palette...
 		bsr.w	PalLoad_Fade				; ...into fade-in buffer
 
 		move.b	#id_CreditsText,(v_credits).w		; load credits text object
@@ -4237,6 +4244,7 @@ Art_LivesNums:	binclude "artunc/Lives Counter Numbers.unc" ; 8x8 pixel numbers o
 ; >>> Level definitions
 		include	"_inc/LevelHeaders.asm"
 		include "_inc/Act Music.asm"
+		include "_inc/Character Assets.asm"
 		include	"_inc/Pattern Load Cues.asm"
 
 
@@ -4295,7 +4303,6 @@ KosM_JapNames:	binclude	"artkosm/Hidden Japanese Credits.kosm"
 ; Uncompressed graphics - Sonic
 ; ---------------------------------------------------------------------------
 Map_Sonic:	include	"_maps/Sonic.asm"
-
 SonicDynPLC:	include	"_maps/Sonic - Dynamic Gfx Script.asm"
 
 ; Keep the two mapping/DPLC tables together: shared signed-word offsets must fit.
@@ -4593,6 +4600,7 @@ KosM_TitleCard:	binclude	"artkosm/Title Cards.kosm"
 KosM_Hud:	binclude	"artkosm/HUD.kosm" ; HUD (rings, time, score)
 		even
 KosM_Lives:	binclude	"artkosm/HUD - Life Counter Icon.kosm"
+KosM_TailsLives: binclude "artkosm/HUD - Tails Life Counter Icon.kosm"
 		even
 KosM_RingSparkles:	binclude	"artkosm/Ring Sparkles.kosm" ; resident sparkle tiles; ring frames are DMA'd (#42)
 		even
@@ -4961,8 +4969,12 @@ Level_TitleBG:	binclude	"levels/titlebg.bin"	; title screen BG
 ; ---------------------------------------------------------------------------
 ; Uncompressed graphics - Giant Rings
 ; ---------------------------------------------------------------------------
+		align $1000                    ; keep the entire $C00 ring within one 128 KiB DMA bank
 Art_BigRing:	binclude	"artunc/Giant Ring.unc"
 Art_BigRing_size:	equ	*-Art_BigRing
+	if ((Art_BigRing&$1FFFF)+Art_BigRing_size>$20000)&(MOMPASS=1)
+		error "Giant ring art crosses a 128 KiB DMA boundary. Move or align it."
+	endif
 		align	$20000			; flash DMA must not cross a 128 KiB ROM boundary
 Art_BigFlash:	binclude	"artunc/Giant Ring Flash.unc"
 Art_BigFlash_size:	equ	*-Art_BigFlash
@@ -5295,6 +5307,17 @@ Art_RingFrames_End:
 	include "_debug/md-debugger/ErrorHandler.asm"
 	endif
 ; Debug symbols are appended directly after this blob, before fixing the header.
+Map_Tails: include "_maps/Tails.asm"
+TailsDynPLC: include "_maps/Tails - Dynamic Gfx Script.asm"
+		include "_anim/Tails.asm"
+		include "_incObj/Tails Flight.asm"
+		align $20000                   ; all Tails DPLC sources must stay within one DMA bank
+Art_Tails: binclude "artunc/Tails.unc"
+Art_Tails_size: equ *-Art_Tails
+	if (Art_Tails_size>$20000)&(MOMPASS=1)
+		error "Tails art exceeds a 128 KiB DMA bank. Split or repack the resource."
+	endif
+
 EndOfRom:
 
 		END

@@ -18,6 +18,8 @@ Debug_Index:	dc.w Debug_Init-Debug_Index			; 0 - init
 
 ; Debug_Main:
 Debug_Init:	; Routine 0
+		clr.b (v_tails_flying).w
+		clr.b (v_tails_flap).w
 		cmpi.b	#6,obRoutine(a0)			; was debug entered from death rather than live play?
 		bhs.s	.rescue
 		cmpi.b	#id_Drown,obAnim(a0)		; drowning waits before switching to Sonic_Death
@@ -321,10 +323,10 @@ Debug_ExitDebugMode:
 
 		moveq	#0,d0					; prepare 0 value
 		move.w	d0,(v_debuguse).w			; deactivate debug mode
-		move.l	#Map_Sonic,(v_player+obMap).w
+		character_asset CharacterAsset_Map,(v_player+obMap).w,GetPlayer1Assets_Normal
 		tst.b	(v_supersonic).w			; item placement must not change the live form
 		beq.s	.normalmap
-		move.l	#Map_SuperSonic,(v_player+obMap).w
+		character_asset CharacterAsset_Map,(v_player+obMap).w,GetPlayer1Assets_Super
 .normalmap:
 		move.w	#ArtTile_Sonic,(v_player+obGfx).w	; reset Sonic's art tile
 		move.b	d0,(v_player+obAnim).w			; reset Sonic's animation to walking
@@ -349,7 +351,7 @@ Debug_ExitDebugMode:
 .specialstage:
 		clr.w	(v_ssangle).w				; make Special Stage "upright"
 		move.w	#ss_rotatespeed,(v_ssrotate).w		; restart maze rotation
-		move.l	#Map_Sonic,(v_player+obMap).w		; reset Sonic's mappings (redundant, already done)
+		character_asset CharacterAsset_Map,(v_player+obMap).w	,GetPlayer1Assets_Normal ; reset Sonic's mappings (redundant, already done)
 		move.w	#ArtTile_Sonic,(v_player+obGfx).w	; reset Sonic's art tile (redundant, already done)
 		move.b	#id_Roll,(v_player+obAnim).w		; reset Sonic's animation to rolling
 		bset	#2,(v_player+obStatus).w		; force rolling state

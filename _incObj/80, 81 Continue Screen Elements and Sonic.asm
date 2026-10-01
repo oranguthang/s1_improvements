@@ -134,7 +134,7 @@ CSon_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)			; advance to CSon_ChkLand
 		move.w	#$A0,obX(a0)				; set X-position
 		move.w	#$C0,obY(a0)				; set starting Y-position
-		move.l	#Map_Sonic,obMap(a0)			; set mappings (cross-referenced from main Sonic object)
+		character_asset CharacterAsset_Map,obMap(a0)		,GetPlayer1Assets_Normal ; set mappings (cross-referenced from main Sonic object)
 		move.w	#ArtTile_Sonic,obGfx(a0)		; set art tile (cross-referenced from main Sonic object)
 		move.b	#sprite_cam_field,obRender(a0)		; set playfield-positioned mode
 		move.b	#2,obPriority(a0)			; set sprite priority (behind other elements)
@@ -148,6 +148,11 @@ CSon_ChkLand:	; Routine 2
 
 		addq.b	#2,obRoutine(a0)			; advance to CSon_Animate
 		clr.w	obVelY(a0)				; stop Sonic falling
+		cmpi.b #Character_Tails,(v_character_p1).w
+		bne.s .sonicPose
+		move.b #id_Duck,obAnim(a0)
+		bra.s CSon_Animate
+.sonicPose:
 		move.l	#Map_ContScr,obMap(a0)			; swap out mappings with continue screen Sonic mappings
 		move.w	#ArtTile_Continue_Sonic|Tile_Prio,obGfx(a0) ; swap out art tile with continue screen Sonic art tile
 		move.b	#0,obAnim(a0)				; use "on floor" animation (this isn't Sonic's main animation script!)
@@ -163,6 +168,11 @@ CSon_ShowFall:
 CSon_Animate:	; Routine 4
 		tst.b	(v_jpadpress1).w			; has Start button been pressed?
 		bmi.s	.continueUsed				; if yes, continue has been used
+		cmpi.b #Character_Tails,(v_character_p1).w
+		bne.s .sonicPose
+		jsr (Sonic_Animate).l
+		jmp (Sonic_LoadGfx).l
+.sonicPose:
 
 		lea	(Ani_CSon).l,a1				; load continue screen Sonic animation script
 		jmp	(AnimateSprite).l			; advance animation
@@ -170,7 +180,7 @@ CSon_Animate:	; Routine 4
 
 	.continueUsed:
 		addq.b	#2,obRoutine(a0)			; advance to CSon_RunRight
-		move.l	#Map_Sonic,obMap(a0)			; set mappings (cross-referenced from main Sonic object)
+		character_asset CharacterAsset_Map,obMap(a0)		,GetPlayer1Assets_Normal ; set mappings (cross-referenced from main Sonic object)
 		move.w	#ArtTile_Sonic,obGfx(a0)		; set art tile (cross-referenced from main Sonic object)
 		move.b	#id_Float4,obAnim(a0)			; use "getting up" animation (changes to id_Walk on finish)
 		clr.w	obInertia(a0)				; stop ground speed

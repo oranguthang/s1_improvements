@@ -40,6 +40,9 @@ palid_Ending:		makePalEntry	Pal_Ending, 		v_palette_line_1
 palid_SuperSonic:	makePalEntry	Pal_SuperSonic,		v_palette_line_1
 palid_SuperSonicWater:	makePalEntry	Pal_SuperSonicWater,	v_palette_line_1
 palid_SuperSonicSBZ3Water:	makePalEntry	Pal_SuperSonicSBZ3Water,	v_palette_line_1
+palid_Tails: makePalEntry Pal_Tails,v_palette_line_1
+palid_TailsWater: makePalEntry Pal_TailsWater,v_palette_line_1
+palid_TailsSBZ3Water: makePalEntry Pal_TailsSBZ3Water,v_palette_line_1
 	even
 
 
@@ -52,6 +55,9 @@ Pal_SegaBG:		bincludeEndMarker	"palette/Sega Background.bin"
 Pal_Title:		bincludeEndMarker	"palette/Title Screen.bin"
 Pal_LevelSel:		bincludeEndMarker	"palette/Level Select.bin"
 Pal_Sonic:		bincludeEndMarker	"palette/Sonic.bin"
+Pal_Tails: bincludeEndMarker "palette/Tails.bin"
+Pal_TailsWater: bincludeEndMarker "palette/Tails - LZ Underwater.bin"
+Pal_TailsSBZ3Water: bincludeEndMarker "palette/Tails - SBZ3 Underwater.bin"
 Pal_GHZ:		bincludeEndMarker	"palette/Green Hill Zone.bin"
 Pal_LZ:			bincludeEndMarker	"palette/Labyrinth Zone.bin"
 Pal_LZWater:		bincludeEndMarker	"palette/Labyrinth Zone Underwater.bin"

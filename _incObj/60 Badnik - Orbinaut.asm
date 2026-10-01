@@ -111,7 +111,7 @@ Orb_CheckSonic:	; Routine 2
 
 .animate:
 		lea	(Ani_Orb).l,a1				; load animation script
-		bsr.w	AnimateSprite				; animate Orbinaut
+		jsr (AnimateSprite).l			; resource tables can exceed a signed-word branch
 		bra.w	Orb_DisplayNoMove			; display or delete Orbinaut (no movement)
 ; ===========================================================================
 

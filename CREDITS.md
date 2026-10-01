@@ -8,6 +8,10 @@ Modifications are maintained by oranguthang. Included third-party tools retain t
 
 Super Sonic player art, mappings, dynamic graphics, transformation effects and dry palette originate from the [Sonic 2 disassembly](https://github.com/sonicretro/s2disasm). Game-specific underwater cycles and shared-resource palette remaps adapt these assets for Sonic 1.
 
+Character resource selection adapts Selbi's [Adding Extra Characters](https://info.sonicretro.org/SCHG_How-to:Add_Extra_Characters) guide, based on Sonic 65's original work. ROM descriptors extend the approach to separate player selections and normal/Super resource sets.
+
+Solo Tails body/tail art, mappings, DPLC and lives-icon art originate from the [Sonic 3 & Knuckles disassembly](https://github.com/sonicretro/skdisasm), using the resource versions in [sk_improvements](https://github.com/oranguthang/sk_improvements). The importer repacks the frames and adapts palette indices and origins for Sonic 1. Flight uses the ascent-pulse and endurance approach from Sonic 3 & Knuckles.
+
 ## Title resources
 
 The independent title resources follow [Make an Alternative Title Screen](https://info.sonicretro.org/SCHG_How-to:Make_an_Alternative_Title_Screen). The source archive is retained with the resource inputs for repeatable extraction.

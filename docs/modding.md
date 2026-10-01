@@ -40,6 +40,8 @@ Placed rings use four-byte S3K records in `objpos/Rings/`: X word and Y word, so
 
 Level resources use moduled Kosinski in `artkosm/`. Add a `plcm` entry and a VRAM tile constant when adding graphics. The bounded PLC/DMA queues must retain their capacity and residency checks. Do not display mappings until their graphics are resident. Keep both SonLVL INIs and object definitions consistent with compression changes.
 
+The VDP DMA source counter wraps within a 128 KiB ROM bank. Giant-ring, flash and Tails player art are aligned and checked during assembly so their transfers cannot cross that boundary. Retain those checks when moving or expanding uncompressed artwork.
+
 ## Collision queue
 
 Collidable objects are queued during object execution. Keep the existing count bounds and reset the queue each frame. Sonic reactions consume this queue instead of scanning all object slots.
@@ -75,3 +77,21 @@ The GHZ purple rock has an optional Smashable subtype in both SonLVL definitions
 ## Music per act
 
 The final act-header field selects the level song. Restoration considers drowning, boss state, Super and invincibility. Boss completion clears the boss override; speed shoes adjust tempo without restarting an ordinary track.
+
+## Character resources
+
+`_inc/Character Assets.asm` adapts Selbi's [Adding Extra Characters](https://info.sonicretro.org/SCHG_How-to:Add_Extra_Characters) guide. Each registered character has two ROM descriptors, normal and Super. They select uncompressed player art, mappings, DPLC, animation scripts, dry/LZ/SBZ3 palettes, Super palette cycles, speed-dependent animation scripts and the lives-icon PLC. Sonic and solo Tails are registered. Tails uses the same descriptor for both forms and is excluded from Super activation.
+
+`v_character_p1` and `v_character_p2` store character IDs without moving existing RAM fields. They default to Sonic and OFF (`$FF`) and survive act transitions. Title OPTIONS selects P1; P2 reserves a selection for future multiplayer and cannot be enabled. A second player object, separate physics and Super state are not implemented. SRAM version 2 persists the selections and accepts version 1 settings records.
+
+`GetCharacterAssets` takes the slot in `d0.w` (0 or 1) and form in `d1.b` (zero for normal, nonzero for Super), and returns a descriptor in `a3`. It preserves other registers and condition flags. Invalid slots select P1; invalid character IDs use Sonic's resources. `GetPlayer1Assets_Normal`, `GetPlayer1Assets_Super` and `GetPlayer1Assets_Current` supply the active player's selection. The `character_asset` macro reads a pointer field and preserves `a3`; its destination must not be `a3`.
+
+To register another character, add an ID in `_Constants.asm`, increase `Character_Count`, and append a normal/Super pointer pair to `CharacterAssets`. Create both records using the `CharacterAsset_*` offsets. Add an eight-character name in `Options_Names`, palette entries and a dedicated lives-icon PLC as needed. Existing PLC IDs must retain their order. Descriptor sizes and table counts are checked during assembly.
+
+The animation driver still expects Sonic's animation IDs, frame conventions and orientation groups: normal walking uses six frames per orientation, Super walking uses eight, and the fast normal run uses the descriptor's figure-eight script. Tails supplies a normal running cycle for that slot. New artwork must follow these conventions or receive a dedicated animation driver. Movement abilities, collision dimensions and character-specific cinematic artwork require separate implementation.
+
+`_incObj/Tails Flight.asm` implements solo flight and swimming. B/C starts flight or adds an ascent pulse; A retains Light Dash. The eight-second endurance and flight flags reset on landing, damage, death and debug placement. Tails uses the existing player collision dimensions. The importer adapts Sonic 3 & Knuckles mapping origins and samples six walk frames per orientation. Separate tail frames are packed with the body, keeping every DMA frame within the existing 32-tile player slot. Large ending illustrations remain Sonic's artwork and restore its normal palette when the cinematic starts.
+
+The shared-art range is inclusive at `SharedFirst` and exclusive at `SharedEnd`; equal values disable it. Super Sonic uses this range for the original spring/air-pose art. DPLC offsets within that range refer to `SharedArt`. Super palette cycles retain the existing eight-byte frame format, transformation/reversion sequence and ten steady frames. Palette refresh changes only indices 2–5, so replacement characters must account for the other shared colours.
+
+Normal Sonic retains the player-water palette ID from the act header; other registered characters use their descriptor's LZ or SBZ3 ID. The lives icon is queued when the title, level or Special Stage results load. If a selection changes during gameplay, update mappings and palettes and invalidate `v_sonframenum` before drawing: the frame cache alone cannot detect a different art source.

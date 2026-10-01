@@ -49,6 +49,7 @@ def test_nemesis_pixels_preserve_template(name: str) -> None:
         ("player", "super", "--verify"),
         ("player", "figure8", "--verify"),
         ("player", "air", "--verify"),
+        ("player", "tails"),
         ("palettes", "badniks", "--verify"),
         ("palettes", "objects", "--verify"),
         ("palettes", "water", "--check"),

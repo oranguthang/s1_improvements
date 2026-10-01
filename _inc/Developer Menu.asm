@@ -16,7 +16,7 @@ devmenu_row_drain: equ 3
 devmenu_row_god: equ 4
 devmenu_rows: equ 5
 
-devmenu_header_len:	equ 8					; "SETTINGS"
+devmenu_header_len:	equ 6					; "CHEATS"
 devmenu_label_len:	equ 21					; characters per option name
 devmenu_value_len:	equ 3					; characters per option value
 
@@ -35,6 +35,9 @@ DevMenu_ChkDefaults:
 		cmpi.b	#devmenu_magic,(v_dev_magic).w
 		beq.w	Settings_Normalize
 Settings_Defaults:
+		clr.b (v_character_p1).w
+		move.b #Character_Off,(v_character_p2).w
+		clr.b (v_options_menuitem).w
 		clr.b	(v_dev_debug).w
 		clr.b	(v_dev_super).w		; obsolete RAM slots remain reserved
 		clr.b	(v_dev_emeralds).w
@@ -210,7 +213,7 @@ DevMenu_Draw:
 		lea	(DevMenu_Header).l,a1
 		move.w	#levsel_white,d3
 		moveq	#devmenu_header_len-1,d2
-		bsr.w	DevMenu_DrawText			; draw "SETTINGS"
+		bsr.w	DevMenu_DrawText			; draw "CHEATS"
 
 		lea	(DevMenu_Labels).l,a1			; first option name
 		locVRAM	devmenu_vram_rows,d4			; first option position
@@ -317,7 +320,7 @@ DevMenu_DrawText:
 	charset 'A','X',$11
 
 DevMenu_Header:
-		dc.b "SETTINGS"
+		dc.b "CHEATS"
 DevMenu_Header_end:
 
 DevMenu_Labels:

@@ -40,6 +40,7 @@ ESon_Main:	; Routine 0
 ; ===========================================================================
 
 ESon_GoodEnding:
+		bsr.w ESon_UseCinematicPalette
 		addq.b	#2,ob2ndRout(a0)			; advance to ESon_MakeEmeralds
 		move.l	#Map_ESon,obMap(a0)			; set mappings
 		move.w	#ArtTile_Ending_Sonic,obGfx(a0)		; set art tile
@@ -57,14 +58,18 @@ ESon_MakeEmeralds:
 
 		; Start the normal Super-to-blue palette fade with the emerald glow.
 		; Keep the cinematic mappings, movement and Ending music untouched.
+		cmpi.b #Character_Sonic,(v_character_p1).w
+		bne.s .emeralds
 		clr.b	(v_supersonic).w
 		move.b	#2,(v_superpal_state).w
 		move.b	#3,(v_superpal_timer).w
 		move.w	#$28,(v_superpal_frame).w
 		clr.w	(v_superframe).w
-		move.l	(Pal_Sonic+4).l,(v_palette_fading+4).w
-		move.l	(Pal_Sonic+8).l,(v_palette_fading+8).w
+		character_asset CharacterAsset_Palette,a1,GetPlayer1Assets_Normal
+		move.l 4(a1),(v_palette_fading+4).w
+		move.l 8(a1),(v_palette_fading+8).w
 
+.emeralds:
 		addq.b	#2,ob2ndRout(a0)			; advance to ESon_Animate ($4)
 		move.w	#(0<<8)+1,obAnim(a0)			; set to "hold" animation and restart it immediately
 		move.b	#id_EndChaos,(v_endemeralds).w		; load ending sequence chaos emeralds objects
@@ -126,6 +131,7 @@ ESon_BadEnding:	; Routine $10
 		subq.w	#1,eson_time(a0)			; decrement time before leap
 		bne.s	.return					; if time remains, branch
 
+		bsr.w ESon_UseCinematicPalette
 		addq.b	#2,ob2ndRout(a0)			; advance to ESon_Animate ($12, doesn't advance past that)
 		move.l	#Map_ESon,obMap(a0)			; set mappings
 		move.w	#ArtTile_Ending_Sonic,obGfx(a0)		; set art tile
@@ -139,6 +145,20 @@ ESon_BadEnding:	; Routine $10
 
 	.return:
 		rts						; return
+
+; Large ending illustrations remain the original Sonic artwork. Do not tint
+; them orange or start a Super palette cycle for the solo Tails player.
+ESon_UseCinematicPalette:
+		cmpi.b #Character_Tails,(v_character_p1).w
+		bne.s .return
+		clr.b (v_supersonic).w
+		clr.b (v_superpal_state).w
+		move.l (Pal_Sonic+4).l,(v_palette+4).w
+		move.l (Pal_Sonic+8).l,(v_palette+8).w
+		move.l (Pal_Sonic+4).l,(v_palette_fading+4).w
+		move.l (Pal_Sonic+8).l,(v_palette_fading+8).w
+.return:
+		rts
 
 ; ===========================================================================
 

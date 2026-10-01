@@ -75,6 +75,8 @@ plcid_TitleBackground:	plcptr	PLC_TitleBackground
 plcid_Continue:		plcptr	PLC_Continue
 plcid_Credits:		plcptr	PLC_Credits
 plcid_Points:		plcptr	PLC_Points
+plcid_PlayerHUD:		plcptr	PLC_PlayerHUD
+plcid_TailsHUD: plcptr PLC_TailsHUD
 
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - standard block 1
@@ -82,7 +84,6 @@ plcid_Points:		plcptr	PLC_Points
 PLC_Main:	plcheader
 		plcm	KosM_Lamp,	ArtTile_Lamppost		; lamppost
 		plcm	KosM_Hud,	ArtTile_HUD			; HUD
-		plcm	KosM_Lives,	ArtTile_Lives_Counter		; lives counter
 		plcm	KosM_RingSparkles,	ArtTile_Ring_Sparkle	; ring sparkles (ring frames are DMA'd, #42)
 PLC_Main_end:
 
@@ -504,3 +505,11 @@ PLC_Credits_end:
 PLC_Points:	plcheader
 		plcm	KosM_Points,	ArtTile_Points
 PLC_Points_end:
+
+PLC_PlayerHUD: plcheader
+		plcm	KosM_Lives,	ArtTile_Lives_Counter		; lives counter
+PLC_PlayerHUD_end:
+
+PLC_TailsHUD: plcheader
+        plcm KosM_TailsLives,ArtTile_Lives_Counter
+PLC_TailsHUD_end:

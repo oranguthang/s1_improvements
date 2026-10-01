@@ -1,5 +1,5 @@
 ; ---------------------------------------------------------------------------
-; Three-row title menu, adapted from Selbi's PSB/font approach.
+; Public player options and unlockable title menu, adapted from Selbi's PSB/font approach.
 ; Unlock is independent of the legacy region-specific cheat sequences.
 ; ---------------------------------------------------------------------------
 TitleMenu_ReadInput:
@@ -12,9 +12,9 @@ TitleMenu_ReadInput:
 		subi.w	#60,(v_generictimer).w
 	.timerReady:
 		tst.b	(v_title_unlocked).w
-		bne.s	.menu
+		bne.w	.menu
 		andi.b	#btnDir,d1
-		beq.s	.return
+		beq.w	.menu
 		moveq	#0,d0
 		move.b	(v_title_codepos).w,d0
 		cmpi.b	#6,d0
@@ -27,7 +27,7 @@ TitleMenu_ReadInput:
 		addq.b	#1,d0
 		move.b	d0,(v_title_codepos).w
 		cmpi.b	#6,d0
-		bne.s	.return
+		bne.w	.menu
 		move.b	#1,(v_title_unlocked).w
 		clr.b	(v_title_menuitem).w
 		clr.b	(v_title_codepos).w
@@ -38,33 +38,39 @@ TitleMenu_ReadInput:
 	.restartCode:
 		clr.b	(v_title_codepos).w
 		cmpi.b	#btnUp,d1
-		bne.s	.return
+		bne.w	.menu
 		move.b	#1,(v_title_codepos).w	; a new Up starts another attempt
-	.return:
-		rts
+		bra.w .menu
 	.menu:
+		move.b (v_jpadpress1).w,d1
+		moveq #1,d2
+		tst.b (v_title_unlocked).w
+		beq.s .menuCount
+		moveq #3,d2
+.menuCount:
 		moveq	#0,d0
 		move.b	(v_title_menuitem).w,d0
 		btst	#bitUp,d1
 		beq.s	.down
 		subq.w	#1,d0
 		bpl.s	.down
-		moveq	#2,d0
+		move.w d2,d0
 	.down:
 		btst	#bitDn,d1
 		beq.s	.store
 		addq.w	#1,d0
-		cmpi.b	#3,d0
-		blo.s	.store
+		cmp.w d2,d0
+		bls.s	.store
 		moveq	#0,d0
 	.store:
 		move.b	d0,(v_title_menuitem).w
+	.return:
 		rts
 TitleMenu_Code:
 		dc.b btnUp,btnDn,btnDn,btnDn,btnL,btnR
 		even
 
-; d0 = 0 for no choice, 1..3 for the selected destination.
+; d0 = 0 for no choice, 1..4 for the selected destination.
 TitleMenu_Confirm:
 		moveq	#0,d0
 		move.b	(v_jpadpress1).w,d0
@@ -89,16 +95,20 @@ PSB_TitleMenu:
 		move.w	#$80+64,obX(a0)
 		move.w	#$80+170,obScreenY(a0)
 		move.b	#0,obPriority(a0)		; no menu text behind the Sonic torso masks
-		move.b	(v_title_menuitem).w,obFrame(a0)
+		move.b (v_title_menuitem).w,obFrame(a0)
+		tst.b (v_title_unlocked).w
+		bne.s .draw
+		addq.b #4,obFrame(a0)
+.draw:
 		rts
 
-; All 60 text tiles are composed while display/interrupts are disabled at title load.
+; All 80 text tiles are composed while display/interrupts are disabled at title load.
 ; No fresh DMA/VRAM writes are needed when unlocking or changing selection.
 TitleMenu_LoadTextGraphics:
 		lea	(vdp_data_port).l,a6
 		locVRAM ArtTile_Title_Menu*tile_size,4(a6)
 		lea	TitleMenu_Text(pc),a1
-		moveq	#3*20-1,d2
+		moveq	#4*20-1,d2
 	.char:
 		moveq	#0,d0
 		move.b	(a1)+,d0			; same font encoding as LevelMenuText
@@ -152,11 +162,12 @@ TitleMenu_HideForSubmenu:
 	charset 'A','X',$11
 TitleMenu_Text:
 		dc.b "     START GAME     "
+		dc.b "      OPTIONS       "
 		dc.b "    LEVEL SELECT    "
-		dc.b "      SETTINGS      "
+		dc.b "       CHEATS       "
 TitleMenu_Text_end:
 	charset
-	if (TitleMenu_Text_end-TitleMenu_Text<>3*20)&(MOMPASS=1)
+	if (TitleMenu_Text_end-TitleMenu_Text<>4*20)&(MOMPASS=1)
 		fatal "Title menu labels must be exactly 20 characters each."
 	endif
 		even

@@ -473,6 +473,13 @@
     "cd/CD-Mappings.asm": "604a1a7c475579abea7e4b856b2c61d02ae1ff9d2897bc8d93180734cb79ecdb",
     "cd/CD-DPLCs.asm": "4b8cb37eb0666f1102762b2682a6d80acfd9cdc7488982e14cfa600df10189cc",
     "cd/Fall.png": "9110d90d556fb6b19cb28ff09724f9e33d998386e603caa4b59a129bc811b9a8",
-    "cd/Fall1.png": "fe992220009e96212d67bbb23319757d6f6e7834052e5b66e7c40f8d172a44a9"
+    "cd/Fall1.png": "fe992220009e96212d67bbb23319757d6f6e7834052e5b66e7c40f8d172a44a9",
+    "sk/General/Sprites/Tails/Art/Tails.bin": "7913a37cee42b0900b281cbc752ce96073a2d3d184ebc70f5bda0e6eef82b02f",
+    "sk/General/Sprites/Tails/Art/Tails tails.bin": "1279bbc29e12e6ccd0296e2ca7119da42916cb0a483e20e546d7db720f844696",
+    "sk/General/Sprites/Tails/Map - Tails.asm": "f802dc25168712b062b4a4b037584296cc577c34f68b3a90caa622c1eabc270b",
+    "sk/General/Sprites/Tails/Map - Tails tails.asm": "88db5d4dc30437a77a03336becfe5bb62b2d0cba23632d12d85d5c332eeb45b6",
+    "sk/General/Sprites/Tails/DPLC - Tails.asm": "8a5ffccf6b54a963f55f7b1c5b1dde22ef243e6abfd8283ec2ac1ab0184c3200",
+    "sk/General/Sprites/Tails/DPLC - Tails tails.asm": "c7d5731cfe19398511a49306024b6358c62fa32db9e57f3f9405ea0a715e5759",
+    "sk/General/Sprites/HUD Icon/Tails Life Icon.bin": "a1d2de0cf36509a16cd06221f78d918fb4a62c44d9b5cb900b2e0e8b6cd0b5db"
   }
 }

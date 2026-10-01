@@ -53,7 +53,7 @@ PCSuper_Transform:
 		move.b	#-1,(v_player+obPrevAni).w
 
 	.copy:
-		lea	(Pal_SuperSonicCycle).l,a0
+		character_asset CharacterAsset_Cycle,a0,GetPlayer1Assets_Super
 		bra.w	PCSuper_CopyColours
 
 ; Fade backwards and restore Sonic 1's exact normal palette at the end.
@@ -69,7 +69,7 @@ PCSuper_Revert:
 		jmp	(Sonic_RefreshPalettes).l
 
 	.copy:
-		lea	(Pal_SuperSonicCycle).l,a0
+		character_asset CharacterAsset_Cycle,a0,GetPlayer1Assets_Super
 		bra.w	PCSuper_CopyColours
 
 ; Cycle the ten steady Super Sonic palette frames every eight game frames.
@@ -84,7 +84,7 @@ PCSuper_Normal:
 		move.w	#$30,(v_superpal_frame).w
 
 	.copy:
-		lea	(Pal_SuperSonicCycle).l,a0
+		character_asset CharacterAsset_Cycle,a0,GetPlayer1Assets_Super
 
 PCSuper_CopyColours:
 		lea	(v_palette+$4).w,a1
@@ -93,10 +93,10 @@ PCSuper_CopyColours:
 
 		cmpi.b	#id_LZ,(v_zone).w
 		bne.s	PCSuper_Return
-		lea	(Pal_SuperSonicCycle_LZWater).l,a0
+		character_asset CharacterAsset_WaterCycle,a0,GetPlayer1Assets_Super
 		cmpi.b	#act4,(v_act).w
 		bne.s	.copyWater
-		lea	(Pal_SuperSonicCycle_SBZ3Water).l,a0
+		character_asset CharacterAsset_SBZ3Cycle,a0,GetPlayer1Assets_Super
 
 	.copyWater:
 		lea	(v_palette_water+$4).w,a1

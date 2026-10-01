@@ -303,19 +303,34 @@ def badnik_palette_contract() -> tuple[list[int], list[int], list[int]]:
     routine = code.split("Sonic_RefreshPalettes:\n", 1)[-1].split(
         "; End of function Sonic_RefreshPalettes", 1
     )[0]
+    # Resource descriptors now select the palettes; the copy still covers only
+    # the four fur colours. Audit both selection and destination ranges.
+    routine = re.sub(r"\s+", "", routine)
     if not all(
         fragment in routine
         for fragment in (
-            "(Pal_Sonic+4)",
-            "(Pal_SuperSonic+4)",
-            "(Pal_SuperSonicWater+4)",
-            "(v_palette+$4)",
-            "(v_palette_water+$4)",
+            "GetPlayer1Assets_Current",
+            "CharacterAsset_Palette(a3)",
+            "CharacterAsset_WaterPalette(a3)",
+            "CharacterAsset_SBZ3Palette(a3)",
+            "(v_palette+4)",
+            "(v_palette_water+4)",
         )
     ):
         raise ValueError("Super Sonic palette copy has changed; re-audit forbidden indices")
-    if routine.count("move.l\t(a1)+,(a2)+") != 2 or routine.count("move.l\t(a1),(a2)") != 2:
+    if routine.count("move.l4(a1),(a2)+") != 2 or routine.count("move.l8(a1),(a2)") != 2:
         raise ValueError("Super Sonic palette copy length has changed")
+    assets = (badnik_ROOT / "_inc/Character Assets.asm").read_text(encoding="utf-8")
+    for label, palettes in (
+        ("CharacterAssets_Sonic", "Pal_Sonic,Pal_LZSonWater,Pal_SBZ3SonWat"),
+        (
+            "CharacterAssets_SuperSonic",
+            "Pal_SuperSonic,Pal_SuperSonicWater,Pal_SuperSonicSBZ3Water",
+        ),
+    ):
+        descriptor = assets.split(label + ":", 1)[-1].split("\nCharacterAssets_", 1)[0]
+        if "dc.l" + palettes not in re.sub(r"\s+", "", descriptor):
+            raise ValueError(f"{label} palette sources have changed; re-audit forbidden indices")
     if not all(normal[i] != super_dry[i] and water[i] != super_water[i] for i in badnik_FORBIDDEN):
         raise ValueError("A forbidden color no longer changes; re-audit palette contract")
     return (normal, water, super_dry)

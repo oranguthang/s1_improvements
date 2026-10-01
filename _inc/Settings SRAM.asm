@@ -1,13 +1,13 @@
 ; ---------------------------------------------------------------------------
-; Settings SRAM, format 1. Logical bytes occupy odd addresses $200001..$20001F.
-; 00..03 "S1DV", 04 version, 05 payload length, 06..11 six settings,
-; 12..13 reserved zero, 14..15 additive big-endian checksum of bytes 00..13.
+; Settings SRAM, format 2. Logical bytes occupy odd addresses $200001..$20001F.
+; 00..03 "S1DV", 04 version, 05 payload length, 06..13 eight settings,
+; 14..15 additive big-endian checksum of bytes 00..13. Format 1 is migrated.
 ; Only configuration is persistent: earned emeralds and cursors are not saved.
 ; The write invalidates the signature first and commits its first byte last.
 ; ---------------------------------------------------------------------------
 settings_sram_size: equ 16
-settings_sram_version: equ 1
-settings_sram_payload: equ 6
+settings_sram_version: equ 2
+settings_sram_payload: equ 8
 
 
 ; Z = all six effectively owned. No general registers are changed.
@@ -57,6 +57,11 @@ Settings_Normalize:
 	.noDrain:
 		clr.b	(v_dev_superdrain).w
 	.done:
+		cmpi.b #Character_Count,(v_character_p1).w
+		blo.s .characterValid
+		clr.b (v_character_p1).w
+.characterValid:
+		move.b #Character_Off,(v_character_p2).w ; second player is not available yet
 		movem.l	(sp)+,d0-d1/a0-a1
 		rts
 Settings_BoolFields:
@@ -67,6 +72,7 @@ Settings_Fields:
 		dc.w v_title_unlocked&$FFFF, v_dev_all_emeralds&$FFFF
 		dc.w v_dev_debug&$FFFF, v_dev_superrings&$FFFF
 		dc.w v_dev_superdrain&$FFFF, v_dev_god&$FFFF
+		dc.w v_character_p1&$FFFF, v_character_p2&$FFFF
 
 ; d0.w = sum of 14 bytes at a0. Clobbers d1/a0.
 Settings_Checksum:
@@ -103,17 +109,23 @@ Settings_Load:
 		move.w	(sp)+,sr
 		cmpi.l	#"S1DV",(sp)
 		bne.s	.done
-		cmpi.w	#(settings_sram_version<<8)|settings_sram_payload,4(sp)
-		bne.s	.done
-		tst.w	12(sp)
-		bne.s	.done
+		moveq #settings_sram_payload,d2
+		cmpi.w #(settings_sram_version<<8)|settings_sram_payload,4(sp)
+		beq.s .checkChecksum
+		cmpi.w #$0106,4(sp)               ; preserve unlock/cheats from older saves
+		bne.s .done
+		tst.w 12(sp)
+		bne.s .done
+		moveq #6,d2
+.checkChecksum:
 		movea.l	sp,a0
-		bsr.s	Settings_Checksum
+		bsr.w	Settings_Checksum
 		cmp.w	14(sp),d0
 		bne.s	.done
 		lea	6(sp),a0
 		lea	Settings_Fields(pc),a2
-		moveq	#settings_sram_payload-1,d1
+		move.w d2,d1
+		subq.w #1,d1
 	.fields:
 		movea.w	(a2)+,a1
 		move.b	(a0)+,(a1)

@@ -2,9 +2,11 @@
 
 ## Title menu and controls
 
-Enter Up, Down, Down, Down, Left, Right on the title to unlock START GAME, LEVEL SELECT and SETTINGS. SRAM remembers the unlock. Old title cheat sequences are disabled. With the title menu unlocked, pause and press A to return directly to the title. Debug alone does not unlock this shortcut.
+The title initially shows START GAME and OPTIONS. OPTIONS selects PLAYER 1 (SONIC or TAILS); PLAYER 2 remains OFF and cannot be enabled. Up/Down selects a row, Left/Right/A/B/C changes PLAYER 1, and Start returns to the title. SRAM remembers the character selection.
 
-Settings use Up/Down to select, Left/Right/A/B/C to change, and Start to leave.
+Enter Up, Down, Down, Down, Left, Right on the title to reveal LEVEL SELECT and CHEATS as two additional choices. SRAM remembers the unlock. Old title cheat sequences are disabled. With the secret menu unlocked, pause and press A to return directly to the title. Debug alone does not unlock this shortcut.
+
+CHEATS uses Up/Down to select, Left/Right/A/B/C to change, and Start to leave.
 
 | Setting | Values | Default |
 | --- | --- | --- |
@@ -20,13 +22,19 @@ Selecting zero required rings switches drain OFF. Enabling drain at zero changes
 
 ## SRAM record
 
-Odd-byte SRAM is declared at `$200001–$20FFFF`; only the first 16 logical bytes are used. Logical byte N is at `$200001 + 2*N`. The record stores `S1DV`, version 1, payload length 6, menu unlock and five settings, two reserved bytes, then a big-endian checksum of logical bytes 0–13. Invalid signatures, lengths, versions or checksums load defaults. Writes invalidate the signature first and restore it last.
+Odd-byte SRAM is declared at `$200001–$20FFFF`; only the first 16 logical bytes are used. Logical byte N is at `$200001 + 2*N`. The record stores `S1DV`, version 2, payload length 8, menu unlock and five cheats, PLAYER 1 and PLAYER 2, then a big-endian checksum of logical bytes 0–13. PLAYER 1 is 0 for Sonic or 1 for Tails; PLAYER 2 is `$FF` for OFF. Valid version 1 records retain their unlock and cheats and default to Sonic/OFF. Invalid signatures, lengths, versions or checksums load defaults. Writes invalidate the signature first and restore it last.
 
 The ROM bank is restored after access, and the routines must remain below `$200000`. Keep the emulator `.srm` file when replacing a ROM with the same basename. Save states independently restore RAM and can temporarily restore earlier settings. Earned progress is not a persistent SRAM save system.
 
 ## God Mode
 
 God Mode prevents damage, drowning and time-over death. Crossing the lower death boundary bounces Sonic upward; left/right input can move him back to solid ground. Air countdown and drowning music do not start while protection is active.
+
+## Solo Tails
+
+Select TAILS in OPTIONS before starting a game or using Level Select. Jump with A/B/C, then press B or C again in midair to fly; repeated presses supply ascent pulses. Flight lasts up to eight seconds before exhaustion and resets on landing. Underwater the same controls use swimming poses; the normal air supply still applies. A retains Light Dash. Spin Dash and Peel-Out are available; Sonic's Homing Attack is replaced by flight. Debug's standalone B still enters placement mode.
+
+Tails has no Super form, even with all emeralds granted. Giant-ring bonuses still use the effective emerald count. Player art, underwater palettes and the lives icon follow the selected character. Large title and ending illustrations and the small Continue counter illustrations retain Sonic's original artwork.
 
 ## Debug display
 

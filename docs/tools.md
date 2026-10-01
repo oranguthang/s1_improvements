@@ -14,7 +14,7 @@ python -m pytest
 
 Pillow is used by image imports and previews. ROM assembly itself does not need Python. Nemesis encoding with a supplied code-table template is built in. To compress arbitrary new Nemesis art, install [Clownacy's clownnemesis](https://github.com/Clownacy/clownnemesis) and set `NEMESIS_TOOL` to the executable, or pass `--compressor` to `art codec`.
 
-Global flags go before the command group. `--root PATH` selects the target disassembly. `--output PATH` first copies it into an empty directory, then operates there. `--source PATH` selects an input bundle containing `s1/`, `s2/`, `cd/` and `title.zip`. Operation-specific options follow the group and command. Commands that alter game resources require `--apply`, `--write` or an explicit output filename/directory. Previews and audit reports go under `tmp/`.
+Global flags go before the command group. `--root PATH` selects the target disassembly. `--output PATH` first copies it into an empty directory, then operates there. `--source PATH` selects an input bundle containing `s1/`, `s2/`, `sk/`, `cd/` and `title.zip`. Operation-specific options follow the group and command. Commands that alter game resources require `--apply`, `--write` or an explicit output filename/directory. Previews and audit reports go under `tmp/`.
 
 ## Inputs and reproducibility
 
@@ -34,9 +34,12 @@ For custom imports, explicitly provide source data. The player/remap commands re
 python -m s1tools player super --verify
 python -m s1tools player figure8 --verify
 python -m s1tools player air --verify
+python -m s1tools player tails
 ```
 
 Use `--apply` instead of `--verify` to regenerate. Order matters: Super base assets, then figure-eight, then air poses. Player importers retain the appended mapping/DPLC hooks. They preserve palette indices, frame IDs and sprite geometry; they do not use image quantization. The ordinary Sonic base art remains an input when computing appended tile offsets.
+
+`player tails` verifies the solo Tails resources; `player tails --apply` regenerates them independently of Sonic's appended artwork. It reads the bundled Sonic 3 & Knuckles body/tail art and mapping/DPLC tables, repacks them to the Sonic 1 frame conventions, and generates dry/underwater palettes and the lives icon. It preserves indexed pixels, applies an explicit colour-index remap and rejects frames larger than the existing 32-tile player VRAM slot.
 
 For a separate output project:
 

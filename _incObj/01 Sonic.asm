@@ -34,10 +34,12 @@ Sonic_Index:	dc.w Sonic_Main-Sonic_Index			; 0 - object init
 
 ; Obj01_Main:
 Sonic_Main:	; Routine 0
+		clr.b (v_tails_flying).w
+		clr.b (v_tails_flap).w
 		addq.b	#2,obRoutine(a0)			; set to Sonic_Control
 		move.b	#sonic_height,obHeight(a0)		; set default height
 		move.b	#sonic_width,obWidth(a0)		; set default width
-		move.l	#Map_Sonic,obMap(a0)			; set mappings
+		character_asset CharacterAsset_Map,obMap(a0)		,GetPlayer1Assets_Normal ; set mappings
 		move.w	#ArtTile_Sonic,obGfx(a0)		; set VRAM location
 		move.b	#2,obPriority(a0)			; set sprite priority
 		move.b	#48/2,obActWid(a0)			; set render width
@@ -90,6 +92,9 @@ Sonic_Control:	; Routine 2
         tst.b d0
         bne.s .ignoremodes
 .normalModeControl:
+		jsr (Tails_FlightControl).l
+		tst.b d0
+		bne.s .ignoremodes
 		btst	#0,(f_playerctrl).w			; is control override flag set?
 		bne.s	.ignoremodes				; if yes, don't run Sonic_Modes
 
@@ -123,6 +128,7 @@ Sonic_Control:	; Routine 2
 		bsr.w Sonic_UpdateAirPose
 		bsr.w	Sonic_UpdateTransformPose
 		bsr.w	Sonic_Animate				; run Sonic's animation scripts
+		jsr (Tails_FlightPose).l
 		jsr (Sonic_LightDashPose).l		; face the dash vector without changing collision angle
 		tst.b	(f_playerctrl).w			; is object interactions ignore flag set?
 		bmi.s	.ignoreobjcoll				; if yes, branch
@@ -1960,6 +1966,8 @@ Sonic_ResetOnFloor:
 
 ; Obj01_Hurt:
 Sonic_Hurt:	; Routine 4
+		clr.b (v_tails_flying).w
+		clr.b (v_tails_flap).w
 	if FixBugs
 		; Fix not being able to enter debug mode from a hurt state.
 		; This was added for Sonic 2.
@@ -2049,6 +2057,8 @@ Sonic_HurtStop:
 
 ; Obj01_Death:
 Sonic_Death:	; Routine 6
+		clr.b (v_tails_flying).w
+		clr.b (v_tails_flap).w
 	if FixBugs
 		; Fix not being able to enter debug mode from a dying state.
 		; This was added for Sonic 2.
@@ -2258,15 +2268,16 @@ Sonic_Loops:
 ; ---------------------------------------------------------------------------
 
 Sonic_Animate:
-		lea	(Ani_Sonic).l,a1			; load Sonic's animation scripts
-		tst.b	(v_supersonic).w
-		bne.s	.superanimations
-		cmpi.l	#Map_SuperSonic,obMap(a0)	; an event deferred the mapping switch
-		bne.s	.normalanimations
-		move.l	#Map_Sonic,obMap(a0)		; switch before selecting a normal frame
-		bra.s	.normalanimations
-	.superanimations:
-		lea	(Ani_SuperSonic).l,a1			; use Sonic 2's Super Sonic animation scripts
+        move.l a3,-(sp)
+        jsr (GetPlayer1Assets_Current).l
+        movea.l a3,a2                 ; retain descriptor for speed-dependent scripts
+        movea.l CharacterAsset_Anim(a2),a1
+        movea.l (sp)+,a3
+        tst.b (v_supersonic).w
+        bne.s .superanimations
+        move.l CharacterAsset_Map(a2),obMap(a0) ; finish deferred form changes before drawing
+        bra.s .normalanimations
+.superanimations:
 		move.b spindash_flag(a0),d0
 		andi.b #3,d0			; preserve either charging animation at obstacles
 		bne.s	.normalanimations
@@ -2417,11 +2428,11 @@ Sonic_Animate:
 .figureThreshold:
         cmp.w d1,d2
         bhs.w .figure8
-		lea	(SonAni_Run).l,a1			; use running animation
+		movea.l CharacterAsset_Run(a2),a1			; use running animation
 		cmpi.w	#$600,d2				; is Sonic at running speed?
 		bhs.s	.running				; if yes, branch
 
-		lea	(SonAni_Walk).l,a1			; use walking animation instead
+		movea.l CharacterAsset_Walk(a2),a1			; use walking animation instead
 		move.b	d0,d1					; make octant modifier a multiple of 3
 		lsr.b	#1,d1					; (0, 3, 6, 9)
 		add.b	d1,d0					; this accounts for 6 total walking frames (Sonic 2 would change this to support 8)
@@ -2445,7 +2456,7 @@ Sonic_Animate:
 ; ===========================================================================
 
  .figure8:
-        lea (SonAni_Figure8).l,a1
+        movea.l CharacterAsset_Figure8(a2),a1
         add.b d0,d0                     ; offsets 0,4,8,12 in Sonic's appended table
         move.b d0,d3
         moveq #0,d1
@@ -2473,10 +2484,10 @@ Sonic_Animate:
 ; Sonic 2 Super Sonic has eight walk frames per orientation and four run
 ; orientations. Every fourth frame uses the brighter alternate drawings.
 .superwalkrun:
-		lea	(SupSonAni_Run).l,a1
+		movea.l CharacterAsset_Run(a2),a1
 		cmpi.w	#$800,d2
 		bhs.s	.superrun
-		lea	(SupSonAni_Walk).l,a1
+		movea.l CharacterAsset_Walk(a2),a1
 		add.b	d0,d0
 		add.b	d0,d0					; orientation offsets 0, 8, $10, $18
 		bra.s	.superselected
@@ -2533,17 +2544,17 @@ Sonic_Animate:
 .nomodspeed2:
 		tst.b	(v_supersonic).w
 		beq.s	.normalrollscripts
-		lea	(SupSonAni_Roll2).l,a1
+		movea.l CharacterAsset_RollFast(a2),a1
 		cmpi.w	#$600,d2
 		bhs.s	.rollfast
-		lea	(SupSonAni_Roll).l,a1
+		movea.l CharacterAsset_Roll(a2),a1
 		bra.s	.rollfast
 
 .normalrollscripts:
-		lea	(SonAni_Roll2).l,a1			; use fast rolling animation
+		movea.l CharacterAsset_RollFast(a2),a1			; use fast rolling animation
 		cmpi.w	#$600,d2				; is Sonic moving fast?
 		bhs.s	.rollfast				; if yes, branch
-		lea	(SonAni_Roll).l,a1			; use slower rolling animation instead
+		movea.l CharacterAsset_Roll(a2),a1			; use slower rolling animation instead
 
 ; loc_13AF0:
 .rollfast:
@@ -2581,10 +2592,10 @@ Sonic_Animate:
 		lsr.w	#6,d2					; shift down a byte and further multiply frame interval by 4
 		move.b	d2,obTimeFrame(a0)			; modify frame duration
 
-		lea	(SonAni_Push).l,a1			; load Sonic's animation script for pushing
+		movea.l CharacterAsset_Push(a2),a1			; load Sonic's animation script for pushing
 		tst.b	(v_supersonic).w
 		beq.s	.normalpush
-		lea	(SupSonAni_Push).l,a1
+		movea.l CharacterAsset_Push(a2),a1
 	.normalpush:
 
 		move.b	obStatus(a0),d1				; get Sonic's current status flags
@@ -2615,17 +2626,17 @@ Sonic_LoadGfx:
 		beq.s	.nochange				; if not, branch (nothing to do)
 
 		move.b	d0,(v_sonframenum).w			; remember new frame ID
-		lea	(SonicDynPLC).l,a2			; load PLC script
-		move.l	#Art_Sonic,d6				; source normal art in ROM
-		tst.b	(v_supersonic).w
-		beq.s	.gotart
-		lea	(SuperSonicDynPLC).l,a2
-		move.l	#Art_SuperSonic,d6			; source Sonic 2 Super art in ROM
-        cmpi.b #fr_SuperSpringTwirl1,d0
-        blo.s .gotart
-        cmpi.b #fr_SuperAirPosesEnd,d0
-        bhs.s .gotart
-        move.l #Art_Sonic,d6             ; shared air poses use one original art source
+        move.l a3,-(sp)
+        jsr (GetPlayer1Assets_Current).l
+        movea.l CharacterAsset_DPLC(a3),a2
+        move.l CharacterAsset_Art(a3),d6
+        cmp.b CharacterAsset_SharedFirst(a3),d0
+        blo.s .selectedart
+        cmp.b CharacterAsset_SharedEnd(a3),d0
+        bhs.s .selectedart
+        move.l CharacterAsset_SharedArt(a3),d6
+.selectedart:
+        movea.l (sp)+,a3
 	.gotart:
 		add.w	d0,d0					; double current frame for word-based indexing
 		adda.w	(a2,d0.w),a2				; find relevant DPLC definition for new frame
@@ -2700,6 +2711,8 @@ Sonic_ChkDebugToggle:
 ; ---------------------------------------------------------------------------
 
 Sonic_ToggleSuper:
+		cmpi.b #Character_Sonic,(v_character_p1).w
+		bne.w .return
 		btst	#7,objoff_3F(a0)	; is Super toggle locked until button release?
 		beq.s	.checktimer		; if not, branch
 		move.b	(v_jpadhold2).w,d0
@@ -2761,6 +2774,8 @@ Sonic_ToggleSuper:
 ; ---------------------------------------------------------------------------
 
 Sonic_ActivateSuper:
+		cmpi.b #Character_Sonic,(v_character_p1).w
+		bne.w .return
 		tst.b	(v_supersonic).w	; is Sonic already Super?
 		beq.s	.chk_emeralds		; if not, branch
 		bra.w	.return
@@ -2788,7 +2803,7 @@ Sonic_ActivateSuper:
 		clr.w	(v_superpal_frame).w
 		move.b	#$F,(v_superpal_timer).w
 		move.b	#1,(v_superpal_state).w
-		move.l	#Map_SuperSonic,obMap(a0)
+		character_asset CharacterAsset_Map,obMap(a0),GetPlayer1Assets_Super
 		move.b	#id_Transform,obAnim(a0)
 		move.b	#-1,obPrevAni(a0)
 		move.b	#-1,(v_sonframenum).w
@@ -2887,7 +2902,7 @@ Sonic_ResetSuperState:
 		move.b	#2,(v_superpal_state).w
 		move.b	#3,(v_superpal_timer).w
 		move.w	#$28,(v_superpal_frame).w
-		move.l	#Map_Sonic,obMap(a0)
+		character_asset CharacterAsset_Map,obMap(a0),GetPlayer1Assets_Normal
 		cmpi.b	#id_Transform,obAnim(a0)	; normal Sonic has no transform animation
 		bne.s	.animready
 		move.b	#id_Walk,obAnim(a0)		; select a valid frame while airborne
@@ -3037,49 +3052,25 @@ Sonic_ApplySpeedSettings:
 ; ---------------------------------------------------------------------------
 
 Sonic_RefreshPalettes:
-		lea	(Pal_Sonic+4).l,a1
-		tst.b	(v_supersonic).w
-		beq.s	.normalpals
-		lea	(Pal_SuperSonic+4).l,a1
-
-.normalpals:
-		lea	(v_palette+$4).w,a2
-		move.l	(a1)+,(a2)+
-		move.l	(a1),(a2)
-
-		cmpi.b	#id_LZ,(v_zone).w
-		beq.s	.loadwater
-		cmpi.w	#(id_LZ<<8)+3,(v_zone).w
-		bne.s	.return
-
-.loadwater:
-		tst.b	(v_supersonic).w
-		beq.s	.normalwater
-		cmpi.b	#act4,(v_act).w		; SBZ3 has its own water tint
-		beq.s	.superSbz3Water
-		lea	(Pal_SuperSonicWater+4).l,a1
-		bra.s	.copywater
-
-.superSbz3Water:
-		lea	(Pal_SuperSonicSBZ3Water+4).l,a1
-		bra.s	.copywater
-
-.normalwater:
-		cmpi.w	#id_LZ_act4,(v_zone_act).w	; SBZ3 is Labyrinth act 4 internally
-		beq.s	.sbz3water
-		lea	(Pal_LZSonWater+4).l,a1
-		bra.s	.copywater
-
-.sbz3water:
-		lea	(Pal_SBZ3SonWat+4).l,a1
-
+        move.l a3,-(sp)
+        jsr (GetPlayer1Assets_Current).l
+        movea.l CharacterAsset_Palette(a3),a1
+        lea (v_palette+4).w,a2
+        move.l 4(a1),(a2)+
+        move.l 8(a1),(a2)
+        cmpi.b #id_LZ,(v_zone).w
+        bne.s .return
+        movea.l CharacterAsset_WaterPalette(a3),a1
+        cmpi.w #id_LZ_act4,(v_zone_act).w
+        bne.s .copywater
+        movea.l CharacterAsset_SBZ3Palette(a3),a1
 .copywater:
-		lea	(v_palette_water+$4).w,a2
-		move.l	(a1)+,(a2)+
-		move.l	(a1),(a2)
-
+        lea (v_palette_water+4).w,a2
+        move.l 4(a1),(a2)+
+        move.l 8(a1),(a2)
 .return:
-		rts
+        movea.l (sp)+,a3
+        rts
 ; End of function Sonic_RefreshPalettes
 
 ; ---------------------------------------------------------------------------
@@ -3112,6 +3103,8 @@ Sonic_AirRoll:
 
 ; Dash toward the closest valid target, or in the direction Sonic faces.
 Sonic_HomingAttack:
+		cmpi.b #Character_Tails,(v_character_p1).w
+		beq.s .return
 		btst	#7,obStatus(a0)				; only one attack per jump until a target is hit
 		bne.s	.return
 		moveq	#btnABC,d0

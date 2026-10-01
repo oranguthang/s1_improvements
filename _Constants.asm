@@ -696,8 +696,8 @@ ArtTile_Title_Foreground:	equ Title_Background_Tiles	; Title Screen.eni (40x28) 
 ArtTile_Title_Sonic:		equ ArtTile_Title_Foreground+Title_Foreground_Tiles
 ArtTile_Title_PressStart:	equ ArtTile_Title_Sonic+Title_Sonic_Tiles
 ArtTile_Title_Trademark:	equ ArtTile_Title_PressStart+Title_PSB_Tiles
-ArtTile_Title_Menu: equ $580			; 60 text tiles; $A000 stages submenu tilemaps
-Title_Menu_Tiles: equ 3*20
+ArtTile_Title_Menu: equ $580			; 80 text tiles; $A000 stages submenu tilemaps
+Title_Menu_Tiles: equ 4*20
 ArtTile_Level_Select_Font:	equ $680
 	if ArtTile_Title_Trademark+Title_TM_Tiles>ArtTile_Title_Menu
 		error "Title menu overlaps the packed title art"
@@ -835,3 +835,43 @@ check_game_art_slot: macro first,tiles
 	check_game_art_slot ArtTile_SpinDust,18
 	check_game_art_slot ArtTile_Shield,Shield_Slot_Tiles
 	check_game_art_slot ArtTile_Debug_Coords,Debug_Coords_Tiles
+
+; Character resource descriptors (normal and Super are separate records).
+Character_Sonic: equ 0
+Character_Tails: equ 1
+Character_Count: equ 2
+Character_Off: equ $FF
+CharacterAsset_Art: equ 0
+CharacterAsset_Map: equ 4
+CharacterAsset_DPLC: equ 8
+CharacterAsset_Anim: equ 12
+CharacterAsset_Palette: equ 16
+CharacterAsset_WaterPalette: equ 20
+CharacterAsset_SBZ3Palette: equ 24
+CharacterAsset_Cycle: equ 28
+CharacterAsset_WaterCycle: equ 32
+CharacterAsset_SBZ3Cycle: equ 36
+CharacterAsset_Run: equ 40
+CharacterAsset_Walk: equ 44
+CharacterAsset_Roll: equ 48
+CharacterAsset_RollFast: equ 52
+CharacterAsset_Push: equ 56
+CharacterAsset_Figure8: equ 60
+CharacterAsset_SharedArt: equ 64
+CharacterAsset_SharedFirst: equ 68
+CharacterAsset_SharedEnd: equ 69
+CharacterAsset_PaletteID: equ 70
+CharacterAsset_WaterID: equ 71
+CharacterAsset_SBZ3ID: equ 72
+CharacterAsset_HUD: equ 73
+CharacterAsset_Size: equ 74
+
+; Read one pointer using a descriptor getter; target must not be a3.
+; The lookup preserves all input registers and flags except target and a3;
+; this macro additionally preserves a3. MOVEA targets also preserve flags.
+character_asset: macro field,target,form
+        move.l a3,-(sp)
+        jsr (form).l
+        move.l field(a3),target
+        movea.l (sp)+,a3
+        endm

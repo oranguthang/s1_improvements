@@ -123,12 +123,7 @@ PSB_Exit:	; Routine 4
 ; ===========================================================================
 
 PSB_PrsStart:	; Routine 2
-		tst.b	(v_title_unlocked).w
-		beq.s	.oldPSB
-		jmp	(PSB_TitleMenu).l
-	.oldPSB:
-		lea	(Ani_PSBTM).l,a1			; "PRESS START" is animated
-		bra.w	AnimateSprite				; flash PSB object
+		jmp (PSB_TitleMenu).l
 
 ; ===========================================================================
 

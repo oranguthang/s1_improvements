@@ -93,7 +93,10 @@ v_lightdash_stall: ds.b 1
 v_lightdash_have_last_ring: ds.b 1
 v_lightdash_near_ground: ds.b 1
 v_lightdash_end:
-                    ds.b $200-4-colqueue_entries*2-2-(v_lightdash_end-v_lightdash_start)
+v_tails_flying: ds.b 1                 ; airborne flight/swim state (0 = inactive)
+v_tails_flap: ds.b 1                   ; remaining ascent pulse frames
+v_tails_flytime: ds.w 1                ; flight endurance, in game frames
+                    ds.b $200-4-colqueue_entries*2-2-(v_lightdash_end-v_lightdash_start)-4
 v_tracksonic:		ds.b	$100				; position tracking data for Sonic
 v_hscrolltablebuffer:	ds.b	$380				; scrolling table data
 v_hscrolltablebuffer_end:
@@ -452,7 +455,8 @@ v_timemin:		equ	v_time+1			; time - minutes
 v_timesec:		equ	v_time+2			; time - seconds
 v_timecent:		equ	v_time+3			; time - centiseconds
 v_score:		ds.l	1				; score
-			ds.b	2				; unused
+v_character_p1: ds.b 1 ; selected character for player slot 0
+v_character_p2: ds.b 1 ; selected character for player slot 1 (reserved)
 v_shield:		ds.b	1				; shield status (00 = no; 01 = yes)
 v_invinc:		ds.b	1				; invincibility status (00 = no; 01 = yes)
 v_shoes:		ds.b	1				; speed shoes status (00 = no; 01 = yes)
@@ -555,6 +559,7 @@ v_ss_selected: ds.b 1			; transient SS selector (0..5)
 v_ss_override: ds.b 1			; one-shot SS selector (1..6; 0 = automatic)
 v_ss_manual: ds.b 1			; return a manually selected SS to title after results
 v_endring_bonus: ds.b 1			; end ring already collected in this act
+v_options_menuitem: ds.b 1             ; transient player-options cursor
 v_dev_settings_end:
 			ds.b	$1C-(v_dev_settings_end-v_dev_settings) ; unused
 f_levselcheat:		ds.b	1				; level select cheat flag
