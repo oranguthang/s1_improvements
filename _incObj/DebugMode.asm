@@ -20,6 +20,7 @@ Debug_Index:	dc.w Debug_Init-Debug_Index			; 0 - init
 Debug_Init:	; Routine 0
 		clr.b (v_tails_flying).w
 		clr.b (v_tails_flap).w
+		clr.b (v_knux_state).w
 		cmpi.b	#6,obRoutine(a0)			; was debug entered from death rather than live play?
 		bhs.s	.rescue
 		cmpi.b	#id_Drown,obAnim(a0)		; drowning waits before switching to Sonic_Death

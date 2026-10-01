@@ -45,7 +45,8 @@ def test_source_bundle_has_checked_inputs() -> None:
     assert (source / "Fall.png").is_file()
 
 
-def test_output_cannot_escape_project(tmp_path: Path) -> None:
+def test_output_cannot_escape_project(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(common, "_ROOT", tmp_path / "project")
     with pytest.raises(ValueError, match="escapes"):
         common.write_outputs({tmp_path / "unrelated.bin": b"bad"}, apply=True)
     assert not (tmp_path / "unrelated.bin").exists()

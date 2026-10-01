@@ -40,9 +40,6 @@ palid_Ending:		makePalEntry	Pal_Ending, 		v_palette_line_1
 palid_SuperSonic:	makePalEntry	Pal_SuperSonic,		v_palette_line_1
 palid_SuperSonicWater:	makePalEntry	Pal_SuperSonicWater,	v_palette_line_1
 palid_SuperSonicSBZ3Water:	makePalEntry	Pal_SuperSonicSBZ3Water,	v_palette_line_1
-palid_Tails: makePalEntry Pal_Tails,v_palette_line_1
-palid_TailsWater: makePalEntry Pal_TailsWater,v_palette_line_1
-palid_TailsSBZ3Water: makePalEntry Pal_TailsSBZ3Water,v_palette_line_1
 	even
 
 
@@ -55,9 +52,6 @@ Pal_SegaBG:		bincludeEndMarker	"palette/Sega Background.bin"
 Pal_Title:		bincludeEndMarker	"palette/Title Screen.bin"
 Pal_LevelSel:		bincludeEndMarker	"palette/Level Select.bin"
 Pal_Sonic:		bincludeEndMarker	"palette/Sonic.bin"
-Pal_Tails: bincludeEndMarker "palette/Tails.bin"
-Pal_TailsWater: bincludeEndMarker "palette/Tails - LZ Underwater.bin"
-Pal_TailsSBZ3Water: bincludeEndMarker "palette/Tails - SBZ3 Underwater.bin"
 Pal_GHZ:		bincludeEndMarker	"palette/Green Hill Zone.bin"
 Pal_LZ:			bincludeEndMarker	"palette/Labyrinth Zone.bin"
 Pal_LZWater:		bincludeEndMarker	"palette/Labyrinth Zone Underwater.bin"
@@ -77,14 +71,14 @@ Pal_Ending:		bincludeEndMarker	"palette/Ending.bin"
 
 Pal_SuperSonic:
 		dc.w $0000, $0000, $04AA, $0ACA, $0ECC, $0EEE, $0EEE, $0CC0
-		dc.w $0888, $0444, $08AE, $046A, $000E, $0008, $0004, $00EE
+		dc.w $0080, $0444, $08AE, $046A, $000E, $0008, $00AE, $008E
 Pal_SuperSonic_end:
 
 Pal_SuperSonicWater:
 		dc.w $0000, $0000, $0842, $0A64, $0C86, $0EA8, $0EEE, $0AAA
-		dc.w $0888, $0444, $06AA, $0266, $0048, $0024, $0002, $00EE
+		dc.w $0442, $0444, $06AA, $0266, $0048, $0024, $068A, $0468
 Pal_SuperSonicWater_end:
 Pal_SuperSonicSBZ3Water:
 		dc.w $0000, $0000, $0A46, $0C68, $0E8A, $0EAC, $0ECE, $0CAC
-		dc.w $0868, $0646, $0CAE, $086C, $060C, $0426, $0004, $00EE
+		dc.w $0646, $0646, $0CAE, $086C, $060C, $0426, $08AC, $066A
 Pal_SuperSonicSBZ3Water_end:

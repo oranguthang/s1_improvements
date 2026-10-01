@@ -65,6 +65,11 @@ Sonic_LightDashStart:
         bne.s .poseReady
         move.b #3,(v_superpal_state).w    ; let Super dash while its palette still fades
 .poseReady:
+        ; A successful dash replaces flight/gliding. Clear their attack and
+        ; pose flags before this routine skips the ability caller's return.
+        jsr (Knuckles_EndAbility).l
+        clr.b (v_tails_flying).w
+        clr.b (v_tails_flap).w
         move.b #1,(v_lightdash).w
         move.w (v_zone_act).w,(v_lightdash_act).w
         move.w #LightDash_MaxFrames,(v_lightdash_timer).w

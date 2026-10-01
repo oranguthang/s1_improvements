@@ -96,7 +96,13 @@ v_lightdash_end:
 v_tails_flying: ds.b 1                 ; airborne flight/swim state (0 = inactive)
 v_tails_flap: ds.b 1                   ; remaining ascent pulse frames
 v_tails_flytime: ds.w 1                ; flight endurance, in game frames
-                    ds.b $200-4-colqueue_entries*2-2-(v_lightdash_end-v_lightdash_start)-4
+v_knux_state: ds.b 1                  ; 0 normal, 1 glide, 2 fall, 3 climb, 4 ledge, 5 slide
+v_knux_turn: ds.b 1                   ; glide heading (0 right, $80 left)
+v_knux_speed: ds.w 1                  ; positive glide speed
+v_knux_wall_x: ds.w 1                 ; wall grab position, detects external pushes
+v_knux_frame: ds.b 1                  ; climbing/ledge pose
+v_knux_timer: ds.b 1                  ; climbing/ledge animation timer
+                    ds.b $200-4-colqueue_entries*2-2-(v_lightdash_end-v_lightdash_start)-12
 v_tracksonic:		ds.b	$100				; position tracking data for Sonic
 v_hscrolltablebuffer:	ds.b	$380				; scrolling table data
 v_hscrolltablebuffer_end:

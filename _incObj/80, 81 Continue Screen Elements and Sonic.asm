@@ -148,8 +148,8 @@ CSon_ChkLand:	; Routine 2
 
 		addq.b	#2,obRoutine(a0)			; advance to CSon_Animate
 		clr.w	obVelY(a0)				; stop Sonic falling
-		cmpi.b #Character_Tails,(v_character_p1).w
-		bne.s .sonicPose
+		cmpi.b #Character_Sonic,(v_character_p1).w
+		beq.s .sonicPose
 		move.b #id_Duck,obAnim(a0)
 		bra.s CSon_Animate
 .sonicPose:
@@ -168,8 +168,8 @@ CSon_ShowFall:
 CSon_Animate:	; Routine 4
 		tst.b	(v_jpadpress1).w			; has Start button been pressed?
 		bmi.s	.continueUsed				; if yes, continue has been used
-		cmpi.b #Character_Tails,(v_character_p1).w
-		bne.s .sonicPose
+		cmpi.b #Character_Sonic,(v_character_p1).w
+		beq.s .sonicPose
 		jsr (Sonic_Animate).l
 		jmp (Sonic_LoadGfx).l
 .sonicPose:

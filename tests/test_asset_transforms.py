@@ -50,6 +50,8 @@ def test_nemesis_pixels_preserve_template(name: str) -> None:
         ("player", "figure8", "--verify"),
         ("player", "air", "--verify"),
         ("player", "tails"),
+        ("player", "knuckles"),
+        ("player", "palette"),
         ("palettes", "badniks", "--verify"),
         ("palettes", "objects", "--verify"),
         ("palettes", "water", "--check"),
@@ -110,3 +112,37 @@ def test_palette_preview_is_portable(tmp_path: Path) -> None:
     text = output.read_text()
     assert "const frames=" in text
     assert "Frame ${n+1}" in text
+
+
+def test_shared_palette_preserves_unselected_tiles() -> None:
+    from s1tools.common import get_source, load_data
+
+    source = get_source("shared")
+    for name, asset in load_data("shared_player_palette.json")["assets"].items():
+        suffix = Path(name).suffix
+        decode = (
+            nemesis.decode
+            if suffix == ".nem"
+            else kosinski.decode_moduled
+            if suffix == ".kosm"
+            else bytes
+        )
+        before = decode((source / asset["source"]).read_bytes())
+        after = decode((ROOT / name).read_bytes())
+        selected = {tile for start, end in asset["ranges"] for tile in range(start, end)}
+        assert len(before) == len(after), name
+        for tile in range(len(before) // 32):
+            if tile not in selected:
+                assert before[tile * 32 : (tile + 1) * 32] == after[tile * 32 : (tile + 1) * 32], (
+                    name,
+                    tile,
+                )
+
+
+def test_score_label_uses_the_same_yellow_for_dynamic_e() -> None:
+    hud = kosinski.decode_moduled((ROOT / "artkosm/HUD.kosm").read_bytes())
+    numbers = (ROOT / "artunc/HUD Numbers.unc").read_bytes()
+    # SCOR is resident art; E is uploaded separately by Hud_Base.
+    for glyph in (hud[: 8 * 32], numbers[22 * 32 : 24 * 32]):
+        colours = {n for b in glyph for n in (b >> 4, b & 15)}
+        assert 12 in colours and colours <= {0, 1, 12}

@@ -839,7 +839,8 @@ check_game_art_slot: macro first,tiles
 ; Character resource descriptors (normal and Super are separate records).
 Character_Sonic: equ 0
 Character_Tails: equ 1
-Character_Count: equ 2
+Character_Knuckles: equ 2
+Character_Count: equ 3
 Character_Off: equ $FF
 CharacterAsset_Art: equ 0
 CharacterAsset_Map: equ 4

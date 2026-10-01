@@ -261,12 +261,19 @@ React_Monitor:
 ; ---------------------------------------------------------------------------
 
 .chkBreakMonitor:
+		cmpi.b #1,(v_knux_state).w
+		beq.s .knucklesBreak
+		cmpi.b #5,(v_knux_state).w
+		beq.s .knucklesBreak
 		cmpi.b	#id_Roll,obAnim(a0)			; is Sonic rolling/jumping?
 		bne.s	.return					; if not, don't break monitor
 		neg.w	obVelY(a0)				; reverse Sonic's y-motion
 		addq.b	#2,obRoutine(a1)			; advance the monitor's routine counter
 		bsr.w	React_ResetHomingAttack		; bounce and permit another dash after breaking a monitor
 
+		rts
+.knucklesBreak:
+		addq.b #2,obRoutine(a1) ; glide keeps its trajectory through a monitor
 	.return:
 		rts						; return
 
@@ -277,6 +284,10 @@ React_Monitor:
 ; ---------------------------------------------------------------------------
 
 React_Enemy:
+		cmpi.b #1,(v_knux_state).w
+		beq.s .checkBossHit
+		cmpi.b #5,(v_knux_state).w
+		beq.s .checkBossHit
 		tst.b	(v_invinc).w				; is Sonic invincible?
 		bne.s	.checkBossHit				; if yes, branch
 		tst.b	(v_supersonic).w			; Super Sonic damages badniks on contact
@@ -433,6 +444,7 @@ HurtSonic:
 	.bounceSonicAway:
 		move.b	#0,(v_shield).w				; remove a potential shield
 		move.b	#4,obRoutine(a0)			; set Sonic to "Sonic_Hurt" routine
+		jsr	(Knuckles_EndAbility).l		; restore the standing hitbox before damage/death
 		jsr	(Sonic_ResetOnFloor).l			; reset airborne state
 		bset	#1,obStatus(a0)				; force airborne flag again
 
@@ -524,6 +536,7 @@ KillSonic:
 		jsr	(Sonic_RefreshPalettes).l
 		movem.l	(sp)+,a1-a2
 		move.b	#6,obRoutine(a0)			; set Sonic to "Sonic_Death" routine
+		jsr	(Knuckles_EndAbility).l		; restore the standing hitbox before damage/death
 		jsr	(Sonic_ResetOnFloor).l			; reset airborne state
 		bset	#1,obStatus(a0)				; force airborne flag again
 

@@ -16,6 +16,7 @@ from s1tools.codecs.nemesis import decode as nemesis_decode
 from s1tools.common import get_root, get_source
 from s1tools.palettes import water_DEFAULT as palettes_water_DEFAULT
 from s1tools.palettes import water_expected_outputs as palettes_water_expected_outputs
+from s1tools.shared_palette import remap_art as shared_remap_art
 from s1tools.sprites import decode_tiles as sprites_decode_tiles
 from s1tools.sprites import parse_mappings as sprites_parse_mappings
 from s1tools.sprites import parse_number as sprites_parse_number
@@ -214,11 +215,13 @@ def super_expected_outputs(root: Path, source: Path) -> dict[Path, bytes]:
         .replace("smpsHeaderStartSong 2", "smpsHeaderStartSong 1", 1)
     )
     outputs: dict[Path, bytes] = {
-        root / "artunc/Super Sonic.unc": art,
+        root / "artunc/Super Sonic.unc": shared_remap_art("artunc/Super Sonic.unc", art),
         root / "_maps/Super Sonic.asm": mappings,
         root / "_maps/Super Sonic - Dynamic Gfx Script.asm": dplc,
         root / "palette/Cycle - Super Sonic.bin": dry_palette,
-        root / "artunc/Super Sonic Stars.unc": nemesis_decode(sources["stars_art"]),
+        root / "artunc/Super Sonic Stars.unc": shared_remap_art(
+            "artunc/Super Sonic Stars.unc", nemesis_decode(sources["stars_art"])
+        ),
         root / "_maps/Super Sonic Stars.asm": star_map.encode("ascii"),
         root / "sound/sfx/SndA2 - Super Transform.asm": transform_sfx.encode("ascii"),
     }
@@ -450,7 +453,9 @@ def figure8_assets(source):
                 + "\n".join(lines)
                 + "\n\teven\n"
             ).encode("ascii")
-        outputs[figure8_ROOT / "artunc" / f"{form} Figure8.unc"] = bytes(packed)
+        outputs[figure8_ROOT / "artunc" / f"{form} Figure8.unc"] = shared_remap_art(
+            f"artunc/{form} Figure8.unc", bytes(packed)
+        )
     return (outputs, normal, superframes)
 
 
@@ -529,7 +534,11 @@ def air_assets(source):
             count -= n
         dplcs.extend([label + "_PLC_End", ""])
         packed.extend(art)
-    outputs = {figure8_ROOT / "artunc/Sonic Air Poses.unc": bytes(packed)}
+    outputs = {
+        figure8_ROOT / "artunc/Sonic Air Poses.unc": shared_remap_art(
+            "artunc/Sonic Air Poses.unc", bytes(packed)
+        )
+    }
     for name, lines in [
         ("Map", maps),
         ("DPLC", dplcs),

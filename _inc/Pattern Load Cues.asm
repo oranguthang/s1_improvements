@@ -77,6 +77,7 @@ plcid_Credits:		plcptr	PLC_Credits
 plcid_Points:		plcptr	PLC_Points
 plcid_PlayerHUD:		plcptr	PLC_PlayerHUD
 plcid_TailsHUD: plcptr PLC_TailsHUD
+plcid_KnucklesHUD: plcptr PLC_KnucklesHUD
 
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - standard block 1
@@ -513,3 +514,6 @@ PLC_PlayerHUD_end:
 PLC_TailsHUD: plcheader
         plcm KosM_TailsLives,ArtTile_Lives_Counter
 PLC_TailsHUD_end:
+PLC_KnucklesHUD: plcheader
+        plcm KosM_KnucklesLives,ArtTile_Lives_Counter
+PLC_KnucklesHUD_end:

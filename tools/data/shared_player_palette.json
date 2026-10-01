@@ -1,0 +1,1477 @@
+{
+  "assets": {
+    "artnem/Animal Chicken.nem": {
+      "source": "artnem/Animal Chicken.nem",
+      "ranges": [
+        [
+          0,
+          14
+        ]
+      ]
+    },
+    "artkosm/Animal Chicken.kosm": {
+      "source": "artkosm/Animal Chicken.kosm",
+      "ranges": [
+        [
+          0,
+          14
+        ]
+      ]
+    },
+    "artnem/Animal Flicky.nem": {
+      "source": "artnem/Animal Flicky.nem",
+      "ranges": [
+        [
+          0,
+          14
+        ]
+      ]
+    },
+    "artkosm/Animal Flicky.kosm": {
+      "source": "artkosm/Animal Flicky.kosm",
+      "ranges": [
+        [
+          0,
+          14
+        ]
+      ]
+    },
+    "artnem/Animal Penguin.nem": {
+      "source": "artnem/Animal Penguin.nem",
+      "ranges": [
+        [
+          0,
+          18
+        ]
+      ]
+    },
+    "artkosm/Animal Penguin.kosm": {
+      "source": "artkosm/Animal Penguin.kosm",
+      "ranges": [
+        [
+          0,
+          18
+        ]
+      ]
+    },
+    "artnem/Animal Pig.nem": {
+      "source": "artnem/Animal Pig.nem",
+      "ranges": [
+        [
+          0,
+          18
+        ]
+      ]
+    },
+    "artkosm/Animal Pig.kosm": {
+      "source": "artkosm/Animal Pig.kosm",
+      "ranges": [
+        [
+          0,
+          18
+        ]
+      ]
+    },
+    "artnem/Animal Rabbit.nem": {
+      "source": "artnem/Animal Rabbit.nem",
+      "ranges": [
+        [
+          0,
+          18
+        ]
+      ]
+    },
+    "artkosm/Animal Rabbit.kosm": {
+      "source": "artkosm/Animal Rabbit.kosm",
+      "ranges": [
+        [
+          0,
+          18
+        ]
+      ]
+    },
+    "artnem/Animal Seal.nem": {
+      "source": "artnem/Animal Seal.nem",
+      "ranges": [
+        [
+          0,
+          14
+        ]
+      ]
+    },
+    "artkosm/Animal Seal.kosm": {
+      "source": "artkosm/Animal Seal.kosm",
+      "ranges": [
+        [
+          0,
+          14
+        ]
+      ]
+    },
+    "artnem/Animal Squirrel.nem": {
+      "source": "artnem/Animal Squirrel.nem",
+      "ranges": [
+        [
+          0,
+          18
+        ]
+      ]
+    },
+    "artkosm/Animal Squirrel.kosm": {
+      "source": "artkosm/Animal Squirrel.kosm",
+      "ranges": [
+        [
+          0,
+          18
+        ]
+      ]
+    },
+    "artnem/Boss - Eggman after FZ Fight.nem": {
+      "source": "artnem/Boss - Eggman after FZ Fight.nem",
+      "ranges": [
+        [
+          32,
+          58
+        ]
+      ],
+      "mappings": "_maps/FZ Damaged Eggmobile.asm"
+    },
+    "artkosm/Boss - Eggman after FZ Fight.kosm": {
+      "source": "artkosm/Boss - Eggman after FZ Fight.kosm",
+      "ranges": [
+        [
+          32,
+          58
+        ]
+      ],
+      "mappings": "_maps/FZ Damaged Eggmobile.asm"
+    },
+    "artnem/Boss - Eggman in SBZ2 & FZ.nem": {
+      "source": "artnem/Boss - Eggman in SBZ2 & FZ.nem",
+      "ranges": [
+        [
+          0,
+          12
+        ],
+        [
+          14,
+          50
+        ],
+        [
+          52,
+          105
+        ],
+        [
+          111,
+          144
+        ]
+      ],
+      "mappings": "_maps/Eggman - Scrap Brain 2.asm"
+    },
+    "artkosm/Boss - Eggman in SBZ2 & FZ.kosm": {
+      "source": "artkosm/Boss - Eggman in SBZ2 & FZ.kosm",
+      "ranges": [
+        [
+          0,
+          12
+        ],
+        [
+          14,
+          50
+        ],
+        [
+          52,
+          105
+        ],
+        [
+          111,
+          144
+        ]
+      ],
+      "mappings": "_maps/Eggman - Scrap Brain 2.asm"
+    },
+    "artnem/Boss - Exhaust Flame.nem": {
+      "source": "artnem/Boss - Exhaust Flame.nem",
+      "ranges": [
+        [
+          0,
+          17
+        ]
+      ]
+    },
+    "artkosm/Boss - Exhaust Flame.kosm": {
+      "source": "artkosm/Boss - Exhaust Flame.kosm",
+      "ranges": [
+        [
+          0,
+          17
+        ]
+      ]
+    },
+    "artnem/Boss - Final Zone.nem": {
+      "source": "artnem/Boss - Final Zone.nem",
+      "ranges": [
+        [
+          104,
+          110
+        ]
+      ],
+      "mappings": "_maps/FZ Eggman's Cylinders.asm"
+    },
+    "artkosm/Boss - Final Zone.kosm": {
+      "source": "artkosm/Boss - Final Zone.kosm",
+      "ranges": [
+        [
+          104,
+          110
+        ]
+      ],
+      "mappings": "_maps/FZ Eggman's Cylinders.asm"
+    },
+    "artnem/Boss - Main.nem": {
+      "source": "artnem/Boss - Main.nem",
+      "ranges": [
+        [
+          0,
+          16
+        ],
+        [
+          45,
+          108
+        ]
+      ],
+      "mappings": "_maps/Eggman.asm"
+    },
+    "artkosm/Boss - Main.kosm": {
+      "source": "artkosm/Boss - Main.kosm",
+      "ranges": [
+        [
+          0,
+          16
+        ],
+        [
+          45,
+          108
+        ]
+      ],
+      "mappings": "_maps/Eggman.asm"
+    },
+    "artnem/Boss - Weapons.nem": {
+      "source": "artnem/Boss - Weapons.nem",
+      "ranges": [
+        [
+          0,
+          42
+        ]
+      ]
+    },
+    "artkosm/Boss - Weapons.kosm": {
+      "source": "artkosm/Boss - Weapons.kosm",
+      "ranges": [
+        [
+          0,
+          42
+        ]
+      ]
+    },
+    "artnem/Ending - Sonic.nem": {
+      "source": "artnem/Ending - Sonic.nem",
+      "ranges": [
+        [
+          0,
+          323
+        ]
+      ]
+    },
+    "artkosm/Ending - Sonic.kosm": {
+      "source": "artkosm/Ending - Sonic.kosm",
+      "ranges": [
+        [
+          0,
+          323
+        ]
+      ]
+    },
+    "artnem/Enemy Basaran.nem": {
+      "source": "artnem/Enemy Basaran.nem",
+      "ranges": [
+        [
+          0,
+          41
+        ]
+      ],
+      "mappings": "_maps/Basaran.asm"
+    },
+    "artkosm/Enemy Basaran.kosm": {
+      "source": "artkosm/Enemy Basaran.kosm",
+      "ranges": [
+        [
+          0,
+          41
+        ]
+      ],
+      "mappings": "_maps/Basaran.asm"
+    },
+    "artnem/Enemy Bomb.nem": {
+      "source": "artnem/Enemy Bomb.nem",
+      "ranges": [
+        [
+          0,
+          41
+        ]
+      ],
+      "mappings": "_maps/Bomb Enemy.asm"
+    },
+    "artkosm/Enemy Bomb.kosm": {
+      "source": "artkosm/Enemy Bomb.kosm",
+      "ranges": [
+        [
+          0,
+          41
+        ]
+      ],
+      "mappings": "_maps/Bomb Enemy.asm"
+    },
+    "artnem/Enemy Burrobot.nem": {
+      "source": "artnem/Enemy Burrobot.nem",
+      "ranges": [
+        [
+          0,
+          90
+        ]
+      ],
+      "mappings": "_maps/Burrobot.asm"
+    },
+    "artkosm/Enemy Burrobot.kosm": {
+      "source": "artkosm/Enemy Burrobot.kosm",
+      "ranges": [
+        [
+          0,
+          90
+        ]
+      ],
+      "mappings": "_maps/Burrobot.asm"
+    },
+    "artnem/Enemy Buzz Bomber.nem": {
+      "source": "artnem/Enemy Buzz Bomber.nem",
+      "ranges": [
+        [
+          0,
+          36
+        ],
+        [
+          48,
+          51
+        ]
+      ],
+      "mappings": "_maps/Buzz Bomber.asm"
+    },
+    "artkosm/Enemy Buzz Bomber.kosm": {
+      "source": "artkosm/Enemy Buzz Bomber.kosm",
+      "ranges": [
+        [
+          0,
+          36
+        ],
+        [
+          48,
+          51
+        ]
+      ],
+      "mappings": "_maps/Buzz Bomber.asm"
+    },
+    "artnem/Enemy Chopper.nem": {
+      "source": "artnem/Enemy Chopper.nem",
+      "ranges": [
+        [
+          0,
+          32
+        ]
+      ],
+      "mappings": "_maps/Chopper.asm"
+    },
+    "artkosm/Enemy Chopper.kosm": {
+      "source": "artkosm/Enemy Chopper.kosm",
+      "ranges": [
+        [
+          0,
+          32
+        ]
+      ],
+      "mappings": "_maps/Chopper.asm"
+    },
+    "artnem/Enemy Motobug.nem": {
+      "source": "artnem/Enemy Motobug.nem",
+      "ranges": [
+        [
+          0,
+          29
+        ]
+      ],
+      "mappings": "_maps/Moto Bug.asm"
+    },
+    "artkosm/Enemy Motobug.kosm": {
+      "source": "artkosm/Enemy Motobug.kosm",
+      "ranges": [
+        [
+          0,
+          29
+        ]
+      ],
+      "mappings": "_maps/Moto Bug.asm"
+    },
+    "artnem/Enemy Newtron.nem": {
+      "source": "artnem/Enemy Newtron.nem",
+      "ranges": [
+        [
+          0,
+          85
+        ]
+      ],
+      "mappings": "_maps/Newtron.asm"
+    },
+    "artkosm/Enemy Newtron.kosm": {
+      "source": "artkosm/Enemy Newtron.kosm",
+      "ranges": [
+        [
+          0,
+          85
+        ]
+      ],
+      "mappings": "_maps/Newtron.asm"
+    },
+    "artnem/Enemy Orbinaut.nem": {
+      "source": "artnem/Enemy Orbinaut.nem",
+      "ranges": [
+        [
+          0,
+          31
+        ]
+      ],
+      "mappings": "_maps/Orbinaut.asm"
+    },
+    "artkosm/Enemy Orbinaut.kosm": {
+      "source": "artkosm/Enemy Orbinaut.kosm",
+      "ranges": [
+        [
+          0,
+          31
+        ]
+      ],
+      "mappings": "_maps/Orbinaut.asm"
+    },
+    "artnem/Enemy Roller.nem": {
+      "source": "artnem/Enemy Roller.nem",
+      "ranges": [
+        [
+          0,
+          80
+        ]
+      ],
+      "mappings": "_maps/Roller.asm"
+    },
+    "artkosm/Enemy Roller.kosm": {
+      "source": "artkosm/Enemy Roller.kosm",
+      "ranges": [
+        [
+          0,
+          80
+        ]
+      ],
+      "mappings": "_maps/Roller.asm"
+    },
+    "artnem/Fireballs.nem": {
+      "source": "artnem/Fireballs.nem",
+      "ranges": [
+        [
+          0,
+          44
+        ]
+      ]
+    },
+    "artkosm/Fireballs.kosm": {
+      "source": "artkosm/Fireballs.kosm",
+      "ranges": [
+        [
+          0,
+          44
+        ]
+      ]
+    },
+    "artnem/LZ Bubbles & Countdown.nem": {
+      "source": "artnem/LZ Bubbles & Countdown.nem",
+      "ranges": [
+        [
+          44,
+          68
+        ]
+      ],
+      "mappings": "_maps/Bubbles and Drowning Countdown.asm"
+    },
+    "artkosm/LZ Bubbles & Countdown.kosm": {
+      "source": "artkosm/LZ Bubbles & Countdown.kosm",
+      "ranges": [
+        [
+          44,
+          68
+        ]
+      ],
+      "mappings": "_maps/Bubbles and Drowning Countdown.asm"
+    },
+    "artnem/LZ Gargoyle & Fireball.nem": {
+      "source": "artnem/LZ Gargoyle & Fireball.nem",
+      "ranges": [
+        [
+          13,
+          17
+        ]
+      ],
+      "mappings": "_maps/Gargoyle.asm"
+    },
+    "artkosm/LZ Gargoyle & Fireball.kosm": {
+      "source": "artkosm/LZ Gargoyle & Fireball.kosm",
+      "ranges": [
+        [
+          13,
+          17
+        ]
+      ],
+      "mappings": "_maps/Gargoyle.asm"
+    },
+    "artnem/LZ Harpoon.nem": {
+      "source": "artnem/LZ Harpoon.nem",
+      "ranges": [
+        [
+          0,
+          18
+        ]
+      ]
+    },
+    "artkosm/LZ Harpoon.kosm": {
+      "source": "artkosm/LZ Harpoon.kosm",
+      "ranges": [
+        [
+          0,
+          18
+        ]
+      ]
+    },
+    "artnem/Lamppost.nem": {
+      "source": "artnem/Lamppost.nem",
+      "ranges": [
+        [
+          0,
+          2
+        ],
+        [
+          6,
+          10
+        ]
+      ],
+      "mappings": "_maps/Lamppost.asm"
+    },
+    "artkosm/Lamppost.kosm": {
+      "source": "artkosm/Lamppost.kosm",
+      "ranges": [
+        [
+          0,
+          2
+        ],
+        [
+          6,
+          10
+        ]
+      ],
+      "mappings": "_maps/Lamppost.asm"
+    },
+    "artnem/Monitors.nem": {
+      "source": "artnem/Monitors.nem",
+      "ranges": [
+        [
+          0,
+          64
+        ]
+      ]
+    },
+    "artkosm/Monitors.kosm": {
+      "source": "artkosm/Monitors.kosm",
+      "ranges": [
+        [
+          0,
+          64
+        ]
+      ]
+    },
+    "artnem/Prison Capsule.nem": {
+      "source": "artnem/Prison Capsule.nem",
+      "ranges": [
+        [
+          60,
+          66
+        ],
+        [
+          79,
+          85
+        ]
+      ],
+      "mappings": "_maps/Prison Capsule.asm"
+    },
+    "artkosm/Prison Capsule.kosm": {
+      "source": "artkosm/Prison Capsule.kosm",
+      "ranges": [
+        [
+          60,
+          66
+        ],
+        [
+          79,
+          85
+        ]
+      ],
+      "mappings": "_maps/Prison Capsule.asm"
+    },
+    "artnem/SBZ Spinning Platform.nem": {
+      "source": "artnem/SBZ Spinning Platform.nem",
+      "ranges": [
+        [
+          0,
+          48
+        ]
+      ]
+    },
+    "artkosm/SBZ Spinning Platform.kosm": {
+      "source": "artkosm/SBZ Spinning Platform.kosm",
+      "ranges": [
+        [
+          0,
+          48
+        ]
+      ]
+    },
+    "artnem/SLZ Little Spikeball.nem": {
+      "source": "artnem/SLZ Little Spikeball.nem",
+      "ranges": [
+        [
+          0,
+          18
+        ]
+      ]
+    },
+    "artkosm/SLZ Little Spikeball.kosm": {
+      "source": "artkosm/SLZ Little Spikeball.kosm",
+      "ranges": [
+        [
+          0,
+          18
+        ]
+      ]
+    },
+    "artnem/SLZ Pylon.nem": {
+      "source": "artnem/SLZ Pylon.nem",
+      "ranges": [
+        [
+          0,
+          16
+        ]
+      ]
+    },
+    "artkosm/SLZ Pylon.kosm": {
+      "source": "artkosm/SLZ Pylon.kosm",
+      "ranges": [
+        [
+          0,
+          16
+        ]
+      ]
+    },
+    "artnem/SLZ Seesaw.nem": {
+      "source": "artnem/SLZ Seesaw.nem",
+      "ranges": [
+        [
+          0,
+          44
+        ]
+      ]
+    },
+    "artkosm/SLZ Seesaw.kosm": {
+      "source": "artkosm/SLZ Seesaw.kosm",
+      "ranges": [
+        [
+          0,
+          44
+        ]
+      ]
+    },
+    "artnem/SYZ Bumper.nem": {
+      "source": "artnem/SYZ Bumper.nem",
+      "ranges": [
+        [
+          0,
+          22
+        ]
+      ]
+    },
+    "artkosm/SYZ Bumper.kosm": {
+      "source": "artkosm/SYZ Bumper.kosm",
+      "ranges": [
+        [
+          0,
+          22
+        ]
+      ]
+    },
+    "artnem/SYZ Large Spikeball.nem": {
+      "source": "artnem/SYZ Large Spikeball.nem",
+      "ranges": [
+        [
+          0,
+          36
+        ]
+      ]
+    },
+    "artkosm/SYZ Large Spikeball.kosm": {
+      "source": "artkosm/SYZ Large Spikeball.kosm",
+      "ranges": [
+        [
+          0,
+          36
+        ]
+      ]
+    },
+    "artnem/SYZ Small Spikeball.nem": {
+      "source": "artnem/SYZ Small Spikeball.nem",
+      "ranges": [
+        [
+          0,
+          4
+        ]
+      ]
+    },
+    "artkosm/SYZ Small Spikeball.kosm": {
+      "source": "artkosm/SYZ Small Spikeball.kosm",
+      "ranges": [
+        [
+          0,
+          4
+        ]
+      ]
+    },
+    "artnem/Signpost.nem": {
+      "source": "artnem/Signpost.nem",
+      "ranges": [
+        [
+          0,
+          58
+        ]
+      ]
+    },
+    "artkosm/Signpost.kosm": {
+      "source": "artkosm/Signpost.kosm",
+      "ranges": [
+        [
+          0,
+          58
+        ]
+      ]
+    },
+    "artnem/Spring Horizontal.nem": {
+      "source": "artnem/Spring Horizontal.nem",
+      "ranges": [
+        [
+          0,
+          16
+        ]
+      ]
+    },
+    "artkosm/Spring Horizontal.kosm": {
+      "source": "artkosm/Spring Horizontal.kosm",
+      "ranges": [
+        [
+          0,
+          16
+        ]
+      ]
+    },
+    "artnem/Spring Vertical.nem": {
+      "source": "artnem/Spring Vertical.nem",
+      "ranges": [
+        [
+          0,
+          14
+        ]
+      ]
+    },
+    "artkosm/Spring Vertical.kosm": {
+      "source": "artkosm/Spring Vertical.kosm",
+      "ranges": [
+        [
+          0,
+          14
+        ]
+      ]
+    },
+    "artnem/Switch.nem": {
+      "source": "artnem/Switch.nem",
+      "ranges": [
+        [
+          0,
+          12
+        ]
+      ]
+    },
+    "artkosm/Switch.kosm": {
+      "source": "artkosm/Switch.kosm",
+      "ranges": [
+        [
+          0,
+          12
+        ]
+      ]
+    },
+    "artnem/Unused - Goggles.nem": {
+      "source": "artnem/Unused - Goggles.nem",
+      "ranges": [
+        [
+          0,
+          36
+        ]
+      ]
+    },
+    "artkosm/Unused - Goggles.kosm": {
+      "source": "artkosm/Unused - Goggles.kosm",
+      "ranges": [
+        [
+          0,
+          36
+        ]
+      ]
+    },
+    "artnem/Unused - LZ Sonic.nem": {
+      "source": "artnem/Unused - LZ Sonic.nem",
+      "ranges": [
+        [
+          0,
+          15
+        ]
+      ]
+    },
+    "artkosm/Unused - LZ Sonic.kosm": {
+      "source": "artkosm/Unused - LZ Sonic.kosm",
+      "ranges": [
+        [
+          0,
+          15
+        ]
+      ]
+    },
+    "artunc/Sonic.unc": {
+      "source": "artunc/Sonic.unc",
+      "ranges": [
+        [
+          0,
+          1379
+        ]
+      ]
+    },
+    "artunc/Sonic Figure8.unc": {
+      "source": "artunc/Sonic Figure8.unc",
+      "ranges": [
+        [
+          0,
+          326
+        ]
+      ]
+    },
+    "artunc/Super Sonic.unc": {
+      "source": "artunc/Super Sonic.unc",
+      "ranges": [
+        [
+          0,
+          2721
+        ]
+      ]
+    },
+    "artunc/Super Sonic Figure8.unc": {
+      "source": "artunc/Super Sonic Figure8.unc",
+      "ranges": [
+        [
+          0,
+          366
+        ]
+      ]
+    },
+    "artunc/Sonic Air Poses.unc": {
+      "source": "artunc/Sonic Air Poses.unc",
+      "ranges": [
+        [
+          0,
+          134
+        ]
+      ]
+    },
+    "artunc/Super Sonic Stars.unc": {
+      "source": "artunc/Super Sonic Stars.unc",
+      "ranges": [
+        [
+          0,
+          14
+        ]
+      ]
+    },
+    "artunc/Explosion Restore.unc": {
+      "source": "artunc/Explosion Restore.unc",
+      "ranges": [
+        [
+          0,
+          96
+        ]
+      ]
+    },
+    "artkosm/HUD.kosm": {
+      "source": "artkosm/HUD.kosm",
+      "ranges": [
+        [
+          0,
+          24
+        ]
+      ],
+      "colours": {
+        "15": 12
+      }
+    },
+    "artkosm/HUD - Life Counter Icon.kosm": {
+      "source": "artkosm/HUD - Life Counter Icon.kosm",
+      "ranges": [
+        [
+          0,
+          12
+        ]
+      ],
+      "text_tiles": 4
+    },
+    "artunc/HUD Numbers.unc": {
+      "source": "artunc/HUD Numbers.unc",
+      "ranges": [
+        [
+          0,
+          24
+        ]
+      ],
+      "colours": {
+        "15": 12
+      }
+    },
+    "artnem/Hidden Bonuses.nem": {
+      "source": "artnem/Hidden Bonuses.nem",
+      "ranges": [
+        [
+          0,
+          36
+        ]
+      ]
+    },
+    "artkosm/Hidden Bonuses.kosm": {
+      "source": "artkosm/Hidden Bonuses.kosm",
+      "ranges": [
+        [
+          0,
+          36
+        ]
+      ]
+    },
+    "artnem/LZ Wheel.nem": {
+      "source": "artnem/LZ Wheel.nem",
+      "ranges": [
+        [
+          0,
+          64
+        ]
+      ],
+      "mappings": "_maps/LZ Conveyor.asm"
+    },
+    "artkosm/LZ Wheel.kosm": {
+      "source": "artkosm/LZ Wheel.kosm",
+      "ranges": [
+        [
+          0,
+          64
+        ]
+      ],
+      "mappings": "_maps/LZ Conveyor.asm"
+    },
+    "artnem/SBZ Electrocuter.nem": {
+      "source": "artnem/SBZ Electrocuter.nem",
+      "ranges": [
+        [
+          8,
+          20
+        ]
+      ],
+      "mappings": "_maps/Electrocuter.asm"
+    },
+    "artkosm/SBZ Electrocuter.kosm": {
+      "source": "artkosm/SBZ Electrocuter.kosm",
+      "ranges": [
+        [
+          8,
+          20
+        ]
+      ],
+      "mappings": "_maps/Electrocuter.asm"
+    },
+    "artnem/SBZ Flaming Pipe.nem": {
+      "source": "artnem/SBZ Flaming Pipe.nem",
+      "ranges": [
+        [
+          0,
+          20
+        ]
+      ],
+      "mappings": "_maps/Flamethrower.asm"
+    },
+    "artkosm/SBZ Flaming Pipe.kosm": {
+      "source": "artkosm/SBZ Flaming Pipe.kosm",
+      "ranges": [
+        [
+          0,
+          20
+        ]
+      ],
+      "mappings": "_maps/Flamethrower.asm"
+    },
+    "artnem/Continue Screen Sonic.nem": {
+      "source": "artnem/Continue Screen Sonic.nem",
+      "ranges": [
+        [
+          6,
+          33
+        ]
+      ],
+      "mappings": "_maps/Continue Screen.asm"
+    },
+    "artkosm/Continue Screen Sonic.kosm": {
+      "source": "artkosm/Continue Screen Sonic.kosm",
+      "ranges": [
+        [
+          6,
+          33
+        ]
+      ],
+      "mappings": "_maps/Continue Screen.asm"
+    },
+    "artnem/Continue Screen Stuff.nem": {
+      "source": "artnem/Continue Screen Stuff.nem",
+      "ranges": [
+        [
+          0,
+          30
+        ]
+      ]
+    },
+    "artkosm/Continue Screen Stuff.kosm": {
+      "source": "artkosm/Continue Screen Stuff.kosm",
+      "ranges": [
+        [
+          0,
+          30
+        ]
+      ]
+    },
+    "artnem/Ending - Emeralds.nem": {
+      "source": "artnem/Ending - Emeralds.nem",
+      "ranges": [
+        [
+          0,
+          16
+        ]
+      ],
+      "mappings": "_maps/Ending Sequence Emeralds.asm"
+    },
+    "artkosm/Ending - Emeralds.kosm": {
+      "source": "artkosm/Ending - Emeralds.kosm",
+      "ranges": [
+        [
+          0,
+          16
+        ]
+      ],
+      "mappings": "_maps/Ending Sequence Emeralds.asm"
+    },
+    "artunc/SpinDust.unc": {
+      "source": "artunc/SpinDust.unc",
+      "ranges": [
+        [
+          0,
+          74
+        ]
+      ]
+    },
+    "artunc/Shield.unc": {
+      "source": "artunc/Shield.unc",
+      "ranges": [
+        [
+          0,
+          27
+        ]
+      ]
+    },
+    "artunc/Invincibility Stars Restore.unc": {
+      "source": "artunc/Invincibility Stars Restore.unc",
+      "ranges": [
+        [
+          0,
+          36
+        ]
+      ]
+    },
+    "artunc/Giant Ring Flash.unc": {
+      "source": "artunc/Giant Ring Flash.unc",
+      "ranges": [
+        [
+          0,
+          84
+        ]
+      ]
+    },
+    "artkosm/Points.kosm": {
+      "source": "artkosm/Points.kosm",
+      "ranges": [
+        [
+          0,
+          9
+        ]
+      ]
+    },
+    "artnem/Points.nem": {
+      "source": "artnem/Points.nem",
+      "ranges": [
+        [
+          0,
+          9
+        ]
+      ]
+    },
+    "artnem/Ending - Try Again.nem": {
+      "source": "artnem/Ending - Try Again.nem",
+      "ranges": [
+        [
+          0,
+          139
+        ]
+      ],
+      "mappings": "_maps/Try Again & End Eggman.asm"
+    },
+    "artkosm/Ending - Try Again.kosm": {
+      "source": "artkosm/Ending - Try Again.kosm",
+      "ranges": [
+        [
+          0,
+          139
+        ]
+      ],
+      "mappings": "_maps/Try Again & End Eggman.asm"
+    },
+    "artnem/Explosion.nem": {
+      "source": "artnem/Explosion.nem",
+      "ranges": [
+        [
+          0,
+          96
+        ]
+      ]
+    },
+    "artkosm/Explosion.kosm": {
+      "source": "artkosm/Explosion.kosm",
+      "ranges": [
+        [
+          0,
+          96
+        ]
+      ]
+    },
+    "artnem/LZ Spiked Ball & Chain.nem": {
+      "source": "artnem/LZ Spiked Ball & Chain.nem",
+      "ranges": [
+        [
+          0,
+          24
+        ]
+      ]
+    },
+    "artkosm/LZ Spiked Ball & Chain.kosm": {
+      "source": "artkosm/LZ Spiked Ball & Chain.kosm",
+      "ranges": [
+        [
+          0,
+          24
+        ]
+      ]
+    },
+    "artnem/8x8 - SYZ.nem": {
+      "source": "artnem/8x8 - SYZ.nem",
+      "ranges": [
+        [
+          0,
+          1
+        ],
+        [
+          49,
+          73
+        ],
+        [
+          394,
+          395
+        ],
+        [
+          396,
+          401
+        ],
+        [
+          403,
+          404
+        ],
+        [
+          408,
+          416
+        ],
+        [
+          419,
+          421
+        ],
+        [
+          762,
+          764
+        ],
+        [
+          792,
+          793
+        ]
+      ],
+      "tilemap": "map16/SYZ.bin"
+    },
+    "artkosm/8x8 - SYZ.kosm": {
+      "source": "artkosm/8x8 - SYZ.kosm",
+      "ranges": [
+        [
+          0,
+          1
+        ],
+        [
+          49,
+          73
+        ],
+        [
+          394,
+          395
+        ],
+        [
+          396,
+          401
+        ],
+        [
+          403,
+          404
+        ],
+        [
+          408,
+          416
+        ],
+        [
+          419,
+          421
+        ],
+        [
+          762,
+          764
+        ],
+        [
+          792,
+          793
+        ]
+      ],
+      "tilemap": "map16/SYZ.bin"
+    },
+    "artnem/8x8 - GHZ (Combined).nem": {
+      "source": "artnem/8x8 - GHZ (Combined).nem",
+      "ranges": [
+        [
+          0,
+          1
+        ],
+        [
+          798,
+          809
+        ]
+      ],
+      "tilemap": "map16/GHZ.bin"
+    },
+    "artnem/8x8 - GHZ1.nem": {
+      "source": "artnem/8x8 - GHZ1.nem",
+      "ranges": [
+        [
+          0,
+          1
+        ]
+      ],
+      "tilemap": "map16/GHZ.bin"
+    },
+    "artnem/8x8 - GHZ2.nem": {
+      "source": "artnem/8x8 - GHZ2.nem",
+      "ranges": [
+        [
+          337,
+          348
+        ]
+      ],
+      "tilemap": "map16/GHZ.bin"
+    },
+    "artkosm/8x8 - GHZ (Combined).kosm": {
+      "source": "artkosm/8x8 - GHZ (Combined).kosm",
+      "ranges": [
+        [
+          0,
+          1
+        ],
+        [
+          798,
+          809
+        ]
+      ],
+      "tilemap": "map16/GHZ.bin"
+    },
+    "artkosm/8x8 - GHZ1.kosm": {
+      "source": "artkosm/8x8 - GHZ1.kosm",
+      "ranges": [
+        [
+          0,
+          1
+        ]
+      ],
+      "tilemap": "map16/GHZ.bin"
+    },
+    "artkosm/8x8 - GHZ2.kosm": {
+      "source": "artkosm/8x8 - GHZ2.kosm",
+      "ranges": [
+        [
+          337,
+          348
+        ]
+      ],
+      "tilemap": "map16/GHZ.bin"
+    },
+    "artnem/8x8 - MZ.nem": {
+      "source": "artnem/8x8 - MZ.nem",
+      "ranges": [
+        [
+          316,
+          318
+        ]
+      ],
+      "tilemap": "map16/MZ.bin"
+    },
+    "artkosm/8x8 - MZ.kosm": {
+      "source": "artkosm/8x8 - MZ.kosm",
+      "ranges": [
+        [
+          316,
+          318
+        ]
+      ],
+      "tilemap": "map16/MZ.bin"
+    },
+    "artnem/8x8 - SLZ.nem": {
+      "source": "artnem/8x8 - SLZ.nem",
+      "ranges": [
+        [
+          0,
+          1
+        ],
+        [
+          828,
+          851
+        ]
+      ],
+      "tilemap": "map16/SLZ.bin"
+    },
+    "artkosm/8x8 - SLZ.kosm": {
+      "source": "artkosm/8x8 - SLZ.kosm",
+      "ranges": [
+        [
+          0,
+          1
+        ],
+        [
+          828,
+          851
+        ]
+      ],
+      "tilemap": "map16/SLZ.bin"
+    }
+  },
+  "palettes": {
+    "palette/Sonic.bin": {
+      "source": "palette/Sonic.bin",
+      "green": 128,
+      "orange": [
+        174,
+        142
+      ]
+    },
+    "palette/Sonic - LZ Underwater.bin": {
+      "source": "palette/Sonic - LZ Underwater.bin",
+      "green": 1090,
+      "orange": [
+        1674,
+        1128
+      ]
+    },
+    "palette/Sonic - SBZ3 Underwater.bin": {
+      "source": "palette/Sonic - SBZ3 Underwater.bin",
+      "green": 1606,
+      "orange": [
+        2220,
+        1642
+      ]
+    },
+    "palette/Labyrinth Zone Underwater.bin": {
+      "source": "palette/Labyrinth Zone Underwater.bin",
+      "green": 1090,
+      "orange": [
+        1674,
+        1128
+      ]
+    },
+    "palette/SBZ Act 3 Underwater.bin": {
+      "source": "palette/SBZ Act 3 Underwater.bin",
+      "green": 1606,
+      "orange": [
+        2220,
+        1642
+      ]
+    },
+    "palette/Special Stage.bin": {
+      "source": "palette/Special Stage.bin",
+      "green": 128,
+      "orange": [
+        174,
+        142
+      ]
+    },
+    "palette/Special Stage Continue Bonus.bin": {
+      "source": "palette/Special Stage Continue Bonus.bin",
+      "green": 128,
+      "orange": [
+        174,
+        142
+      ]
+    },
+    "palette/Ending.bin": {
+      "source": "palette/Ending.bin",
+      "green": 128,
+      "orange": [
+        174,
+        142
+      ]
+    }
+  }
+}

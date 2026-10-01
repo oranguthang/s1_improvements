@@ -15,6 +15,7 @@ from s1tools.codecs.enigma import decode as enigma_decode
 from s1tools.codecs.nemesis import decode as nemesis_decode
 from s1tools.codecs.nemesis import encode_with_table as nemesis_encode_with_table
 from s1tools.common import get_root, get_source, load_data
+from s1tools.shared_palette import remap_art as shared_remap_art
 from s1tools.sprites import parse_mappings as sprites_parse_mappings
 
 water_ROOT = get_root()
@@ -422,6 +423,7 @@ def badnik_remap_asset(
     for tile in protected | set(range(len(raw) // 32)) - selected:
         if changed[tile * 32 : (tile + 1) * 32] != raw[tile * 32 : (tile + 1) * 32]:
             raise ValueError(f"Protected tile {tile} changed in {asset['art']}")
+    changed = bytearray(shared_remap_art(asset["art"], bytes(changed)))
     packed = nemesis_encode_with_table(original, bytes(changed))
     if nemesis_decode(packed) != changed:
         raise ValueError(f"Nemesis round trip failed for {asset['art']}")
@@ -519,6 +521,7 @@ def object_remap_asset(
     for tile in set(range(len(raw) // 32)) - covered:
         if output[tile * 32 : (tile + 1) * 32] != raw[tile * 32 : (tile + 1) * 32]:
             raise ValueError(f"Unselected tile changed: {asset['art']} / {tile}")
+    output = bytearray(shared_remap_art(asset["art"], bytes(output)))
     packed = nemesis_encode_with_table(source, bytes(output))
     if nemesis_decode(packed) != output:
         raise ValueError(f"Nemesis round trip failed: {asset['art']}")
@@ -590,7 +593,7 @@ def object_main(argv: list[str]) -> int:
 bubbles_ROOT = get_root()
 bubbles_ART_PATH = bubbles_ROOT / "artnem/LZ Bubbles & Countdown.nem"
 bubbles_BUBBLE_RANGES = ((0, 44), (104, 116))
-bubbles_GREY = {2: 9, 3: 8, 4: 7, 5: 6}
+bubbles_GREY = {2: 9, 3: 7, 4: 7, 5: 6}
 
 
 def bubbles_main() -> None:
@@ -630,7 +633,7 @@ def bubbles_main() -> None:
 
 platform_ROOT = get_root()
 platform_ART_PATH = platform_ROOT / "artnem/SBZ Spinning Platform.nem"
-platform_RED = {2: 14, 4: 12}
+platform_RED = {2: 13, 4: 12}
 
 
 def platform_main() -> None:
@@ -671,7 +674,7 @@ def platform_main() -> None:
 seesaw_ROOT = get_root()
 seesaw_ART_PATH = seesaw_ROOT / "artnem/SLZ Seesaw.nem"
 seesaw_PIVOT_TILES = {*range(14, 20), 22, *range(41, 44)}
-seesaw_GREY = {2: 9, 3: 8, 4: 7, 5: 6}
+seesaw_GREY = {2: 9, 3: 7, 4: 7, 5: 6}
 
 
 def seesaw_main() -> None:
@@ -717,7 +720,7 @@ button_ROOT = get_root()
 button_ART_PATH = button_ROOT / "artnem/Switch.nem"
 button_FIRST_TILE = 4
 button_TILE_COUNT = 8
-button_GREY = {2: 9, 3: 8, 4: 7, 5: 6}
+button_GREY = {2: 9, 3: 7, 4: 7, 5: 6}
 
 
 def button_main() -> None:
@@ -762,7 +765,7 @@ searchlight_ROOT = get_root()
 searchlight_ART_PATH = searchlight_ROOT / "artnem/8x8 - SYZ.nem"
 searchlight_FIRST_TILE = 49
 searchlight_TILE_COUNT = 24
-searchlight_GREY = {2: 9, 3: 8, 4: 7, 5: 6}
+searchlight_GREY = {2: 9, 3: 7, 4: 7, 5: 6}
 
 
 def searchlight_main() -> None:
@@ -887,11 +890,14 @@ def column_main() -> None:
     else:
         print("Old decoder selected the same tiles")
     changed = 0
+    words = column_raw_words(column_MAP_PATH)
+    player_tiles = {word & 2047 for word in words if (word >> 13 & 3) == 0}
     for tile in tiles:
+        grey = {**column_GREY, 3: 7} if tile in player_tiles else column_GREY
         for offset in range(tile * 32, (tile + 1) * 32):
             value = art[offset]
-            high = column_GREY.get(value >> 4, value >> 4)
-            low = column_GREY.get(value & 15, value & 15)
+            high = grey.get(value >> 4, value >> 4)
+            low = grey.get(value & 15, value & 15)
             replacement = high << 4 | low
             if replacement != value:
                 art[offset] = replacement

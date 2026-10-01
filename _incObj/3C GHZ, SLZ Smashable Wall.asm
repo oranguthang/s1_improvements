@@ -43,9 +43,12 @@ Smash_Solid:	; Routine 2
 ; ===========================================================================
 
 .chkroll:
+		cmpi.b #1,(v_knux_state).w
+		beq.s .knucklesSmash
 		cmpi.b	#id_Roll,obAnim(a1)			; is Sonic rolling?
 		bne.s	.return					; if not, don't smash
 
+.knucklesSmash:
 		move.w	smash_speed(a0),d0			; get Sonic's impact speed
 		bpl.s	.chkspeed				; if positive, branch
 		neg.w	d0					; make it positive for check

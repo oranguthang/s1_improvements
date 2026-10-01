@@ -34,6 +34,8 @@ COMMANDS = {
         "remap": ("palettes", "remap_main"),
     },
     "player": {
+        "palette": ("shared_palette", "main"),
+        "knuckles": ("knuckles", "main"),
         "tails": ("tails", "main"),
         "super": ("player", "super_main"),
         "figure8": ("player", "figure8_main"),

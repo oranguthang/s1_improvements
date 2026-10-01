@@ -36,6 +36,7 @@ Sonic_Index:	dc.w Sonic_Main-Sonic_Index			; 0 - object init
 Sonic_Main:	; Routine 0
 		clr.b (v_tails_flying).w
 		clr.b (v_tails_flap).w
+		clr.b (v_knux_state).w
 		addq.b	#2,obRoutine(a0)			; set to Sonic_Control
 		move.b	#sonic_height,obHeight(a0)		; set default height
 		move.b	#sonic_width,obWidth(a0)		; set default width
@@ -92,6 +93,9 @@ Sonic_Control:	; Routine 2
         tst.b d0
         bne.s .ignoremodes
 .normalModeControl:
+		jsr (Knuckles_GlideControl).l
+		tst.b d0
+		bne.s .ignoremodes
 		jsr (Tails_FlightControl).l
 		tst.b d0
 		bne.s .ignoremodes
@@ -129,6 +133,7 @@ Sonic_Control:	; Routine 2
 		bsr.w	Sonic_UpdateTransformPose
 		bsr.w	Sonic_Animate				; run Sonic's animation scripts
 		jsr (Tails_FlightPose).l
+		jsr (Knuckles_GlidePose).l
 		jsr (Sonic_LightDashPose).l		; face the dash vector without changing collision angle
 		tst.b	(f_playerctrl).w			; is object interactions ignore flag set?
 		bmi.s	.ignoreobjcoll				; if yes, branch
@@ -1283,6 +1288,10 @@ Sonic_Jump:
 		blt.w	.return					; if yes, prevent jumping
 
 		move.w	#son_jumpspeed,d2			; set initial jump force
+		cmpi.b #Character_Knuckles,(v_character_p1).w
+		bne.s .sonicJump
+		move.w #$600,d2
+.sonicJump:
 		tst.b	(v_supersonic).w
 		beq.s	.checkunderwater
 		move.w	#$800,d2				; Super Sonic jumps higher
@@ -1290,6 +1299,9 @@ Sonic_Jump:
 		btst	#6,obStatus(a0)				; is Sonic underwater?
 		beq.s	.notunderwater				; if not, continue
 		move.w	#son_jumpspeed-$300,d2			; set underwater jump force
+		cmpi.b #Character_Knuckles,(v_character_p1).w
+		bne.s .notunderwater
+		move.w #$300,d2
 ; loc_1341C:
 .notunderwater:
 		moveq	#0,d0					; clear d0
@@ -1968,6 +1980,7 @@ Sonic_ResetOnFloor:
 Sonic_Hurt:	; Routine 4
 		clr.b (v_tails_flying).w
 		clr.b (v_tails_flap).w
+		clr.b (v_knux_state).w
 	if FixBugs
 		; Fix not being able to enter debug mode from a hurt state.
 		; This was added for Sonic 2.
@@ -2059,6 +2072,7 @@ Sonic_HurtStop:
 Sonic_Death:	; Routine 6
 		clr.b (v_tails_flying).w
 		clr.b (v_tails_flap).w
+		clr.b (v_knux_state).w
 	if FixBugs
 		; Fix not being able to enter debug mode from a dying state.
 		; This was added for Sonic 2.
@@ -3103,8 +3117,8 @@ Sonic_AirRoll:
 
 ; Dash toward the closest valid target, or in the direction Sonic faces.
 Sonic_HomingAttack:
-		cmpi.b #Character_Tails,(v_character_p1).w
-		beq.s .return
+		cmpi.b #Character_Sonic,(v_character_p1).w
+		bne.s .return
 		btst	#7,obStatus(a0)				; only one attack per jump until a target is hit
 		bne.s	.return
 		moveq	#btnABC,d0

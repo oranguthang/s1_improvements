@@ -104,7 +104,7 @@ Options_Labels:
         dc.b "PLAYER 1        "
         dc.b "PLAYER 2        "
 Options_Names:
-        dc.b "SONIC   ","TAILS   "
+        dc.b "SONIC   ","TAILS   ","KNUCKLES"
 Options_Names_End:
 Options_Off: dc.b "OFF     "
         charset

@@ -10,10 +10,11 @@ from pathlib import Path
 from s1tools.codecs.kosinski import encode_moduled
 from s1tools.codecs.nemesis import decode as nemesis_decode
 from s1tools.common import get_root, get_source, write_outputs
+from s1tools.shared_palette import life_icon
 
 BASE = "General/Sprites/Tails/"
-# Preserve the shared Sonic 1 whites, skin, reds and black. Orange uses 2..5.
-COLOURS = (0, 6, 5, 4, 2, 9, 12, 13, 5, 4, 10, 11, 7, 7, 8, 1)
+# Sonic keeps blue 2..5; Tails uses the two shared orange shades at E/F.
+COLOURS = (0, 6, 14, 15, 15, 9, 12, 13, 14, 15, 10, 11, 7, 7, 9, 1)
 FRAME_COUNT = 151
 
 
@@ -53,6 +54,7 @@ def frame(
     maps: tuple[list[str], dict[str, bytes]],
     cues: tuple[list[str], dict[str, bytes]],
     index: int,
+    colours: tuple[int, ...] | None = None,
 ) -> tuple[bytes, list[tuple[int, ...]]]:
     cue = cues[1][cues[0][index]]
     count = int.from_bytes(cue[:2], "big")
@@ -89,7 +91,8 @@ def frame(
                 (attributes >> 15) & 1,
             )
         )
-    return remap_art(bytes(tiles)), pieces
+    lookup = COLOURS if colours is None else colours
+    return bytes((lookup[b >> 4] << 4) | lookup[b & 15] for b in tiles), pieces
 
 
 def frame_plan() -> list[tuple[int, int, int, int]]:
@@ -177,6 +180,45 @@ def frame_plan() -> list[tuple[int, int, int, int]]:
     return plan
 
 
+def emit_frames(
+    name: str, frames: list[tuple[bytes, list[tuple[int, ...]]]]
+) -> tuple[bytes, bytes, bytes]:
+    """Pack complete frames into a bounded S1 mapping/DPLC stream."""
+    packed, seen = bytearray(), {}
+    maps = [
+        f"; S3K {name}, repacked for the S1 player frame IDs.",
+        f"{name}Map_internal: mappingsTable",
+    ]
+    cues = [f"{name}DPLC_internal: mappingsTable"]
+    for index in range(len(frames)):
+        maps.append(f"\tmappingsTableEntry.w {name}Map_{index:02X}")
+        cues.append(f"\tmappingsTableEntry.w {name}PLC_{index:02X}")
+    for index, (data, pieces) in enumerate(frames):
+        if len(data) // 32 > 32:
+            raise ValueError(f"Frame {index:02X} exceeds the player VRAM slot")
+        if data not in seen:
+            seen[data] = len(packed) // 32
+            packed.extend(data)
+        start = seen[data]
+        maps.extend(["", f"{name}Map_{index:02X}: spriteHeader"])
+        for x, y, *rest in pieces:
+            maps.append("\tspritePiece " + ", ".join(map(str, (x, y, *rest))))
+        maps.append(f"{name}Map_{index:02X}_End")
+        cues.extend(["", f"{name}PLC_{index:02X}: dplcHeader"])
+        remaining = len(data) // 32
+        while remaining:
+            count = min(remaining, 16)
+            if start > 0xFFF:
+                raise ValueError(f"{name} art exceeds the 12-bit DPLC source range")
+            cues.append(f"\tdplcEntry {count}, ${start:X}")
+            start += count
+            remaining -= count
+        cues.append(f"{name}PLC_{index:02X}_End")
+    maps += ["", "\teven", ""]
+    cues += ["", "\teven", ""]
+    return bytes(packed), "\n".join(maps).encode("ascii"), "\n".join(cues).encode("ascii")
+
+
 def expected_outputs(source: Path) -> dict[Path, bytes]:
     root = get_root()
     body = (source / (BASE + "Art/Tails.bin")).read_bytes()
@@ -185,67 +227,24 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
     body_cues = raw_table(source / (BASE + "DPLC - Tails.asm"))
     tail_maps = raw_table(source / (BASE + "Map - Tails tails.asm"))
     tail_cues = raw_table(source / (BASE + "DPLC - Tails tails.asm"))
-    packed, seen = bytearray(), {}
-    maps = [
-        "; S3K Tails, repacked for the S1 player frame IDs.",
-        "TailsMap_internal: mappingsTable",
-    ]
-    cues = ["TailsDPLC_internal: mappingsTable"]
-    for index in range(FRAME_COUNT):
-        maps.append(f"\tmappingsTableEntry.w TailsMap_{index:02X}")
-        cues.append(f"\tmappingsTableEntry.w TailsPLC_{index:02X}")
-    for index, (body_id, tail_id, dx, dy) in enumerate(frame_plan()):
+    frames = []
+    for body_id, tail_id, dx, dy in frame_plan():
         data, pieces = frame(body, body_maps, body_cues, body_id)
         if tail_id:
             tail_data, tail_pieces = frame(tail, tail_maps, tail_cues, tail_id)
             pieces += [(*p[:4], p[4] + len(data) // 32, *p[5:]) for p in tail_pieces]
             data += tail_data
-        if len(data) // 32 > 32:
-            raise ValueError(f"Frame {index:02X} exceeds the player VRAM slot")
-        if data not in seen:
-            seen[data] = len(packed) // 32
-            packed.extend(data)
-        start = seen[data]
-        maps.extend(["", f"TailsMap_{index:02X}: spriteHeader"])
-        for x, y, *rest in pieces:
-            maps.append("\tspritePiece " + ", ".join(map(str, (x + dx, y + dy, *rest))))
-        maps.append(f"TailsMap_{index:02X}_End")
-        cues.extend(["", f"TailsPLC_{index:02X}: dplcHeader"])
-        remaining = len(data) // 32
-        while remaining:
-            count = min(remaining, 16)
-            if start > 0xFFF:
-                raise ValueError("Tails art exceeds the 12-bit DPLC source range")
-            cues.append(f"\tdplcEntry {count}, ${start:X}")
-            start += count
-            remaining -= count
-        cues.append(f"TailsPLC_{index:02X}_End")
-    maps += ["", "\teven", ""]
-    cues += ["", "\teven", ""]
+        frames.append((data, [(x + dx, y + dy, *rest) for x, y, *rest in pieces]))
+    art, mappings, cues = emit_frames("Tails", frames)
     outputs = {
-        root / "artunc/Tails.unc": bytes(packed),
-        root / "_maps/Tails.asm": "\n".join(maps).encode("ascii"),
-        root / "_maps/Tails - Dynamic Gfx Script.asm": "\n".join(cues).encode("ascii"),
+        root / "artunc/Tails.unc": art,
+        root / "_maps/Tails.asm": mappings,
+        root / "_maps/Tails - Dynamic Gfx Script.asm": cues,
     }
-    # Match the existing zone tint while retaining all non-fur shared colours.
-    for file, template, colours in (
-        ("Tails.bin", "Sonic.bin", (0x0468, 0x068C, 0x008E, 0x00AE)),
-        (
-            "Tails - LZ Underwater.bin",
-            "Sonic - LZ Underwater.bin",
-            (0x0244, 0x0466, 0x0488, 0x06AA),
-        ),
-        (
-            "Tails - SBZ3 Underwater.bin",
-            "Sonic - SBZ3 Underwater.bin",
-            (0x0648, 0x086A, 0x08AC, 0x0ACE),
-        ),
-    ):
-        palette = bytearray((root / "palette" / template).read_bytes())
-        palette[4:12] = struct.pack(">4H", *colours)
-        outputs[root / "palette" / file] = bytes(palette)
     icon = nemesis_decode((source / "General/Sprites/HUD Icon/Tails Life Icon.bin").read_bytes())
-    outputs[root / "artkosm/HUD - Tails Life Counter Icon.kosm"] = encode_moduled(remap_art(icon))
+    outputs[root / "artkosm/HUD - Tails Life Counter Icon.kosm"] = encode_moduled(
+        life_icon(icon, COLOURS)
+    )
     return outputs
 
 

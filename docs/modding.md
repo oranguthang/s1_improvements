@@ -2,7 +2,9 @@
 
 ## Shared palettes
 
-Sonic cycles palette indices 2–5. Shared level objects and badnik art use stable indices for affected details. Choose palette lines deliberately when adding sprites; graphic resources are shared rather than duplicated just to recolour them.
+Sonic, Tails and Knuckles share palette line 0 using the Sonic 2 approach: separate blue and orange ramps within one player line. Sonic cycles indices 2–5; Tails uses orange E/F, and Knuckles uses red C/D with green shoe panels at 8. The remaining colours are black at 1, white at 6, gray at 7/9 and skin at A/B. Two former gray shades are merged to make room for green. Dry, Labyrinth and Scrap Brain Act 3 palettes use the same index assignments.
+
+Shared level objects and badnik art use stable indices for affected details. Legacy gray 8 moves to 7, dark red E to D and yellow F to orange E in the audited player-line tiles. Mixed sheets retain tiles belonging only to other palette lines. HUD labels and counters use the level's first palette line for yellow and white; player portraits keep line 0. Graphic resources are shared rather than duplicated just to recolour them. `player palette` reproduces the palette and tile changes from the checked source bundle.
 
 ## Placing giant rings
 
@@ -80,7 +82,7 @@ The final act-header field selects the level song. Restoration considers drownin
 
 ## Character resources
 
-`_inc/Character Assets.asm` adapts Selbi's [Adding Extra Characters](https://info.sonicretro.org/SCHG_How-to:Add_Extra_Characters) guide. Each registered character has two ROM descriptors, normal and Super. They select uncompressed player art, mappings, DPLC, animation scripts, dry/LZ/SBZ3 palettes, Super palette cycles, speed-dependent animation scripts and the lives-icon PLC. Sonic and solo Tails are registered. Tails uses the same descriptor for both forms and is excluded from Super activation.
+`_inc/Character Assets.asm` adapts Selbi's [Adding Extra Characters](https://info.sonicretro.org/SCHG_How-to:Add_Extra_Characters) guide. Each registered character has two ROM descriptors, normal and Super. They select uncompressed player art, mappings, DPLC, animation scripts, dry/LZ/SBZ3 palettes, Super palette cycles, speed-dependent animation scripts and the lives-icon PLC. Sonic, solo Tails and solo Knuckles are registered. Tails and Knuckles use their normal descriptor for both forms and are excluded from Super activation.
 
 `v_character_p1` and `v_character_p2` store character IDs without moving existing RAM fields. They default to Sonic and OFF (`$FF`) and survive act transitions. Title OPTIONS selects P1; P2 reserves a selection for future multiplayer and cannot be enabled. A second player object, separate physics and Super state are not implemented. SRAM version 2 persists the selections and accepts version 1 settings records.
 
@@ -88,9 +90,11 @@ The final act-header field selects the level song. Restoration considers drownin
 
 To register another character, add an ID in `_Constants.asm`, increase `Character_Count`, and append a normal/Super pointer pair to `CharacterAssets`. Create both records using the `CharacterAsset_*` offsets. Add an eight-character name in `Options_Names`, palette entries and a dedicated lives-icon PLC as needed. Existing PLC IDs must retain their order. Descriptor sizes and table counts are checked during assembly.
 
-The animation driver still expects Sonic's animation IDs, frame conventions and orientation groups: normal walking uses six frames per orientation, Super walking uses eight, and the fast normal run uses the descriptor's figure-eight script. Tails supplies a normal running cycle for that slot. New artwork must follow these conventions or receive a dedicated animation driver. Movement abilities, collision dimensions and character-specific cinematic artwork require separate implementation.
+The animation driver still expects Sonic's animation IDs, frame conventions and orientation groups: normal walking uses six frames per orientation, Super walking uses eight, and the fast normal run uses the descriptor's figure-eight script. Tails and Knuckles supply normal running cycles for that slot. New artwork must follow these conventions or receive a dedicated animation driver. Movement abilities, collision dimensions and character-specific cinematic artwork require separate implementation.
 
 `_incObj/Tails Flight.asm` implements solo flight and swimming. B/C starts flight or adds an ascent pulse; A retains Light Dash. The eight-second endurance and flight flags reset on landing, damage, death and debug placement. Tails uses the existing player collision dimensions. The importer adapts Sonic 3 & Knuckles mapping origins and samples six walk frames per orientation. Separate tail frames are packed with the body, keeping every DMA frame within the existing 32-tile player slot. Large ending illustrations remain Sonic's artwork and restore its normal palette when the cinematic starts.
+
+`_incObj/Knuckles Glide.asm` implements solo gliding, terrain-wall climbing, wall jumps and ledge transitions. Its compact glide hitbox returns to the standing size after release, landing, damage or death. Gliding attacks enemies, monitors and compatible smashable walls. Ordinary solid objects remain non-climbable. The S3K importer preserves indexed pixels, packs each frame into the same 32-tile player slot and maps the normal/Super resource pair to the normal artwork. Knuckles uses a lower jump than Sonic and keeps normal running poses at high speed.
 
 The shared-art range is inclusive at `SharedFirst` and exclusive at `SharedEnd`; equal values disable it. Super Sonic uses this range for the original spring/air-pose art. DPLC offsets within that range refer to `SharedArt`. Super palette cycles retain the existing eight-byte frame format, transformation/reversion sequence and ten steady frames. Palette refresh changes only indices 2–5, so replacement characters must account for the other shared colours.
 

@@ -10,7 +10,7 @@ Super Sonic player art, mappings, dynamic graphics, transformation effects and d
 
 Character resource selection adapts Selbi's [Adding Extra Characters](https://info.sonicretro.org/SCHG_How-to:Add_Extra_Characters) guide, based on Sonic 65's original work. ROM descriptors extend the approach to separate player selections and normal/Super resource sets.
 
-Solo Tails body/tail art, mappings, DPLC and lives-icon art originate from the [Sonic 3 & Knuckles disassembly](https://github.com/sonicretro/skdisasm), using the resource versions in [sk_improvements](https://github.com/oranguthang/sk_improvements). The importer repacks the frames and adapts palette indices and origins for Sonic 1. Flight uses the ascent-pulse and endurance approach from Sonic 3 & Knuckles.
+Solo Tails body/tail art and Knuckles art, mappings, DPLC and lives icons originate from the [Sonic 3 & Knuckles disassembly](https://github.com/sonicretro/skdisasm), using the resource versions in [sk_improvements](https://github.com/oranguthang/sk_improvements). The importer repacks the frames and adapts palette indices and origins for Sonic 1. Flight uses the ascent-pulse and endurance approach from Sonic 3 & Knuckles. Knuckles gliding, climbing and ledge transitions adapt its movement rules to Sonic 1 terrain collision.
 
 ## Title resources
 

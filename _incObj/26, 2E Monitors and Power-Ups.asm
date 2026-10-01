@@ -98,6 +98,10 @@ Mon_Solid:	; Routine 2
 
 		tst.w	obVelY(a1)				; is Sonic moving upwards?
 		bmi.s	.dontbreak				; if yes, branch
+		cmpi.b #1,(v_knux_state).w
+		beq.s .checkpush
+		cmpi.b #5,(v_knux_state).w
+		beq.s .checkpush
 		cmpi.b	#id_Roll,obAnim(a1)			; is Sonic rolling?
 		beq.s	.checkpush				; if yes, branch
 		cmpi.b	#id_SpinDash,obAnim(a1)		; is Sonic charging a Spin Dash?

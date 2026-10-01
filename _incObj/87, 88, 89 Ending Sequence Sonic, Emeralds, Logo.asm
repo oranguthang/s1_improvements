@@ -147,10 +147,10 @@ ESon_BadEnding:	; Routine $10
 		rts						; return
 
 ; Large ending illustrations remain the original Sonic artwork. Do not tint
-; them orange or start a Super palette cycle for the solo Tails player.
+; them orange/red or start a Super palette cycle for the solo characters.
 ESon_UseCinematicPalette:
-		cmpi.b #Character_Tails,(v_character_p1).w
-		bne.s .return
+		cmpi.b #Character_Sonic,(v_character_p1).w
+		beq.s .return
 		clr.b (v_supersonic).w
 		clr.b (v_superpal_state).w
 		move.l (Pal_Sonic+4).l,(v_palette+4).w

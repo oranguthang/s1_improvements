@@ -4601,6 +4601,7 @@ KosM_Hud:	binclude	"artkosm/HUD.kosm" ; HUD (rings, time, score)
 		even
 KosM_Lives:	binclude	"artkosm/HUD - Life Counter Icon.kosm"
 KosM_TailsLives: binclude "artkosm/HUD - Tails Life Counter Icon.kosm"
+KosM_KnucklesLives: binclude "artkosm/HUD - Knuckles Life Counter Icon.kosm"
 		even
 KosM_RingSparkles:	binclude	"artkosm/Ring Sparkles.kosm" ; resident sparkle tiles; ring frames are DMA'd (#42)
 		even
@@ -5311,11 +5312,22 @@ Map_Tails: include "_maps/Tails.asm"
 TailsDynPLC: include "_maps/Tails - Dynamic Gfx Script.asm"
 		include "_anim/Tails.asm"
 		include "_incObj/Tails Flight.asm"
+		include "_incObj/Knuckles Glide.asm"
+Map_Knuckles: include "_maps/Knuckles.asm"
+KnucklesDynPLC: include "_maps/Knuckles - Dynamic Gfx Script.asm"
+		include "_anim/Knuckles.asm"
 		align $20000                   ; all Tails DPLC sources must stay within one DMA bank
 Art_Tails: binclude "artunc/Tails.unc"
 Art_Tails_size: equ *-Art_Tails
 	if (Art_Tails_size>$20000)&(MOMPASS=1)
 		error "Tails art exceeds a 128 KiB DMA bank. Split or repack the resource."
+	endif
+
+		align $20000
+Art_Knuckles: binclude "artunc/Knuckles.unc"
+Art_Knuckles_size: equ *-Art_Knuckles
+	if (Art_Knuckles_size>$20000)&(MOMPASS=1)
+		error "Knuckles art exceeds a 128 KiB DMA bank. Split or repack the resource."
 	endif
 
 EndOfRom:
