@@ -18,6 +18,13 @@ Knuckles_GlideControl:
         bne.w .cancel
         cmpi.b #id_GetAir,obAnim(a0)
         beq.w .cancel
+        ; A spring interrupts an existing glide or fall, but the player may
+        ; start a fresh glide during the following airborne frames.
+        cmpi.b #id_Spring,obAnim(a0)
+        bne.s .ability
+        tst.b (v_knux_state).w
+        bne.w .cancel
+.ability:
         cmpi.b #5,(v_knux_state).w
         beq.w Knuckles_Slide
         btst #1,obStatus(a0)
@@ -155,6 +162,7 @@ Knuckles_ReleaseGlide:
         asr.w obVelX(a0)
         asr.w obVelX(a0)
         move.b #2,(v_knux_state).w
+        move.b #8,(v_knux_timer).w       ; transition to the held falling pose once
         move.b #sonic_height,obHeight(a0)
         move.b #sonic_width,obWidth(a0)
         ; Keep the airborne origin, as in S3K. The floor sensors establish the
@@ -304,6 +312,7 @@ Knuckles_WallJump:
 
 Knuckles_Detach:
         move.b #2,(v_knux_state).w
+        move.b #8,(v_knux_timer).w
         move.b #sonic_height,obHeight(a0)
         move.b #sonic_width,obWidth(a0)
         move.b #id_Float2,obAnim(a0)
@@ -458,11 +467,13 @@ Knuckles_GlidePose:
         bset #0,obStatus(a0)
         bra.w .flip
 .fall:
-        move.b (v_framecount+1).w,d0
-        lsr.b #3,d0
-        andi.b #1,d0
-        addi.b #knux_fall_frame,d0
-        move.b d0,obFrame(a0)
+        ; S3K uses CA once, then holds CB (animation 21 ends with FE,1).
+        ; Alternating the two indefinitely makes the torso jerk every 8 frames.
+        move.b #knux_fall_frame+1,obFrame(a0)
+        tst.b (v_knux_timer).w
+        beq.w .flip
+        subq.b #1,(v_knux_timer).w
+        move.b #knux_fall_frame,obFrame(a0)
 .flip:
         move.b obStatus(a0),d0
         andi.b #1,d0

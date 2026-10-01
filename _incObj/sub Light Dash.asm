@@ -512,9 +512,14 @@ Sonic_LightDashPose:
         andi.w #1,d1
         add.w d1,d0
         lea .normalFrames(pc),a1
+        cmpi.b #Character_Knuckles,(v_character_p1).w
+        beq.s .knuckles
         tst.b (v_supersonic).w
         beq.s .frameReady
         lea .superFrames(pc),a1
+        bra.s .frameReady
+.knuckles:
+        lea .knucklesFrames(pc),a1
 .frameReady:
         move.b (a1,d0.w),obFrame(a0)
 .return:
@@ -529,6 +534,13 @@ Sonic_LightDashPose:
 .superFrames:
         dc.b $B5,$B9,$B8,$BC,$B7,$BB,$B6,$BA
         dc.b $B5,$B9,$B8,$BC,$B7,$BB,$B6,$BA
+.knucklesFrames:
+        ; Horizontal travel uses the actual glide, not the shared Float frames.
+        ; Retain the rotated run poses and flips for the other six directions.
+        dc.b knux_glide_frame,knux_glide_frame,fr_Run41,fr_Run42
+        dc.b fr_Run31,fr_Run32,fr_Run21,fr_Run22
+        dc.b knux_glide_frame,knux_glide_frame,fr_Run41,fr_Run42
+        dc.b fr_Run31,fr_Run32,fr_Run21,fr_Run22
         even
 
 ; Preserve all registers and event/hurt animations. A completed dash loses its

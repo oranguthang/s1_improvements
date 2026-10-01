@@ -462,7 +462,7 @@ v_timesec:		equ	v_time+2			; time - seconds
 v_timecent:		equ	v_time+3			; time - centiseconds
 v_score:		ds.l	1				; score
 v_character_p1: ds.b 1 ; selected character for player slot 0
-v_character_p2: ds.b 1 ; selected character for player slot 1 (reserved)
+v_character_p2: ds.b 1 ; unused legacy SRAM field, forced to $FF
 v_shield:		ds.b	1				; shield status (00 = no; 01 = yes)
 v_invinc:		ds.b	1				; invincibility status (00 = no; 01 = yes)
 v_shoes:		ds.b	1				; speed shoes status (00 = no; 01 = yes)
@@ -565,7 +565,7 @@ v_ss_selected: ds.b 1			; transient SS selector (0..5)
 v_ss_override: ds.b 1			; one-shot SS selector (1..6; 0 = automatic)
 v_ss_manual: ds.b 1			; return a manually selected SS to title after results
 v_endring_bonus: ds.b 1			; end ring already collected in this act
-v_options_menuitem: ds.b 1             ; transient player-options cursor
+v_options_menuitem: ds.b 1             ; reserved former player-options cursor
 v_dev_settings_end:
 			ds.b	$1C-(v_dev_settings_end-v_dev_settings) ; unused
 f_levselcheat:		ds.b	1				; level select cheat flag

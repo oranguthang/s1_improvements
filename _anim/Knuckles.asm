@@ -71,7 +71,10 @@ KnucklesAni_Push:	dc.b $FD
 
 KnucklesAni_Wait: dc.b 23,fr_Stand,$02,$03,afEnd
         even
-KnucklesAni_Balance: dc.b 9,$87,$88,$89,$8A,afEnd
+; S3K's balance sequence, translated to the appended S1 frame IDs.
+KnucklesAni_Balance: dc.b 3,$87,$87,$88,$88,$89,$89,$8A,$8A,$8B,$8B,$8C,$8C
+        dc.b $8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D
+        dc.b $8E,$8E,$8E,$8F,$8F,$8F,$90,$90,$91,$91,$92,$92,afBack,6
         even
 KnucklesAni_LookUp: dc.b 5,$04,fr_LookUp,afEnd
         even
@@ -113,8 +116,7 @@ KnucklesAni_Float2:	dc.b 7
 		dc.b afEnd
 		even
 
-KnucklesAni_Spring: dc.b 3
-        dc.b fr_SpringTwirl1,fr_SpringTwirl2,fr_SpringTwirl3,fr_SpringTwirl4,fr_SpringTwirl5,afEnd
+KnucklesAni_Spring: dc.b 15,fr_Spring,afEnd
         even
 
 KnucklesAni_Hang:	dc.b 4

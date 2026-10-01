@@ -1,6 +1,7 @@
 ; ---------------------------------------------------------------------------
 ; Settings SRAM, format 2. Logical bytes occupy odd addresses $200001..$20001F.
-; 00..03 "S1DV", 04 version, 05 payload length, 06..13 eight settings,
+; 00..03 "S1DV", 04 version, 05 payload length, 06..12 seven settings,
+; 13 legacy unused player-2 byte (always $FF),
 ; 14..15 additive big-endian checksum of bytes 00..13. Format 1 is migrated.
 ; Only configuration is persistent: earned emeralds and cursors are not saved.
 ; The write invalidates the signature first and commits its first byte last.
@@ -61,7 +62,7 @@ Settings_Normalize:
 		blo.s .characterValid
 		clr.b (v_character_p1).w
 .characterValid:
-		move.b #Character_Off,(v_character_p2).w ; second player is not available yet
+		move.b #Character_Off,(v_character_p2).w ; legacy SRAM field stays $FF
 		movem.l	(sp)+,d0-d1/a0-a1
 		rts
 Settings_BoolFields:

@@ -134,22 +134,22 @@ CharacterAssets_RecordsEnd:
         endif
 CharacterAssets_Tails:
         dc.l Art_Tails,Map_Tails,TailsDynPLC,Ani_Tails
-        dc.l Pal_Sonic,Pal_LZSonWater,Pal_SBZ3SonWat
+        dc.l Pal_Tails,Pal_TailsWater,Pal_TailsSBZ3Water
         dc.l Pal_SuperSonicCycle,Pal_SuperSonicCycle_LZWater,Pal_SuperSonicCycle_SBZ3Water
         dc.l TailsAni_Run,TailsAni_Walk,TailsAni_Roll,TailsAni_Roll2,TailsAni_Push,TailsAni_Figure8
         dc.l Art_Tails
-        dc.b 0,0,palid_Sonic,palid_LZSonWater,palid_SBZ3SonWat,plcid_TailsHUD
+        dc.b 0,0,palid_Tails,palid_TailsWater,palid_TailsSBZ3Water,plcid_TailsHUD
 CharacterAssets_TailsEnd:
         if (CharacterAssets_TailsEnd-CharacterAssets_Tails)<>CharacterAsset_Size
         fatal "Tails character descriptor size mismatch"
         endif
 CharacterAssets_Knuckles:
         dc.l Art_Knuckles,Map_Knuckles,KnucklesDynPLC,Ani_Knuckles
-        dc.l Pal_Sonic,Pal_LZSonWater,Pal_SBZ3SonWat
+        dc.l Pal_Knuckles,Pal_KnucklesWater,Pal_KnucklesSBZ3Water
         dc.l Pal_SuperSonicCycle,Pal_SuperSonicCycle_LZWater,Pal_SuperSonicCycle_SBZ3Water
         dc.l KnucklesAni_Run,KnucklesAni_Walk,KnucklesAni_Roll,KnucklesAni_Roll2,KnucklesAni_Push,KnucklesAni_Figure8
         dc.l Art_Knuckles
-        dc.b 0,0,palid_Sonic,palid_LZSonWater,palid_SBZ3SonWat,plcid_KnucklesHUD
+        dc.b 0,0,palid_Knuckles,palid_KnucklesWater,palid_KnucklesSBZ3Water,plcid_KnucklesHUD
 CharacterAssets_KnucklesEnd:
         if (CharacterAssets_KnucklesEnd-CharacterAssets_Knuckles)<>CharacterAsset_Size
         fatal "Knuckles character descriptor size mismatch"

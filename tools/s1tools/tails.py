@@ -10,11 +10,11 @@ from pathlib import Path
 from s1tools.codecs.kosinski import encode_moduled
 from s1tools.codecs.nemesis import decode as nemesis_decode
 from s1tools.common import get_root, get_source, write_outputs
-from s1tools.shared_palette import life_icon
+from s1tools.shared_palette import life_icon, player_palettes
 
 BASE = "General/Sprites/Tails/"
-# Sonic keeps blue 2..5; Tails uses the two shared orange shades at E/F.
-COLOURS = (0, 6, 14, 15, 15, 9, 12, 13, 14, 15, 10, 11, 7, 7, 9, 1)
+# The selected solo player's fur uses protected colours 2..5.
+COLOURS = (0, 6, 5, 4, 2, 9, 12, 13, 5, 4, 10, 11, 7, 7, 9, 1)
 FRAME_COUNT = 151
 
 
@@ -244,6 +244,14 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
     icon = nemesis_decode((source / "General/Sprites/HUD Icon/Tails Life Icon.bin").read_bytes())
     outputs[root / "artkosm/HUD - Tails Life Counter Icon.kosm"] = encode_moduled(
         life_icon(icon, COLOURS)
+    )
+    outputs.update(
+        player_palettes(
+            "Tails",
+            (0x0468, 0x068C, 0x008E, 0x00AE),
+            (0x0244, 0x0466, 0x0488, 0x06AA),
+            (0x0446, 0x0668, 0x068A, 0x08AC),
+        )
     )
     return outputs
 

@@ -43,6 +43,24 @@ def life_icon(raw: bytes, colours: tuple[int, ...]) -> bytes:
     return face + bytes((text[b >> 4] << 4) | text[b & 15] for b in raw[128:])
 
 
+def player_palettes(
+    name: str,
+    dry: tuple[int, ...],
+    water: tuple[int, ...],
+    sbz3: tuple[int, ...],
+) -> dict[Path, bytes]:
+    """Replace only the selected solo player's protected fur ramp."""
+    root = get_root()
+    outputs = {}
+    for suffix, ramp in (("", dry), (" - LZ Underwater", water), (" - SBZ3 Underwater", sbz3)):
+        if len(ramp) != 4 or any(word & ~0xEEE for word in ramp):
+            raise ValueError("Expected four Mega Drive colour words")
+        data = bytearray((root / f"palette/Sonic{suffix}.bin").read_bytes())
+        data[4:12] = b"".join(word.to_bytes(2, "big") for word in ramp)
+        outputs[root / f"palette/{name}{suffix}.bin"] = bytes(data)
+    return outputs
+
+
 def expected_outputs() -> dict[Path, bytes]:
     source, root = get_source("shared"), get_root()
     config = load_data("shared_player_palette.json")

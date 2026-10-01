@@ -13,6 +13,36 @@ from s1tools.codecs import kosinski, nemesis
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_knuckles_gameplay_pose_sources() -> None:
+    """S1 gameplay IDs must select the corresponding S3K poses."""
+    from s1tools.knuckles import frame_plan
+
+    plan = frame_plan()
+    # S3K's animation table uses CE..D1 for pushing, B1/B2 for hanging,
+    # 9D/9E for stopping and 9F..AA for balancing. The shared S3K event
+    # IDs select 8E for spring, 8D for hurt and AB for death (not surf 91).
+    assert [plan[i][0] for i in range(0x45, 0x49)] == list(range(0xCE, 0xD2))
+    assert [plan[i][0] for i in (0x41, 0x42)] == [0xB1, 0xB2]
+    assert [plan[i][0] for i in (0x37, 0x38)] == [0x9D, 0x9E]
+    assert [plan[i][0] for i in range(0x87, 0x93)] == list(range(0x9F, 0xAB))
+    assert plan[0x40][0] == 0x8E
+    assert plan[0x55][0] == 0x8D
+    assert plan[0x4D][0] == 0xAB
+    assert plan[0x4C][0] == 0xAD
+    assert [plan[i][0] for i in range(0x58, 0x5E)] == list(range(0x86, 0x8C))
+
+
+@pytest.mark.parametrize("suffix", ["", " - LZ Underwater", " - SBZ3 Underwater"])
+def test_solo_character_palettes_protect_object_colours(suffix: str) -> None:
+    reference = (ROOT / f"palette/Sonic{suffix}.bin").read_bytes()
+    for name in ("Tails", "Knuckles"):
+        palette = (ROOT / f"palette/{name}{suffix}.bin").read_bytes()
+        assert palette[:4] == reference[:4]
+        assert palette[12:] == reference[12:]
+        assert len({palette[i : i + 2] for i in range(4, 12, 2)}) == 4
+        assert palette[4:12] != reference[4:12]
+
+
 def run(*command: str) -> str:
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT / "tools")
