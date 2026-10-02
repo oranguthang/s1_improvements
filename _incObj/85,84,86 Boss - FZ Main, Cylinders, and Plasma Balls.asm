@@ -222,7 +222,7 @@ BossFinal_Eggman_Crush:
 		move.w	#40/2,d3				; set standing height
 		move.w	obX(a0),d4				; set object X position
 		jsr	(SolidObject).l				; calculate collision
-		tst.w	d4					; is Sonic colliding with the side of the piston?
+		tst.w	d4					; is the player colliding with the side of the piston?
 		bgt.s	.checkHit				; if yes, branch
 
 ; loc_19F48:
@@ -235,8 +235,9 @@ BossFinal_Eggman_Crush:
 ; loc_19F50:
 .checkHit:
 		addq.w	#7,(v_random).w				; seed RNG
-		cmpi.b	#id_Roll,(v_player+obAnim).w		; is Sonic rolling/jumping?
-		bne.s	.checkFlash				; if not, branch
+		jsr	(BossFinal_CheckPlayerAttack).l
+		tst.b	d0
+		beq.s	.checkFlash				; no attack: retain the solid side collision
 		move.w	#$300,d0				; set up initial velocity
 		btst	#0,obStatus(a0)				; is Eggman on the right?
 		bne.s	.applyDamage				; if not, branch
@@ -1206,3 +1207,29 @@ BossPlasma_Move:
 Map_PLaunch:	include	"_maps/Plasma Ball Launcher.asm"
 		include	"_anim/Plasma Balls.asm"
 Map_Plasma:	include	"_maps/Plasma Balls.asm"
+
+; FZ uses solid side collision instead of the normal enemy hitbox.
+; a0 = Eggman, a1 = player, d4 = SolidObject collision result.
+; d0 = 1 for a valid attack; all other registers are preserved.
+BossFinal_CheckPlayerAttack:
+		tst.w d4
+		ble.s .noAttack            ; only Eggman's exposed side can be hit
+		cmpi.b #id_Roll,obAnim(a1)
+		beq.s .attack
+		exg a0,a1
+		cmpi.b #Character_Tails,(v_character_p1).w
+		bne.s .normalAbility
+		; Exception for the cylinder fight: flying Tails can hit its side.
+		jsr (React_TailsRotorActive).l
+		bra.s .restore
+.normalAbility:
+		jsr (React_AbilityAttack).l
+.restore:
+		exg a0,a1
+		rts
+.attack:
+		moveq #1,d0
+		rts
+.noAttack:
+		moveq #0,d0
+		rts

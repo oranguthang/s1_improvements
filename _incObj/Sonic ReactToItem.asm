@@ -284,10 +284,9 @@ React_Monitor:
 ; ---------------------------------------------------------------------------
 
 React_Enemy:
-		cmpi.b #1,(v_knux_state).w
-		beq.s .checkBossHit
-		cmpi.b #5,(v_knux_state).w
-		beq.s .checkBossHit
+		bsr.w React_AbilityAttack
+		tst.b d0
+		bne.s .checkBossHit
 		tst.b	(v_invinc).w				; is Sonic invincible?
 		bne.s	.checkBossHit				; if yes, branch
 		tst.b	(v_supersonic).w			; Super Sonic damages badniks on contact
@@ -653,4 +652,59 @@ React_ResetHomingAttack:
 		move.w	#-$500,obVelY(a0)
 		bclr	#7,obStatus(a0)
 .return:
+		rts
+
+; Character ability attacks. a0 = player, a1 = target; d0 = 1 for an
+; attack. Other registers are preserved for the collision queue.
+React_AbilityAttack:
+		cmpi.b #2,obRoutine(a0)
+		bne.s .noAttack
+		cmpi.b #Character_Knuckles,(v_character_p1).w
+		beq.s .knuckles
+		bsr.w React_TailsRotorActive
+		tst.b d0
+		beq.s .noAttack
+		; S3K Touch_Enemy/Check_TailsAttack: the target must be above
+		; Tails, within the rotor's 90-degree cone ($20 <= angle < $60).
+		movem.l d1-d2,-(sp)
+		move.w obX(a0),d1
+		move.w obY(a0),d2
+		sub.w obX(a1),d1
+		sub.w obY(a1),d2
+		jsr (CalcAngle).l
+		movem.l (sp)+,d1-d2
+		subi.b #$20,d0
+		cmpi.b #$40,d0
+		bhs.s .noAttack
+.attack:
+		moveq #1,d0
+		rts
+.knuckles:
+		cmpi.b #1,(v_knux_state).w
+		beq.s .attack               ; glide
+		cmpi.b #5,(v_knux_state).w
+		beq.s .attack               ; slide after landing
+.noAttack:
+		moveq #0,d0
+		rts
+
+; Check the rotor state separately so FZ can allow flying side attacks.
+; a0 = player; d0 = 1 while the airborne tail rotor is active.
+React_TailsRotorActive:
+		cmpi.b #Character_Tails,(v_character_p1).w
+		bne.s .inactive
+		cmpi.b #2,obRoutine(a0)
+		bne.s .inactive
+		tst.b (v_tails_flying).w
+		beq.s .inactive
+		btst #1,obStatus(a0)
+		beq.s .inactive
+		btst #6,obStatus(a0)
+		bne.s .inactive             ; swimming has no attacking tail rotor
+		cmpi.b #id_Float1,obAnim(a0)
+		bne.s .inactive
+		moveq #1,d0
+		rts
+.inactive:
+		moveq #0,d0
 		rts
