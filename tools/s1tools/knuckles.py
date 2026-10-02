@@ -20,7 +20,8 @@ FALL = 0x7A
 SLIDE = 0x7C
 CLIMB = 0x7E
 LEDGE = 0x84
-FRAME_COUNT = 0x93
+WATER_TURN_EXTRA = 0x93
+FRAME_COUNT = WATER_TURN_EXTRA + 4
 
 
 def frame_plan() -> list[tuple[int, int, int]]:
@@ -49,10 +50,10 @@ def frame_plan() -> list[tuple[int, int, int]]:
         (0x39, 0x9B),
         (0x3A, 0x9F),
         (0x3B, 0xA0),
-        (0x3C, 0xAE),
-        (0x3D, 0xAF),
-        (0x3E, 0xAE),
-        (0x3F, 0xAF),
+        (0x3C, 0xC0),
+        (0x3D, 0xC1),
+        (0x3E, 0xC3),
+        (0x3F, 0xC5),
         (0x40, 0x8E),
         (0x41, 0xB1),
         (0x42, 0xB2),
@@ -63,8 +64,8 @@ def frame_plan() -> list[tuple[int, int, int]]:
         (0x4B, 0xAC),
         (0x4C, 0xAD),
         (0x4D, 0xAB),
-        (0x53, 0xAE),
-        (0x54, 0xAF),
+        (0x53, 0xC2),
+        (0x54, 0xC4),
         (0x55, 0x8D),
         (0x56, 0xB0),
         (0x57, 0x8C),
@@ -90,6 +91,9 @@ def frame_plan() -> list[tuple[int, int, int]]:
         assign(LEDGE + step, 0xBD + step)
     for step in range(12):
         assign(0x87 + step, 0x9F + step)
+    # S3K has no water-spin art: cycle the ten glide headings instead.
+    for step in range(4):
+        assign(WATER_TURN_EXTRA + step, 0xC6 + step)
     return plan
 
 

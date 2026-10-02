@@ -146,6 +146,10 @@ KnucklesDPLC_internal: mappingsTable
 	mappingsTableEntry.w KnucklesPLC_90
 	mappingsTableEntry.w KnucklesPLC_91
 	mappingsTableEntry.w KnucklesPLC_92
+	mappingsTableEntry.w KnucklesPLC_93
+	mappingsTableEntry.w KnucklesPLC_94
+	mappingsTableEntry.w KnucklesPLC_95
+	mappingsTableEntry.w KnucklesPLC_96
 
 KnucklesPLC_00: dplcHeader
 KnucklesPLC_00_End
@@ -431,36 +435,33 @@ KnucklesPLC_3B_End
 
 KnucklesPLC_3C: dplcHeader
 	dplcEntry 16, $43C
-	dplcEntry 3, $44C
 KnucklesPLC_3C_End
 
 KnucklesPLC_3D: dplcHeader
-	dplcEntry 16, $44F
-	dplcEntry 3, $45F
+	dplcEntry 14, $44C
 KnucklesPLC_3D_End
 
 KnucklesPLC_3E: dplcHeader
-	dplcEntry 16, $43C
-	dplcEntry 3, $44C
+	dplcEntry 14, $44C
 KnucklesPLC_3E_End
 
 KnucklesPLC_3F: dplcHeader
-	dplcEntry 16, $44F
-	dplcEntry 3, $45F
+	dplcEntry 16, $45A
+	dplcEntry 2, $46A
 KnucklesPLC_3F_End
 
 KnucklesPLC_40: dplcHeader
-	dplcEntry 15, $462
+	dplcEntry 15, $46C
 KnucklesPLC_40_End
 
 KnucklesPLC_41: dplcHeader
-	dplcEntry 16, $471
-	dplcEntry 3, $481
+	dplcEntry 16, $47B
+	dplcEntry 3, $48B
 KnucklesPLC_41_End
 
 KnucklesPLC_42: dplcHeader
-	dplcEntry 16, $484
-	dplcEntry 6, $494
+	dplcEntry 16, $48E
+	dplcEntry 6, $49E
 KnucklesPLC_42_End
 
 KnucklesPLC_43: dplcHeader
@@ -474,48 +475,48 @@ KnucklesPLC_44: dplcHeader
 KnucklesPLC_44_End
 
 KnucklesPLC_45: dplcHeader
-	dplcEntry 16, $49A
-	dplcEntry 4, $4AA
+	dplcEntry 16, $4A4
+	dplcEntry 4, $4B4
 KnucklesPLC_45_End
 
 KnucklesPLC_46: dplcHeader
-	dplcEntry 16, $4AE
-	dplcEntry 4, $4BE
+	dplcEntry 16, $4B8
+	dplcEntry 4, $4C8
 KnucklesPLC_46_End
 
 KnucklesPLC_47: dplcHeader
-	dplcEntry 16, $4C2
-	dplcEntry 4, $4D2
+	dplcEntry 16, $4CC
+	dplcEntry 4, $4DC
 KnucklesPLC_47_End
 
 KnucklesPLC_48: dplcHeader
-	dplcEntry 16, $4D6
-	dplcEntry 3, $4E6
+	dplcEntry 16, $4E0
+	dplcEntry 3, $4F0
 KnucklesPLC_48_End
 
 KnucklesPLC_49: dplcHeader
-	dplcEntry 16, $4E9
-	dplcEntry 2, $4F9
+	dplcEntry 16, $4F3
+	dplcEntry 2, $503
 KnucklesPLC_49_End
 
 KnucklesPLC_4A: dplcHeader
-	dplcEntry 16, $4FB
-	dplcEntry 5, $50B
+	dplcEntry 16, $505
+	dplcEntry 5, $515
 KnucklesPLC_4A_End
 
 KnucklesPLC_4B: dplcHeader
-	dplcEntry 16, $510
-	dplcEntry 4, $520
+	dplcEntry 16, $51A
+	dplcEntry 4, $52A
 KnucklesPLC_4B_End
 
 KnucklesPLC_4C: dplcHeader
-	dplcEntry 16, $524
-	dplcEntry 4, $534
+	dplcEntry 16, $52E
+	dplcEntry 4, $53E
 KnucklesPLC_4C_End
 
 KnucklesPLC_4D: dplcHeader
-	dplcEntry 16, $538
-	dplcEntry 4, $548
+	dplcEntry 16, $542
+	dplcEntry 4, $552
 KnucklesPLC_4D_End
 
 KnucklesPLC_4E: dplcHeader
@@ -535,32 +536,30 @@ KnucklesPLC_51: dplcHeader
 KnucklesPLC_51_End
 
 KnucklesPLC_52: dplcHeader
-	dplcEntry 14, $54C
+	dplcEntry 14, $556
 KnucklesPLC_52_End
 
 KnucklesPLC_53: dplcHeader
-	dplcEntry 16, $43C
-	dplcEntry 3, $44C
+	dplcEntry 12, $564
 KnucklesPLC_53_End
 
 KnucklesPLC_54: dplcHeader
-	dplcEntry 16, $44F
-	dplcEntry 3, $45F
+	dplcEntry 16, $43C
 KnucklesPLC_54_End
 
 KnucklesPLC_55: dplcHeader
-	dplcEntry 16, $55A
-	dplcEntry 6, $56A
+	dplcEntry 16, $570
+	dplcEntry 6, $580
 KnucklesPLC_55_End
 
 KnucklesPLC_56: dplcHeader
-	dplcEntry 16, $4FB
-	dplcEntry 5, $50B
+	dplcEntry 16, $505
+	dplcEntry 5, $515
 KnucklesPLC_56_End
 
 KnucklesPLC_57: dplcHeader
-	dplcEntry 16, $570
-	dplcEntry 4, $580
+	dplcEntry 16, $586
+	dplcEntry 4, $596
 KnucklesPLC_57_End
 
 KnucklesPLC_58: dplcHeader
@@ -580,11 +579,11 @@ KnucklesPLC_5B: dplcHeader
 KnucklesPLC_5B_End
 
 KnucklesPLC_5C: dplcHeader
-	dplcEntry 14, $54C
+	dplcEntry 14, $556
 KnucklesPLC_5C_End
 
 KnucklesPLC_5D: dplcHeader
-	dplcEntry 14, $584
+	dplcEntry 14, $59A
 KnucklesPLC_5D_End
 
 KnucklesPLC_5E: dplcHeader
@@ -668,23 +667,23 @@ KnucklesPLC_6D: dplcHeader
 KnucklesPLC_6D_End
 
 KnucklesPLC_6E: dplcHeader
-	dplcEntry 15, $462
+	dplcEntry 15, $46C
 KnucklesPLC_6E_End
 
 KnucklesPLC_6F: dplcHeader
-	dplcEntry 15, $462
+	dplcEntry 15, $46C
 KnucklesPLC_6F_End
 
 KnucklesPLC_70: dplcHeader
-	dplcEntry 15, $462
+	dplcEntry 15, $46C
 KnucklesPLC_70_End
 
 KnucklesPLC_71: dplcHeader
-	dplcEntry 15, $462
+	dplcEntry 15, $46C
 KnucklesPLC_71_End
 
 KnucklesPLC_72: dplcHeader
-	dplcEntry 15, $462
+	dplcEntry 15, $46C
 KnucklesPLC_72_End
 
 KnucklesPLC_73: dplcHeader
@@ -698,82 +697,82 @@ KnucklesPLC_74: dplcHeader
 KnucklesPLC_74_End
 
 KnucklesPLC_75: dplcHeader
-	dplcEntry 16, $592
+	dplcEntry 16, $43C
 KnucklesPLC_75_End
 
 KnucklesPLC_76: dplcHeader
-	dplcEntry 14, $5A2
+	dplcEntry 14, $44C
 KnucklesPLC_76_End
 
 KnucklesPLC_77: dplcHeader
-	dplcEntry 12, $5B0
+	dplcEntry 12, $564
 KnucklesPLC_77_End
 
 KnucklesPLC_78: dplcHeader
-	dplcEntry 14, $5A2
+	dplcEntry 14, $44C
 KnucklesPLC_78_End
 
 KnucklesPLC_79: dplcHeader
-	dplcEntry 16, $592
+	dplcEntry 16, $43C
 KnucklesPLC_79_End
 
 KnucklesPLC_7A: dplcHeader
-	dplcEntry 16, $5BC
-	dplcEntry 7, $5CC
+	dplcEntry 16, $5A8
+	dplcEntry 7, $5B8
 KnucklesPLC_7A_End
 
 KnucklesPLC_7B: dplcHeader
-	dplcEntry 16, $5D3
-	dplcEntry 5, $5E3
+	dplcEntry 16, $5BF
+	dplcEntry 5, $5CF
 KnucklesPLC_7B_End
 
 KnucklesPLC_7C: dplcHeader
-	dplcEntry 13, $5E8
+	dplcEntry 13, $5D4
 KnucklesPLC_7C_End
 
 KnucklesPLC_7D: dplcHeader
-	dplcEntry 16, $5F5
-	dplcEntry 1, $605
+	dplcEntry 16, $5E1
+	dplcEntry 1, $5F1
 KnucklesPLC_7D_End
 
 KnucklesPLC_7E: dplcHeader
-	dplcEntry 16, $606
-	dplcEntry 1, $616
+	dplcEntry 16, $5F2
+	dplcEntry 1, $602
 KnucklesPLC_7E_End
 
 KnucklesPLC_7F: dplcHeader
-	dplcEntry 16, $617
+	dplcEntry 16, $603
 KnucklesPLC_7F_End
 
 KnucklesPLC_80: dplcHeader
-	dplcEntry 16, $627
-	dplcEntry 2, $637
+	dplcEntry 16, $613
+	dplcEntry 2, $623
 KnucklesPLC_80_End
 
 KnucklesPLC_81: dplcHeader
-	dplcEntry 16, $639
-	dplcEntry 1, $649
+	dplcEntry 16, $625
+	dplcEntry 1, $635
 KnucklesPLC_81_End
 
 KnucklesPLC_82: dplcHeader
-	dplcEntry 16, $64A
+	dplcEntry 16, $636
 KnucklesPLC_82_End
 
 KnucklesPLC_83: dplcHeader
-	dplcEntry 16, $65A
+	dplcEntry 16, $646
 KnucklesPLC_83_End
 
 KnucklesPLC_84: dplcHeader
-	dplcEntry 14, $66A
+	dplcEntry 14, $656
 KnucklesPLC_84_End
 
 KnucklesPLC_85: dplcHeader
-	dplcEntry 16, $678
+	dplcEntry 16, $664
 KnucklesPLC_85_End
 
 KnucklesPLC_86: dplcHeader
-	dplcEntry 16, $688
-	dplcEntry 3, $698
+	dplcEntry 16, $674
+	dplcEntry 3, $684
 KnucklesPLC_86_End
 
 KnucklesPLC_87: dplcHeader
@@ -787,53 +786,70 @@ KnucklesPLC_88: dplcHeader
 KnucklesPLC_88_End
 
 KnucklesPLC_89: dplcHeader
-	dplcEntry 16, $69B
-	dplcEntry 11, $6AB
+	dplcEntry 16, $687
+	dplcEntry 11, $697
 KnucklesPLC_89_End
 
 KnucklesPLC_8A: dplcHeader
-	dplcEntry 16, $6B6
-	dplcEntry 6, $6C6
+	dplcEntry 16, $6A2
+	dplcEntry 6, $6B2
 KnucklesPLC_8A_End
 
 KnucklesPLC_8B: dplcHeader
-	dplcEntry 16, $6CC
-	dplcEntry 7, $6DC
+	dplcEntry 16, $6B8
+	dplcEntry 7, $6C8
 KnucklesPLC_8B_End
 
 KnucklesPLC_8C: dplcHeader
-	dplcEntry 16, $6E3
-	dplcEntry 3, $6F3
+	dplcEntry 16, $6CF
+	dplcEntry 3, $6DF
 KnucklesPLC_8C_End
 
 KnucklesPLC_8D: dplcHeader
-	dplcEntry 16, $6F6
-	dplcEntry 6, $706
+	dplcEntry 16, $6E2
+	dplcEntry 6, $6F2
 KnucklesPLC_8D_End
 
 KnucklesPLC_8E: dplcHeader
-	dplcEntry 16, $70C
-	dplcEntry 8, $71C
+	dplcEntry 16, $6F8
+	dplcEntry 8, $708
 KnucklesPLC_8E_End
 
 KnucklesPLC_8F: dplcHeader
-	dplcEntry 16, $724
-	dplcEntry 6, $734
+	dplcEntry 16, $710
+	dplcEntry 6, $720
 KnucklesPLC_8F_End
 
 KnucklesPLC_90: dplcHeader
-	dplcEntry 16, $73A
-	dplcEntry 7, $74A
+	dplcEntry 16, $726
+	dplcEntry 7, $736
 KnucklesPLC_90_End
 
 KnucklesPLC_91: dplcHeader
-	dplcEntry 16, $751
-	dplcEntry 13, $761
+	dplcEntry 16, $73D
+	dplcEntry 13, $74D
 KnucklesPLC_91_End
 
 KnucklesPLC_92: dplcHeader
-	dplcEntry 16, $76E
-	dplcEntry 10, $77E
+	dplcEntry 16, $75A
+	dplcEntry 10, $76A
 KnucklesPLC_92_End
+
+KnucklesPLC_93: dplcHeader
+	dplcEntry 16, $774
+KnucklesPLC_93_End
+
+KnucklesPLC_94: dplcHeader
+	dplcEntry 12, $784
+KnucklesPLC_94_End
+
+KnucklesPLC_95: dplcHeader
+	dplcEntry 16, $774
+KnucklesPLC_95_End
+
+KnucklesPLC_96: dplcHeader
+	dplcEntry 16, $45A
+	dplcEntry 2, $46A
+KnucklesPLC_96_End
 
 	even

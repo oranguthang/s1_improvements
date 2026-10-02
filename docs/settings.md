@@ -40,7 +40,7 @@ Tails has no Super form, even with all emeralds granted. Giant-ring bonuses stil
 
 Select KNUCKLES in OPTIONS. Jump with A/B/C, then hold B or C after a second press to glide. Release to fall. Gliding into a vertical terrain wall grabs it; Up/Down climbs, B/C jumps away, and holding away releases the wall. At the top Knuckles climbs onto the ledge. His jump is lower than Sonic's. Gliding can defeat badniks and break monitors and compatible walls. A retains Light Dash; standalone B retains its debug-placement function when debug is enabled.
 
-Knuckles has no Super form. His fur uses protected palette slots 2/4/5, with a separate red/pink ramp and underwater tints; green shoe panels use protected slot 3. Objects retain their three gray shades independently of the selected character. The lives label uses the S3K KTE abbreviation. Large title/ending illustrations and Continue counters remain Sonic artwork. Only one playable character is supported.
+Knuckles has no Super form. His fur uses protected palette slots 2/4/5, with a separate red/pink ramp and underwater tints; green shoe panels use protected slot 3. Objects retain their three gray shades independently of the selected character. The lives label uses the S3K KTE abbreviation. Large title/ending illustrations and Continue counters remain Sonic artwork. Water tunnels approximate rotation by cycling the ten Sonic 3 & Knuckles glide headings; the original game has no dedicated Knuckles water-spin artwork. Only one playable character is supported.
 
 ## Debug display
 

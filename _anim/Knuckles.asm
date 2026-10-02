@@ -111,8 +111,9 @@ KnucklesAni_Float1:	dc.b 7
 		dc.b afEnd
 		even
 
-KnucklesAni_Float2:	dc.b 7
-		dc.b fr_Float1, fr_Float2, fr_Float5, fr_Float3, fr_Float6
+; Approximate water rotation with the ten S3K glide headings $C0..$C9.
+KnucklesAni_Float2:	dc.b 3
+		dc.b fr_Float1, fr_Float2, fr_Float5, fr_Float3, fr_Float6, fr_Float4, $93, $94, $95, $96
 		dc.b afEnd
 		even
 
@@ -182,8 +183,8 @@ KnucklesAni_Null:	dc.b 119
 		dc.b afChange, id_Walk
 		even
 
-KnucklesAni_Float3:	dc.b 3
-		dc.b fr_Float1, fr_Float2, fr_Float5, fr_Float3, fr_Float6
+KnucklesAni_Float3:	dc.b 1
+		dc.b fr_Float1, fr_Float2, fr_Float5, fr_Float3, fr_Float6, fr_Float4, $93, $94, $95, $96
 		dc.b afEnd
 		even
 
