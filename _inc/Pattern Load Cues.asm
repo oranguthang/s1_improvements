@@ -82,6 +82,9 @@ plcid_TailsSignpost: plcptr PLC_TailsSignpost
 plcid_KnucklesSignpost: plcptr PLC_KnucklesSignpost
 plcid_TailsMonitors: plcptr PLC_TailsMonitors
 plcid_KnucklesMonitors: plcptr PLC_KnucklesMonitors
+plcid_SonicEnding: plcptr PLC_SonicEnding
+plcid_TailsEnding: plcptr PLC_TailsEnding
+plcid_KnucklesEnding: plcptr PLC_KnucklesEnding
 
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - standard block 1
@@ -431,13 +434,11 @@ PLC_SSResult_end:
 ; Pattern load cues - ending sequence
 ; ---------------------------------------------------------------------------
 PLC_Ending:	plcheader
-		plcm	KosM_Lives,	ArtTile_Lives_Counter		; Sonic icon, independent of the preceding player
 		plcm	KosM_GHZ_1st,	ArtTile_Level			; GHZ main patterns
 		plcm	KosM_GHZ_2nd,	ArtTile_Level+$1CD		; GHZ secondary patterns
 		plcm	KosM_Stalk,	ArtTile_GHZ_Flower_Stalk	; flower stalk
 		plcm	KosM_EndFlower,	ArtTile_Ending_Flowers		; flowers
-		plcm	KosM_EndEm,	ArtTile_Ending_Emeralds		; emeralds
-		plcm	KosM_EndSonic,	ArtTile_Ending_Sonic		; Sonic
+		plcm	KosM_EndSharedEm,	ArtTile_Ending_Emeralds		; emeralds
 	if Revision=0
 		plcm	KosM_EndEggman,	ArtTile_Ending_Eggman		; Eggman's death (unused)
 	endif
@@ -450,6 +451,21 @@ PLC_Ending:	plcheader
 		plcm	KosM_Squirrel,	ArtTile_Ending_Squirrel		; squirrel
 		plcm	KosM_EndStH,	ArtTile_Ending_STH		; "SONIC THE HEDGEHOG"
 PLC_Ending_end:
+
+PLC_SonicEnding: plcheader
+        plcm KosM_Lives,ArtTile_Lives_Counter
+        plcm KosM_EndSonic,ArtTile_Ending_Sonic
+PLC_SonicEnding_end:
+PLC_TailsEnding: plcheader
+        plcm KosM_TailsLives,ArtTile_Lives_Counter
+        plcm KosM_EndTails,ArtTile_Ending_Sonic
+        plcm KosM_EndSharedLogo,ArtTile_Ending_STH
+PLC_TailsEnding_end:
+PLC_KnucklesEnding: plcheader
+        plcm KosM_KnucklesLives,ArtTile_Lives_Counter
+        plcm KosM_EndKnuckles,ArtTile_Ending_Sonic
+        plcm KosM_EndSharedLogo,ArtTile_Ending_STH
+PLC_KnucklesEnding_end:
 
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - "TRY AGAIN" and "END" screens

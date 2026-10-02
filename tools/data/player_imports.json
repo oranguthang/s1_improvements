@@ -633,6 +633,7 @@
     "s1/artkosm/Title Cards.kosm": "5da1e3f21fc13192c43939992d646e6dd06a063ca72146ff1fa4ecbab87aa744",
     "sk/General/Sprites/Signpost/End Signs.bin": "f7bde4e6f77a21a9747df2476ec176d9fd6f1b1ce73b5bcd3178b8210b74b218",
     "sk/General/Sprites/Signpost/Map - End Signs.asm": "9b2326a154e3182dba1afe00a8395de4586ad427091f263a0804fa1f1027ab7f",
-    "sk/General/Sprites/Signpost/DPLC - End Signs.asm": "55ad4c53ad6f4b7c034388d2e2d75e4f6b144edcb75d537df510258e112ffb8e"
+    "sk/General/Sprites/Signpost/DPLC - End Signs.asm": "55ad4c53ad6f4b7c034388d2e2d75e4f6b144edcb75d537df510258e112ffb8e",
+    "mobile/ending.png": "920337485f7088ade90576f71366da79562857d09c94c5f297ce780e8c268fcb"
   }
 }

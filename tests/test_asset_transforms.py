@@ -94,6 +94,7 @@ def test_nemesis_pixels_preserve_template(name: str) -> None:
         ("player", "knuckles"),
         ("player", "palette"),
         ("player", "ui"),
+        ("player", "endings"),
         ("palettes", "badniks", "--verify"),
         ("palettes", "objects", "--verify"),
         ("palettes", "water", "--check"),
@@ -213,3 +214,70 @@ def test_title_card_ovals_do_not_use_character_colours() -> None:
     assert after[: 0x6E * 32] == before[: 0x6E * 32]
     colours = {n for b in after[0x6E * 32 :] for n in (b >> 4, b & 15)}
     assert colours <= {0, 1, 6, 7, 8, 9}
+
+
+def test_ending_blue_remap_preserves_other_emeralds_and_transparency() -> None:
+    original = kosinski.decode_moduled((ROOT / "artkosm/Ending - Emeralds.kosm").read_bytes())
+    shared = kosinski.decode_moduled((ROOT / "artkosm/Ending - Shared Emeralds.kosm").read_bytes())
+    # Only the blue gem's four tiles change; other gems and the flash stay intact.
+    assert shared[: 4 * 32] == original[: 4 * 32]
+    assert shared[8 * 32 :] == original[8 * 32 :]
+    for before, after in zip(original, shared, strict=True):
+        assert (before >> 4 == 0) == (after >> 4 == 0)
+        assert (before & 15 == 0) == (after & 15 == 0)
+    for name in ("Emeralds", "Logo"):
+        before = kosinski.decode_moduled(
+            (ROOT / f"artkosm/Ending - {'StH Logo' if name == 'Logo' else name}.kosm").read_bytes()
+        )
+        after = kosinski.decode_moduled(
+            (ROOT / f"artkosm/Ending - Shared {name}.kosm").read_bytes()
+        )
+        for a, b in zip(before, after, strict=True):
+            assert (a >> 4 == 6) == (b >> 4 == 6)
+            assert (a & 15 == 6) == (b & 15 == 6)
+
+
+@pytest.mark.parametrize("name", ["Tails", "Knuckles"])
+def test_ending_glow_keeps_the_head_and_feet_stationary(name: str) -> None:
+    from PIL import Image
+    from s1tools.character_endings import mobile_frames
+    from s1tools.common import get_source
+
+    sheet = Image.open(get_source("mobile") / "ending.png").convert("RGB")
+    hold, glow = mobile_frames(sheet, name)[:2]
+    # Sparkles cover the hands/tail. The head and shoes retain their placement.
+    for bounds in ((116, 114, 138, 122), (108, 144, 150, 150)):
+        unchanged = hold.crop(bounds)
+        assert unchanged.getbbox()
+        assert unchanged.tobytes() == glow.crop(bounds).tobytes()
+
+
+@pytest.mark.parametrize("name", ["Tails", "Knuckles"])
+def test_mobile_ending_mapping_preserves_every_pixel(name: str) -> None:
+    from PIL import Image
+    from s1tools.character_endings import ENDING_TILES, mobile_frames
+    from s1tools.common import get_source
+    from s1tools.sprites import decode_tiles, parse_mappings
+
+    source = Image.open(get_source("mobile") / "ending.png").convert("RGB")
+    art = kosinski.decode_moduled((ROOT / f"artkosm/Ending - {name}.kosm").read_bytes())
+    tiles = decode_tiles(art)
+    assert len(tiles) <= ENDING_TILES
+    table, frames = parse_mappings(ROOT / f"_maps/Ending Sequence {name}.asm")
+    for label, expected in zip(table, mobile_frames(source, name), strict=True):
+        actual = Image.new("P", expected.size)
+        assert len(frames[label]) <= 24  # Original Sonic's largest ending pose.
+        for piece in frames[label]:
+            assert -128 <= piece.y <= 127
+            assert piece.tile + piece.width_tiles * piece.height_tiles <= len(tiles)
+            for tx in range(piece.width_tiles):
+                for ty in range(piece.height_tiles):
+                    tile = tiles[piece.tile + tx * piece.height_tiles + ty]
+                    for y, row in enumerate(tile):
+                        for x, colour in enumerate(row):
+                            if colour:
+                                actual.putpixel(
+                                    (128 + piece.x + tx * 8 + x, 128 + piece.y + ty * 8 + y),
+                                    colour,
+                                )
+        assert actual.tobytes() == expected.tobytes(), label

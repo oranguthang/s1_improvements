@@ -42,8 +42,7 @@ ESon_Main:	; Routine 0
 ESon_GoodEnding:
 		bsr.w ESon_UseCinematicPalette
 		addq.b	#2,ob2ndRout(a0)			; advance to ESon_MakeEmeralds
-		move.l	#Map_ESon,obMap(a0)			; set mappings
-		move.w	#ArtTile_Ending_Sonic,obGfx(a0)		; set art tile
+        jsr (GetEndingCharacterMap).l
 		move.b	#sprite_cam_field,obRender(a0)		; set to playfield-positioned mode
 		clr.b	obStatus(a0)				; clear X-flip flag
 		move.b	#2,obPriority(a0)			; set sprite priority
@@ -56,20 +55,6 @@ ESon_MakeEmeralds:
 		subq.w	#1,eson_time(a0)			; decrement timer to stare at hands
 		bne.s	.return					; if time remains, branch
 
-		; Start the normal Super-to-blue palette fade with the emerald glow.
-		; Keep the cinematic mappings, movement and Ending music untouched.
-		cmpi.b #Character_Sonic,(v_character_p1).w
-		bne.s .emeralds
-		clr.b	(v_supersonic).w
-		move.b	#2,(v_superpal_state).w
-		move.b	#3,(v_superpal_timer).w
-		move.w	#$28,(v_superpal_frame).w
-		clr.w	(v_superframe).w
-		character_asset CharacterAsset_Palette,a1,GetPlayer1Assets_Normal
-		move.l 4(a1),(v_palette_fading+4).w
-		move.l 8(a1),(v_palette_fading+8).w
-
-.emeralds:
 		addq.b	#2,ob2ndRout(a0)			; advance to ESon_Animate ($4)
 		move.w	#(0<<8)+1,obAnim(a0)			; set to "hold" animation and restart it immediately
 		move.b	#id_EndChaos,(v_endemeralds).w		; load ending sequence chaos emeralds objects
@@ -133,8 +118,7 @@ ESon_BadEnding:	; Routine $10
 
 		bsr.w ESon_UseCinematicPalette
 		addq.b	#2,ob2ndRout(a0)			; advance to ESon_Animate ($12, doesn't advance past that)
-		move.l	#Map_ESon,obMap(a0)			; set mappings
-		move.w	#ArtTile_Ending_Sonic,obGfx(a0)		; set art tile
+        jsr (GetEndingCharacterMap).l
 		move.b	#sprite_cam_field,obRender(a0)		; set to playfield-positioned mode
 		clr.b	obStatus(a0)				; clear any X/Y-flip flags
 		move.b	#2,obPriority(a0)			; set sprite priority
@@ -146,18 +130,15 @@ ESon_BadEnding:	; Routine $10
 	.return:
 		rts						; return
 
-; Large ending illustrations remain the original Sonic artwork. Do not tint
-; them orange/red or start a Super palette cycle for the solo characters.
+; All three endings use normal forms and keep shared object colours intact.
 ESon_UseCinematicPalette:
-		cmpi.b #Character_Sonic,(v_character_p1).w
-		beq.s .return
 		clr.b (v_supersonic).w
 		clr.b (v_superpal_state).w
-		move.l (Pal_Sonic+4).l,(v_palette+4).w
-		move.l (Pal_Sonic+8).l,(v_palette+8).w
-		move.l (Pal_Sonic+4).l,(v_palette_fading+4).w
-		move.l (Pal_Sonic+8).l,(v_palette_fading+8).w
-.return:
+        character_asset CharacterAsset_Palette,a1,GetPlayer1Assets_Normal
+        move.l 4(a1),(v_palette+4).w
+        move.l 8(a1),(v_palette+8).w
+        move.l 4(a1),(v_palette_fading+4).w
+        move.l 8(a1),(v_palette_fading+8).w
 		rts
 
 ; ===========================================================================
@@ -207,6 +188,11 @@ ECha_CreateEms:
 		addq.b	#2,obRoutine(a1)			; set to ECha_Move
 		move.l	#Map_ECha,obMap(a1)			; set mappings
 		move.w	#ArtTile_Ending_Emeralds,obGfx(a1)	; set art tile
+        cmpi.b #1,d2
+        bne.s .paletteReady
+        move.l #Map_EChaBlue,obMap(a1)
+        move.w #ArtTile_Ending_Emeralds|3<<13,obGfx(a1)
+.paletteReady:
 		move.b	#sprite_cam_field,obRender(a1)		; set to playfield-positioned mode
 		move.b	#1,obPriority(a1)			; set sprite priority (above Sonic)
 		move.w	obX(a0),echa_origX(a1)			; remember initial X-position for spinning animation
@@ -288,6 +274,10 @@ ESth_Main:	; Routine 0
 		move.w	#$80+$58,obScreenY(a0)			; set fixed Y-position
 		move.l	#Map_ESth,obMap(a0)			; set mappings
 		move.w	#ArtTile_Ending_STH,obGfx(a0)		; set art tile
+        cmpi.b #Character_Sonic,(v_character_p1).w
+        beq.s .paletteReady
+        ori.w #3<<13,obGfx(a0) ; shared logo uses the existing sky colours
+.paletteReady:
 		move.b	#sprite_cam_screen,obRender(a0)		; set to screen-positioned mode
 		move.b	#0,obPriority(a0)			; set to maximum sprite priority
 ; ---------------------------------------------------------------------------
@@ -327,5 +317,15 @@ ESth_Wait:
 ; ===========================================================================
 
 Map_ESon:	include	"_maps/Ending Sequence Sonic.asm"
+Map_ETails: include "_maps/Ending Sequence Tails.asm"
+Map_EKnuckles: include "_maps/Ending Sequence Knuckles.asm"
 Map_ECha:	include	"_maps/Ending Sequence Emeralds.asm"
+; The blue emerald uses the sky palette, independent of player fur.
+Map_EChaBlue: mappingsTable
+        mappingsTableEntry.w .blue
+        mappingsTableEntry.w .blue
+.blue: spriteHeader
+        spritePiece -8,-8,2,2,4,0,0,0,0
+.blue_End
+        even
 Map_ESth:	include	"_maps/Ending Sequence STH.asm"

@@ -34,6 +34,7 @@ COMMANDS = {
         "remap": ("palettes", "remap_main"),
     },
     "player": {
+        "endings": ("character_endings", "main"),
         "ui": ("character_ui", "main"),
         "palette": ("shared_palette", "main"),
         "knuckles": ("knuckles", "main"),

@@ -14,6 +14,8 @@ Solo Tails body/tail art and Knuckles art, mappings, DPLC and lives icons origin
 
 Tails and Knuckles signpost portraits also use the original S3K end-sign art and DPLC. The 1UP monitor portraits reuse the S3K lives icons. Act-clear character names reuse the Sonic 1 title-card alphabet.
 
+Their character-specific endings use the official Sonic the Hedgehog mobile remaster artwork, extracted by Parky33 and available in the [Ending sprite sheet](https://www.spriters-resource.com/mobile/sonicthehedgehogmobile/asset/65174/). The importer preserves pixel shapes and pose dimensions, adapts colours to the shared player palette and repacks mapping origins for the existing ending graphics slot. The blue emerald uses the independent sky palette.
+
 ## Title resources
 
 The independent title resources follow [Make an Alternative Title Screen](https://info.sonicretro.org/SCHG_How-to:Make_an_Alternative_Title_Screen). The source archive is retained with the resource inputs for repeatable extraction.

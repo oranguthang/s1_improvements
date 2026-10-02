@@ -38,9 +38,10 @@ python -m s1tools player tails
 python -m s1tools player knuckles
 python -m s1tools player palette
 python -m s1tools player ui
+python -m s1tools player endings
 ```
 
-Use `--apply` instead of `--verify` to regenerate. Order matters: Super base assets, then figure-eight, then air poses. Player importers retain the appended mapping/DPLC hooks. They preserve palette indices, frame IDs and sprite geometry; they do not use image quantization. The ordinary Sonic base art remains an input when computing appended tile offsets.
+Use `--apply` instead of `--verify` to regenerate. Order matters: Super base assets, then figure-eight, then air poses. These three importers retain the appended mapping/DPLC hooks. They preserve palette indices, frame IDs and sprite geometry; they do not use image quantization. The ordinary Sonic base art remains an input when computing appended tile offsets.
 
 `player tails` verifies the solo Tails resources; `player tails --apply` regenerates them independently of Sonic's appended artwork. It reads the bundled Sonic 3 & Knuckles body/tail art and mapping/DPLC tables, repacks them to the Sonic 1 frame conventions, and generates the lives icon. It preserves indexed pixels, applies an explicit colour-index remap and rejects frames larger than the existing 32-tile player VRAM slot.
 
@@ -49,6 +50,8 @@ Use `--apply` instead of `--verify` to regenerate. Order matters: Super base ass
 `player palette` verifies the common dry/underwater palette and reindexed Sonic, HUD, object and level resources; `--apply` regenerates them from the bundled `shared/` inputs. The range manifest retains mixed-palette sheet boundaries and records the mappings or tilemaps used for selection. Reindex the common resources before generating player imports and remaps; those recipes already target the shared indices.
 
 `player ui` verifies title-card gray ovals and the Tails/Knuckles signpost and 1UP monitor portraits; `--apply` regenerates them after the player palette import. It retains the original title-card font and numbers, and converts the S3K end-sign DPLC into two 24-tile portraits that replace only the Sonic face in the shared S1 signpost sheet. The four-tile 1UP monitor portraits reuse the original S3K lives icons; the other monitor tiles remain shared.
+
+`player endings` verifies the Tails and Knuckles ending graphics and eight-frame mappings; `--apply` rebuilds them from the packaged Sonic 1 mobile ending sheet. Explicit crop bounds exclude sheet separators. Original pixel shapes and sizes are retained; portrait highlights are quantized into the common player palette. Tile sequences are reused across poses to fit the existing ending VRAM allocation, including Revision 0. Separate emerald/logo resources use the existing sky palette so the blue emerald stays blue for every character and non-Sonic ending logos stay independent of player colours.
 
 For a separate output project:
 

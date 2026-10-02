@@ -2,8 +2,8 @@
 ; https://info.sonicretro.org/SCHG_How-to:Add_Extra_Characters
 ; ROM pointers avoid a shared RAM cache that would mix two player selections.
 
-; Apply the saved choice only to interactive levels and Special Stages.
-; Presentation scenes and recorded demos always use Sonic. Clobbers d0.
+; Apply the saved choice to gameplay and its ending. Recorded demos and
+; other presentation screens always use Sonic. Clobbers d0.
 UpdateSceneCharacter:
         move.b #-1,(v_sonframenum).w ; reload art even if the new character uses the same frame
         clr.b (v_character_p1).w
@@ -14,6 +14,8 @@ UpdateSceneCharacter:
         cmpi.b #id_Level,d0
         beq.s .playable
         cmpi.b #id_Special,d0
+        beq.s .playable
+        cmpi.b #id_Ending,d0
         bne.s .return
 .playable:
         move.b (v_character_selected).w,d0
@@ -109,6 +111,37 @@ LoadPlayerHUD:
         move.b CharacterAsset_HUD(a3),d0
         movea.l (sp)+,a3
         jmp (AddPLC).l
+
+; Ending art and HUD are loaded immediately before the initial fade-in.
+; Keep the shared scenery PLC independent of the selected character.
+LoadEndingCharacterArt:
+        bsr.s GetEndingCharacterIndex
+        lea EndingCharacterPLCs(pc),a1
+        move.w (a1,d0.w),d0
+        jmp (QuickPLC).l
+
+GetEndingCharacterMap:
+        bsr.s GetEndingCharacterIndex
+        add.w d0,d0
+        lea EndingCharacterMaps(pc),a1
+        move.l (a1,d0.w),obMap(a0)
+        move.w #ArtTile_Ending_Sonic,obGfx(a0)
+        rts
+
+GetEndingCharacterIndex:
+        moveq #0,d0
+        move.b (v_character_p1).w,d0
+        cmpi.w #Character_Count,d0
+        blo.s .valid
+        moveq #Character_Sonic,d0
+.valid:
+        add.w d0,d0
+        rts
+
+EndingCharacterPLCs:
+        dc.w plcid_SonicEnding,plcid_TailsEnding,plcid_KnucklesEnding
+EndingCharacterMaps:
+        dc.l Map_ESon,Map_ETails,Map_EKnuckles
 
 ; Queue the shared monitor sheet followed by the selected 1UP portrait.
 LoadPlayerMonitors:

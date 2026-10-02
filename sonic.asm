@@ -3449,6 +3449,7 @@ GM_Ending:
 End_LoadData:
 		moveq	#plcid_Ending,d0			; load ending sequence patterns (GHZ art, animals, etc.)
 		bsr.w	QuickPLC				; execute PLCs immediately (no queue)
+        jsr (LoadEndingCharacterArt).l
 		jsr	(Hud_Base).l				; load basic HUD graphics (only in levels, not in the ending demos)
 		bsr.w	LevelSizeLoad				; load level size and set default level boundaries
 		bsr.w	DeformLayers				; initialize background deformation
@@ -3495,7 +3496,7 @@ End_LoadSonic:
 		move.b	d0,(v_shield).w				; clear shield
 		move.b	d0,(v_invinc).w				; clear invincibility
 		move.b	d0,(v_shoes).w				; clear speed shoes
-		; v_unused1 aliases v_supersonic; preserve the cinematic form.
+        move.b d0,(v_supersonic).w ; endings currently use normal forms only
 		move.w	d0,(v_debuguse).w			; exit debug mode if necessary
 		move.w	d0,(f_restart).w			; clear level restart flag
 		move.w	d0,(v_framecount).w			; reset frames since level start to 0
@@ -3602,6 +3603,7 @@ End_SlowFade:
 
 		moveq	#palid_Ending,d0			; reload ending palette...
 		bsr.w	PalLoad_Fade				; ...to fade-in buffer
+        jsr (ApplyPlayerFadeColours).l
 		bsr.w	PaletteWhiteIn				; fade-in from white
 
 		bra.w	End_MainLoop				; return to main ending sequence loop for the rest of the scene
@@ -3616,35 +3618,6 @@ End_SlowFade:
 ; which have plenty of resources to teach you! This subroutine is a Moore machine.
 ; Once you understand these concepts, Sonic 1's game logic will make a lot more sense to you!
 ; ---------------------------------------------------------------------------
-
-; Good-ending Super presentation uses the normal cutscene movement constants.
-; Do not call Sonic_ActivateSuper: it changes physics, music and star objects.
-End_InitSuper:
-		cmpi.b #Character_Sonic,(v_character_p1).w
-		bne.s .return
-		jsr	(HasAllEmeralds).l
-		bne.s	.return
-		move.b	#1,(v_supersonic).w
-		character_asset CharacterAsset_Map,obMap(a0),GetPlayer1Assets_Super
-		move.b	#-1,obPrevAni(a0)
-		move.b	#-1,(v_sonframenum).w
-		bsr.s	End_SuperFadePalette
-.return:
-		rts
-
-; The initial fade-in targets gold. ESon_MakeEmeralds restores blue later.
-; Only the four fur colours change; ending scenery and skin keep their palette.
-End_SuperFadePalette:
-		tst.b	(v_supersonic).w
-		beq.s	.return
-		move.b	#-1,(v_superpal_state).w
-		move.b	#7,(v_superpal_timer).w
-		move.w	#$38,(v_superpal_frame).w
-		character_asset CharacterAsset_Cycle,a1,GetPlayer1Assets_Super
-		move.l $30(a1),(v_palette_fading+4).w
-		move.l $34(a1),(v_palette_fading+8).w
-.return:
-		rts
 
 End_MoveSonic:
 		move.b	(v_sonicend).w,d0			; get ending cutscene routine number
@@ -4746,6 +4719,14 @@ KosM_Exhaust:	binclude	"artkosm/Boss - Exhaust Flame.kosm"
 KosM_EndEm:	binclude	"artkosm/Ending - Emeralds.kosm"
 		even
 KosM_EndSonic:	binclude	"artkosm/Ending - Sonic.kosm"
+        even
+KosM_EndTails: binclude "artkosm/Ending - Tails.kosm"
+        even
+KosM_EndKnuckles: binclude "artkosm/Ending - Knuckles.kosm"
+        even
+KosM_EndSharedEm: binclude "artkosm/Ending - Shared Emeralds.kosm"
+        even
+KosM_EndSharedLogo: binclude "artkosm/Ending - Shared Logo.kosm"
 		even
 KosM_TryAgain:	binclude	"artkosm/Ending - Try Again.kosm"
 		even

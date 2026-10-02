@@ -56,10 +56,6 @@ Sonic_Main:	; Routine 0
 		clr.b	(v_superpal_state).w
 		clr.b	objoff_3D(a0)
 		clr.b	objoff_3F(a0)
-		cmpi.b	#id_Ending,(v_gamemode).w
-		bne.s	.notEnding
-		jsr	(End_InitSuper).l			; cinematic form, with normal scripted physics/music
-.notEnding:
 ; ---------------------------------------------------------------------------
 
 ; Obj01_Control:
