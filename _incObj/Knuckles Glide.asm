@@ -411,9 +411,41 @@ Knuckles_Slide:
         bpl.w .stop
 .move:
         move.w obVelX(a0),obInertia(a0)
+        ; Sliding bypasses Sonic's ordinary ground movement. Check walls
+        ; before floor snapping, in steps short enough to catch a 16px ledge
+        ; even at maximum glide speed. Friction is still applied once a frame.
+        move.l d7,-(sp)
+        move.w obVelY(a0),-(sp)
+        move.w obVelX(a0),d7
+.step:
+        move.w d7,d0
+        cmpi.w #$800,d0
+        ble.s .negativeStep
+        move.w #$800,d0
+.negativeStep:
+        cmpi.w #-$800,d0
+        bge.s .stepSpeed
+        move.w #-$800,d0
+.stepSpeed:
+        sub.w d0,d7
+        move.w d0,obVelX(a0)
+        jsr (Sonic_WallSpeedAdjust).l
         jsr (Sonic_LevelBound).l
         jsr (SpeedToPos).l
         jsr (Sonic_AnglePos).l
+        clr.w obVelY(a0)               ; apply this frame's vertical movement only once
+        tst.w obInertia(a0)
+        beq.s .stepDone
+        btst #1,obStatus(a0)
+        bne.s .stepDone                ; don't snap to further floor after leaving a ledge
+        tst.w d7
+        bne.s .step
+.stepDone:
+        move.w (sp)+,obVelY(a0)
+        move.l (sp)+,d7
+        tst.w obInertia(a0)
+        beq.w .stop                   ; finish the allowed movement before standing up
+        move.w obInertia(a0),obVelX(a0) ; restore the full speed after unblocked substeps
         moveq #1,d0
         rts
 .stop:
