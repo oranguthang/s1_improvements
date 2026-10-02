@@ -16,6 +16,11 @@ BASE = "General/Sprites/Tails/"
 # The selected solo player's fur uses protected colours 2..5.
 COLOURS = (0, 6, 5, 4, 2, 9, 12, 13, 5, 4, 10, 11, 7, 8, 9, 1)
 FRAME_COUNT = 151
+ROLL_FRAME_FIRST = FRAME_COUNT
+ROLL_FRAME_END = ROLL_FRAME_FIRST + 3 * 8 * 4
+# S3K's directional tails: horizontal/diagonal/vertical poses plus both flips.
+# Headings follow velocity clockwise from right, before the player's X flip.
+ROLL_TAILS = ((5, 0), (17, 3), (13, 3), (9, 3), (5, 3), (17, 0), (13, 0), (9, 0))
 
 
 def number(value: str) -> int:
@@ -120,7 +125,7 @@ def frame_plan() -> list[tuple[int, int, int, int]]:
             assign(0x1E + group * 4 + step, 0x21 + group * 4 + step, dx=dx, dy=dy)
             assign(0x5E + group * 4 + step, 0x21 + group * 4 + step, dx=dx, dy=dy)
     for step in range(5):
-        assign(0x2E + step, 0x96 + step % 3, 5 + step % 4, dy=5)
+        assign(0x2E + step, 0x96 + step % 3, 5 + step % 4, dy=0)
     for index in range(0x33, 0x37):
         assign(index, 0x82 + index - 0x33)
     for index, body, tail in (
@@ -235,7 +240,27 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
             pieces += [(*p[:4], p[4] + len(data) // 32, *p[5:]) for p in tail_pieces]
             data += tail_data
         frames.append((data, [(x + dx, y + dy, *rest) for x, y, *rest in pieces]))
+    # Keep the three body phases and the four-tick tail cycle independent.
+    # Bake tail-only mirroring into pieces so the body keeps its own facing.
+    for body_id in range(0x96, 0x99):
+        body_data, body_pieces = frame(body, body_maps, body_cues, body_id)
+        for tail_first, flips in ROLL_TAILS:
+            for phase in range(4):
+                tail_data, tail_pieces = frame(tail, tail_maps, tail_cues, tail_first + phase)
+                pieces = list(body_pieces)
+                for x, y, w, h, tile, xf, yf, pal, priority in tail_pieces:
+                    if flips & 1:
+                        x, xf = -x - w * 8, xf ^ 1
+                    if flips & 2:
+                        y, yf = -y - h * 8, yf ^ 1
+                    pieces.append((x, y, w, h, tile + len(body_data) // 32, xf, yf, pal, priority))
+                frames.append((body_data + tail_data, pieces))
     art, mappings, cues = emit_frames("Tails", frames)
+    mappings = (
+        f"; Runtime-selected roll composites, separate from animation commands.\n"
+        f"fr_TailsRollFirst equ ${ROLL_FRAME_FIRST:X}\n"
+        f"fr_TailsRollEnd equ ${ROLL_FRAME_END:X}\n\n"
+    ).encode("ascii") + mappings
     outputs = {
         root / "artunc/Tails.unc": art,
         root / "_maps/Tails.asm": mappings,

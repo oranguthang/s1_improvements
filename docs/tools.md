@@ -43,7 +43,7 @@ python -m s1tools player endings
 
 Use `--apply` instead of `--verify` to regenerate. Order matters: Super base assets, then figure-eight, then air poses. These three importers retain the appended mapping/DPLC hooks. They preserve palette indices, frame IDs and sprite geometry; they do not use image quantization. The ordinary Sonic base art remains an input when computing appended tile offsets.
 
-`player tails` verifies the solo Tails resources; `player tails --apply` regenerates them independently of Sonic's appended artwork. It reads the bundled Sonic 3 & Knuckles body/tail art and mapping/DPLC tables, repacks them to the Sonic 1 frame conventions, and generates the lives icon. It preserves indexed pixels, applies an explicit colour-index remap and rejects frames larger than the existing 32-tile player VRAM slot.
+`player tails` verifies the solo Tails resources; `player tails --apply` regenerates them independently of Sonic's appended artwork. It reads the bundled Sonic 3 & Knuckles body/tail art and mapping/DPLC tables, repacks them to the Sonic 1 frame conventions, and generates the lives icon. It preserves indexed pixels, applies an explicit colour-index remap and rejects frames larger than the existing 32-tile player VRAM slot. Directional rolling composites retain the original S3K body origin and independently mirrored tail pieces for eight velocity headings and a four-phase swish. Their generated frame bounds are used by the runtime pose selector.
 
 `player knuckles` verifies the solo Knuckles art, mappings, DPLC and lives icon; `--apply` regenerates them. It adapts S3K walk/run frame counts and includes glide, fall, slide, climbing and ledge poses. Both solo importers apply explicit colour-index maps into the common player palette.
 

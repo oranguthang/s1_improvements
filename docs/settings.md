@@ -34,7 +34,7 @@ God Mode prevents damage, drowning and time-over death. Crossing the lower death
 
 Select TAILS in OPTIONS before starting a game or using Level Select. Jump with A/B/C, then press B or C again in midair to fly; repeated presses supply ascent pulses. Flight lasts up to eight seconds before exhaustion and resets on landing. Underwater the same controls use swimming poses; the normal air supply still applies. A retains Light Dash. Spin Dash and Peel-Out are available; Sonic's Homing Attack is replaced by flight. Debug's standalone B still enters placement mode.
 
-Tails has no Super form, even with all emeralds granted. Giant-ring bonuses still use the effective emerald count. Player art, underwater palettes and the lives icon follow the selected character. Large title illustrations and the small Continue counter illustrations retain Sonic's original artwork. His ending uses the official mobile Tails poses.
+Tails has no Super form, even with all emeralds granted. Giant-ring bonuses still use the effective emerald count. Player art, underwater palettes and the lives icon follow the selected character. Large title illustrations and the small Continue counter illustrations retain Sonic's original artwork. His ending uses the official mobile Tails poses. The rolling body stays aligned with the floor. Its tails follow movement in eight directions and swish independently of the body animation, as in S3K.
 
 ## Solo Knuckles
 

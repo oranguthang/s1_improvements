@@ -128,6 +128,7 @@ Sonic_Control:	; Routine 2
 		bsr.w Sonic_UpdateAirPose
 		bsr.w	Sonic_UpdateTransformPose
 		bsr.w	Sonic_Animate				; run Sonic's animation scripts
+		jsr (Tails_RollPose).l
 		jsr (Tails_FlightPose).l
 		jsr (Knuckles_GlidePose).l
 		jsr (Sonic_LightDashPose).l		; face the dash vector without changing collision angle

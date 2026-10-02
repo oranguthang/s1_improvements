@@ -1,3 +1,7 @@
+; Runtime-selected roll composites, separate from animation commands.
+fr_TailsRollFirst equ $97
+fr_TailsRollEnd equ $F7
+
 ; S3K Tails, repacked for the S1 player frame IDs.
 TailsMap_internal: mappingsTable
 	mappingsTableEntry.w TailsMap_00
@@ -151,6 +155,102 @@ TailsMap_internal: mappingsTable
 	mappingsTableEntry.w TailsMap_94
 	mappingsTableEntry.w TailsMap_95
 	mappingsTableEntry.w TailsMap_96
+	mappingsTableEntry.w TailsMap_97
+	mappingsTableEntry.w TailsMap_98
+	mappingsTableEntry.w TailsMap_99
+	mappingsTableEntry.w TailsMap_9A
+	mappingsTableEntry.w TailsMap_9B
+	mappingsTableEntry.w TailsMap_9C
+	mappingsTableEntry.w TailsMap_9D
+	mappingsTableEntry.w TailsMap_9E
+	mappingsTableEntry.w TailsMap_9F
+	mappingsTableEntry.w TailsMap_A0
+	mappingsTableEntry.w TailsMap_A1
+	mappingsTableEntry.w TailsMap_A2
+	mappingsTableEntry.w TailsMap_A3
+	mappingsTableEntry.w TailsMap_A4
+	mappingsTableEntry.w TailsMap_A5
+	mappingsTableEntry.w TailsMap_A6
+	mappingsTableEntry.w TailsMap_A7
+	mappingsTableEntry.w TailsMap_A8
+	mappingsTableEntry.w TailsMap_A9
+	mappingsTableEntry.w TailsMap_AA
+	mappingsTableEntry.w TailsMap_AB
+	mappingsTableEntry.w TailsMap_AC
+	mappingsTableEntry.w TailsMap_AD
+	mappingsTableEntry.w TailsMap_AE
+	mappingsTableEntry.w TailsMap_AF
+	mappingsTableEntry.w TailsMap_B0
+	mappingsTableEntry.w TailsMap_B1
+	mappingsTableEntry.w TailsMap_B2
+	mappingsTableEntry.w TailsMap_B3
+	mappingsTableEntry.w TailsMap_B4
+	mappingsTableEntry.w TailsMap_B5
+	mappingsTableEntry.w TailsMap_B6
+	mappingsTableEntry.w TailsMap_B7
+	mappingsTableEntry.w TailsMap_B8
+	mappingsTableEntry.w TailsMap_B9
+	mappingsTableEntry.w TailsMap_BA
+	mappingsTableEntry.w TailsMap_BB
+	mappingsTableEntry.w TailsMap_BC
+	mappingsTableEntry.w TailsMap_BD
+	mappingsTableEntry.w TailsMap_BE
+	mappingsTableEntry.w TailsMap_BF
+	mappingsTableEntry.w TailsMap_C0
+	mappingsTableEntry.w TailsMap_C1
+	mappingsTableEntry.w TailsMap_C2
+	mappingsTableEntry.w TailsMap_C3
+	mappingsTableEntry.w TailsMap_C4
+	mappingsTableEntry.w TailsMap_C5
+	mappingsTableEntry.w TailsMap_C6
+	mappingsTableEntry.w TailsMap_C7
+	mappingsTableEntry.w TailsMap_C8
+	mappingsTableEntry.w TailsMap_C9
+	mappingsTableEntry.w TailsMap_CA
+	mappingsTableEntry.w TailsMap_CB
+	mappingsTableEntry.w TailsMap_CC
+	mappingsTableEntry.w TailsMap_CD
+	mappingsTableEntry.w TailsMap_CE
+	mappingsTableEntry.w TailsMap_CF
+	mappingsTableEntry.w TailsMap_D0
+	mappingsTableEntry.w TailsMap_D1
+	mappingsTableEntry.w TailsMap_D2
+	mappingsTableEntry.w TailsMap_D3
+	mappingsTableEntry.w TailsMap_D4
+	mappingsTableEntry.w TailsMap_D5
+	mappingsTableEntry.w TailsMap_D6
+	mappingsTableEntry.w TailsMap_D7
+	mappingsTableEntry.w TailsMap_D8
+	mappingsTableEntry.w TailsMap_D9
+	mappingsTableEntry.w TailsMap_DA
+	mappingsTableEntry.w TailsMap_DB
+	mappingsTableEntry.w TailsMap_DC
+	mappingsTableEntry.w TailsMap_DD
+	mappingsTableEntry.w TailsMap_DE
+	mappingsTableEntry.w TailsMap_DF
+	mappingsTableEntry.w TailsMap_E0
+	mappingsTableEntry.w TailsMap_E1
+	mappingsTableEntry.w TailsMap_E2
+	mappingsTableEntry.w TailsMap_E3
+	mappingsTableEntry.w TailsMap_E4
+	mappingsTableEntry.w TailsMap_E5
+	mappingsTableEntry.w TailsMap_E6
+	mappingsTableEntry.w TailsMap_E7
+	mappingsTableEntry.w TailsMap_E8
+	mappingsTableEntry.w TailsMap_E9
+	mappingsTableEntry.w TailsMap_EA
+	mappingsTableEntry.w TailsMap_EB
+	mappingsTableEntry.w TailsMap_EC
+	mappingsTableEntry.w TailsMap_ED
+	mappingsTableEntry.w TailsMap_EE
+	mappingsTableEntry.w TailsMap_EF
+	mappingsTableEntry.w TailsMap_F0
+	mappingsTableEntry.w TailsMap_F1
+	mappingsTableEntry.w TailsMap_F2
+	mappingsTableEntry.w TailsMap_F3
+	mappingsTableEntry.w TailsMap_F4
+	mappingsTableEntry.w TailsMap_F5
+	mappingsTableEntry.w TailsMap_F6
 
 TailsMap_00: spriteHeader
 TailsMap_00_End
@@ -445,28 +545,28 @@ TailsMap_2D: spriteHeader
 TailsMap_2D_End
 
 TailsMap_2E: spriteHeader
-	spritePiece -16, -11, 4, 4, 0, 0, 0, 0, 0
-	spritePiece -36, -3, 3, 2, 16, 0, 0, 0, 0
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
 TailsMap_2E_End
 
 TailsMap_2F: spriteHeader
-	spritePiece -16, -11, 4, 4, 0, 0, 0, 0, 0
-	spritePiece -36, -3, 3, 2, 16, 0, 0, 0, 0
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
 TailsMap_2F_End
 
 TailsMap_30: spriteHeader
-	spritePiece -16, -11, 4, 4, 0, 0, 0, 0, 0
-	spritePiece -36, -3, 3, 2, 16, 0, 0, 0, 0
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
 TailsMap_30_End
 
 TailsMap_31: spriteHeader
-	spritePiece -16, -11, 4, 4, 0, 0, 0, 0, 0
-	spritePiece -36, -3, 3, 2, 16, 0, 0, 0, 0
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
 TailsMap_31_End
 
 TailsMap_32: spriteHeader
-	spritePiece -16, -11, 4, 4, 0, 0, 0, 0, 0
-	spritePiece -36, -3, 3, 2, 16, 0, 0, 0, 0
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
 TailsMap_32_End
 
 TailsMap_33: spriteHeader
@@ -1063,5 +1163,485 @@ TailsMap_96: spriteHeader
 	spritePiece -23, 12, 3, 1, 10, 0, 0, 0, 0
 	spritePiece -28, -4, 3, 2, 13, 0, 0, 0, 0
 TailsMap_96_End
+
+TailsMap_97: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
+TailsMap_97_End
+
+TailsMap_98: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
+TailsMap_98_End
+
+TailsMap_99: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
+TailsMap_99_End
+
+TailsMap_9A: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
+TailsMap_9A_End
+
+TailsMap_9B: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -23, -31, 2, 3, 16, 1, 1, 0, 0
+TailsMap_9B_End
+
+TailsMap_9C: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -23, -31, 2, 3, 16, 1, 1, 0, 0
+TailsMap_9C_End
+
+TailsMap_9D: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -23, -31, 2, 3, 16, 1, 1, 0, 0
+TailsMap_9D_End
+
+TailsMap_9E: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -23, -31, 2, 3, 16, 1, 1, 0, 0
+TailsMap_9E_End
+
+TailsMap_9F: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, -36, 2, 3, 16, 1, 1, 0, 0
+TailsMap_9F_End
+
+TailsMap_A0: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, -36, 2, 3, 16, 1, 1, 0, 0
+TailsMap_A0_End
+
+TailsMap_A1: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, -36, 2, 3, 16, 1, 1, 0, 0
+TailsMap_A1_End
+
+TailsMap_A2: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, -36, 2, 3, 16, 1, 1, 0, 0
+TailsMap_A2_End
+
+TailsMap_A3: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, -23, 3, 2, 16, 1, 1, 0, 0
+TailsMap_A3_End
+
+TailsMap_A4: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, -23, 3, 2, 16, 1, 1, 0, 0
+TailsMap_A4_End
+
+TailsMap_A5: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, -23, 3, 2, 16, 1, 1, 0, 0
+TailsMap_A5_End
+
+TailsMap_A6: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, -23, 3, 2, 16, 1, 1, 0, 0
+TailsMap_A6_End
+
+TailsMap_A7: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 12, -8, 3, 2, 16, 1, 1, 0, 0
+TailsMap_A7_End
+
+TailsMap_A8: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 12, -8, 3, 2, 16, 1, 1, 0, 0
+TailsMap_A8_End
+
+TailsMap_A9: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 12, -8, 3, 2, 16, 1, 1, 0, 0
+TailsMap_A9_End
+
+TailsMap_AA: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 12, -8, 3, 2, 16, 1, 1, 0, 0
+TailsMap_AA_End
+
+TailsMap_AB: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 3, 16, 0, 0, 0, 0
+TailsMap_AB_End
+
+TailsMap_AC: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 3, 16, 0, 0, 0, 0
+TailsMap_AC_End
+
+TailsMap_AD: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 3, 16, 0, 0, 0, 0
+TailsMap_AD_End
+
+TailsMap_AE: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 3, 16, 0, 0, 0, 0
+TailsMap_AE_End
+
+TailsMap_AF: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 3, 16, 0, 0, 0, 0
+TailsMap_AF_End
+
+TailsMap_B0: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 3, 16, 0, 0, 0, 0
+TailsMap_B0_End
+
+TailsMap_B1: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 3, 16, 0, 0, 0, 0
+TailsMap_B1_End
+
+TailsMap_B2: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 3, 16, 0, 0, 0, 0
+TailsMap_B2_End
+
+TailsMap_B3: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -31, 7, 3, 2, 16, 0, 0, 0, 0
+TailsMap_B3_End
+
+TailsMap_B4: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -31, 7, 3, 2, 16, 0, 0, 0, 0
+TailsMap_B4_End
+
+TailsMap_B5: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -31, 7, 3, 2, 16, 0, 0, 0, 0
+TailsMap_B5_End
+
+TailsMap_B6: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -31, 7, 3, 2, 16, 0, 0, 0, 0
+TailsMap_B6_End
+
+TailsMap_B7: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
+TailsMap_B7_End
+
+TailsMap_B8: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
+TailsMap_B8_End
+
+TailsMap_B9: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
+TailsMap_B9_End
+
+TailsMap_BA: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
+TailsMap_BA_End
+
+TailsMap_BB: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -23, -31, 2, 3, 16, 1, 1, 0, 0
+TailsMap_BB_End
+
+TailsMap_BC: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -23, -31, 2, 3, 16, 1, 1, 0, 0
+TailsMap_BC_End
+
+TailsMap_BD: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -23, -31, 2, 3, 16, 1, 1, 0, 0
+TailsMap_BD_End
+
+TailsMap_BE: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -23, -31, 2, 3, 16, 1, 1, 0, 0
+TailsMap_BE_End
+
+TailsMap_BF: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, -36, 2, 3, 16, 1, 1, 0, 0
+TailsMap_BF_End
+
+TailsMap_C0: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, -36, 2, 3, 16, 1, 1, 0, 0
+TailsMap_C0_End
+
+TailsMap_C1: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, -36, 2, 3, 16, 1, 1, 0, 0
+TailsMap_C1_End
+
+TailsMap_C2: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, -36, 2, 3, 16, 1, 1, 0, 0
+TailsMap_C2_End
+
+TailsMap_C3: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, -23, 3, 2, 16, 1, 1, 0, 0
+TailsMap_C3_End
+
+TailsMap_C4: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, -23, 3, 2, 16, 1, 1, 0, 0
+TailsMap_C4_End
+
+TailsMap_C5: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, -23, 3, 2, 16, 1, 1, 0, 0
+TailsMap_C5_End
+
+TailsMap_C6: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, -23, 3, 2, 16, 1, 1, 0, 0
+TailsMap_C6_End
+
+TailsMap_C7: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 12, -8, 3, 2, 16, 1, 1, 0, 0
+TailsMap_C7_End
+
+TailsMap_C8: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 12, -8, 3, 2, 16, 1, 1, 0, 0
+TailsMap_C8_End
+
+TailsMap_C9: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 12, -8, 3, 2, 16, 1, 1, 0, 0
+TailsMap_C9_End
+
+TailsMap_CA: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 12, -8, 3, 2, 16, 1, 1, 0, 0
+TailsMap_CA_End
+
+TailsMap_CB: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 3, 16, 0, 0, 0, 0
+TailsMap_CB_End
+
+TailsMap_CC: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 3, 16, 0, 0, 0, 0
+TailsMap_CC_End
+
+TailsMap_CD: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 3, 16, 0, 0, 0, 0
+TailsMap_CD_End
+
+TailsMap_CE: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 3, 16, 0, 0, 0, 0
+TailsMap_CE_End
+
+TailsMap_CF: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 3, 16, 0, 0, 0, 0
+TailsMap_CF_End
+
+TailsMap_D0: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 3, 16, 0, 0, 0, 0
+TailsMap_D0_End
+
+TailsMap_D1: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 3, 16, 0, 0, 0, 0
+TailsMap_D1_End
+
+TailsMap_D2: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 3, 16, 0, 0, 0, 0
+TailsMap_D2_End
+
+TailsMap_D3: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -31, 7, 3, 2, 16, 0, 0, 0, 0
+TailsMap_D3_End
+
+TailsMap_D4: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -31, 7, 3, 2, 16, 0, 0, 0, 0
+TailsMap_D4_End
+
+TailsMap_D5: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -31, 7, 3, 2, 16, 0, 0, 0, 0
+TailsMap_D5_End
+
+TailsMap_D6: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -31, 7, 3, 2, 16, 0, 0, 0, 0
+TailsMap_D6_End
+
+TailsMap_D7: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
+TailsMap_D7_End
+
+TailsMap_D8: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
+TailsMap_D8_End
+
+TailsMap_D9: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
+TailsMap_D9_End
+
+TailsMap_DA: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -36, -8, 3, 2, 16, 0, 0, 0, 0
+TailsMap_DA_End
+
+TailsMap_DB: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -23, -31, 2, 3, 16, 1, 1, 0, 0
+TailsMap_DB_End
+
+TailsMap_DC: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -23, -31, 2, 3, 16, 1, 1, 0, 0
+TailsMap_DC_End
+
+TailsMap_DD: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -23, -31, 2, 3, 16, 1, 1, 0, 0
+TailsMap_DD_End
+
+TailsMap_DE: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -23, -31, 2, 3, 16, 1, 1, 0, 0
+TailsMap_DE_End
+
+TailsMap_DF: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, -36, 2, 3, 16, 1, 1, 0, 0
+TailsMap_DF_End
+
+TailsMap_E0: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, -36, 2, 3, 16, 1, 1, 0, 0
+TailsMap_E0_End
+
+TailsMap_E1: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, -36, 2, 3, 16, 1, 1, 0, 0
+TailsMap_E1_End
+
+TailsMap_E2: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, -36, 2, 3, 16, 1, 1, 0, 0
+TailsMap_E2_End
+
+TailsMap_E3: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, -23, 3, 2, 16, 1, 1, 0, 0
+TailsMap_E3_End
+
+TailsMap_E4: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, -23, 3, 2, 16, 1, 1, 0, 0
+TailsMap_E4_End
+
+TailsMap_E5: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, -23, 3, 2, 16, 1, 1, 0, 0
+TailsMap_E5_End
+
+TailsMap_E6: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, -23, 3, 2, 16, 1, 1, 0, 0
+TailsMap_E6_End
+
+TailsMap_E7: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 12, -8, 3, 2, 16, 1, 1, 0, 0
+TailsMap_E7_End
+
+TailsMap_E8: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 12, -8, 3, 2, 16, 1, 1, 0, 0
+TailsMap_E8_End
+
+TailsMap_E9: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 12, -8, 3, 2, 16, 1, 1, 0, 0
+TailsMap_E9_End
+
+TailsMap_EA: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 12, -8, 3, 2, 16, 1, 1, 0, 0
+TailsMap_EA_End
+
+TailsMap_EB: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 3, 16, 0, 0, 0, 0
+TailsMap_EB_End
+
+TailsMap_EC: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 3, 16, 0, 0, 0, 0
+TailsMap_EC_End
+
+TailsMap_ED: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 3, 16, 0, 0, 0, 0
+TailsMap_ED_End
+
+TailsMap_EE: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 3, 16, 0, 0, 0, 0
+TailsMap_EE_End
+
+TailsMap_EF: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 3, 16, 0, 0, 0, 0
+TailsMap_EF_End
+
+TailsMap_F0: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 3, 16, 0, 0, 0, 0
+TailsMap_F0_End
+
+TailsMap_F1: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 3, 16, 0, 0, 0, 0
+TailsMap_F1_End
+
+TailsMap_F2: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 3, 16, 0, 0, 0, 0
+TailsMap_F2_End
+
+TailsMap_F3: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -31, 7, 3, 2, 16, 0, 0, 0, 0
+TailsMap_F3_End
+
+TailsMap_F4: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -31, 7, 3, 2, 16, 0, 0, 0, 0
+TailsMap_F4_End
+
+TailsMap_F5: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -31, 7, 3, 2, 16, 0, 0, 0, 0
+TailsMap_F5_End
+
+TailsMap_F6: spriteHeader
+	spritePiece -16, -16, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -31, 7, 3, 2, 16, 0, 0, 0, 0
+TailsMap_F6_End
 
 	even
