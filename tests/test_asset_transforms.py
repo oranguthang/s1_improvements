@@ -281,3 +281,24 @@ def test_mobile_ending_mapping_preserves_every_pixel(name: str) -> None:
                                     colour,
                                 )
         assert actual.tobytes() == expected.tobytes(), label
+
+
+def test_invincibility_stars_use_shared_colours() -> None:
+    from s1tools.common import get_source
+
+    original = (get_source("shared") / "artunc/Invincibility Stars Restore.unc").read_bytes()
+    art = (ROOT / "artunc/Invincibility Stars Restore.unc").read_bytes()
+    assert art == nemesis.decode((ROOT / "artnem/Invincibility Stars.nem").read_bytes())
+    assert art == kosinski.decode_moduled((ROOT / "artkosm/Invincibility Stars.kosm").read_bytes())
+    colours = {n for b in art for n in (b >> 4, b & 15)}
+    assert colours == {0, 6, 7, 8, 9}
+    for before, after in zip(original, art, strict=True):
+        assert (before >> 4 == 0) == (after >> 4 == 0)
+        assert (before & 15 == 0) == (after & 15 == 0)
+    for suffix in ("", " - LZ Underwater", " - SBZ3 Underwater"):
+        palettes = [
+            (ROOT / f"palette/{name}{suffix}.bin").read_bytes()
+            for name in ("Sonic", "Tails", "Knuckles")
+        ]
+        for colour in colours:
+            assert len({p[colour * 2 : colour * 2 + 2] for p in palettes}) == 1

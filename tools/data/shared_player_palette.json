@@ -606,6 +606,10 @@
         [
           40,
           44
+        ],
+        [
+          44,
+          48
         ]
       ],
       "colours": {
@@ -626,6 +630,18 @@
             "4": 7,
             "5": 7
           }
+        },
+        {
+          "tiles": [
+            44,
+            48
+          ],
+          "colours": {
+            "2": 9,
+            "3": 8,
+            "4": 7,
+            "5": 7
+          }
         }
       ]
     },
@@ -639,6 +655,10 @@
         [
           40,
           44
+        ],
+        [
+          44,
+          48
         ]
       ],
       "colours": {
@@ -652,6 +672,18 @@
           "tiles": [
             0,
             24
+          ],
+          "colours": {
+            "2": 9,
+            "3": 8,
+            "4": 7,
+            "5": 7
+          }
+        },
+        {
+          "tiles": [
+            44,
+            48
           ],
           "colours": {
             "2": 9,
@@ -1201,7 +1233,14 @@
           0,
           36
         ]
-      ]
+      ],
+      "colours": {
+        "2": 9,
+        "3": 8,
+        "4": 7,
+        "5": 7,
+        "6": 6
+      }
     },
     "artunc/Giant Ring Flash.unc": {
       "source": "artunc/Giant Ring Flash.unc",
@@ -1518,6 +1557,40 @@
         "4": 8,
         "5": 8,
         "6": 7
+      }
+    },
+    "artnem/Invincibility Stars.nem": {
+      "source": "artnem/Invincibility Stars.nem",
+      "source_group": "s1",
+      "ranges": [
+        [
+          0,
+          36
+        ]
+      ],
+      "colours": {
+        "2": 9,
+        "3": 8,
+        "4": 7,
+        "5": 7,
+        "6": 6
+      }
+    },
+    "artkosm/Invincibility Stars.kosm": {
+      "source": "artnem/Invincibility Stars.nem",
+      "source_group": "s1",
+      "ranges": [
+        [
+          0,
+          36
+        ]
+      ],
+      "colours": {
+        "2": 9,
+        "3": 8,
+        "4": 7,
+        "5": 7,
+        "6": 6
       }
     }
   },
