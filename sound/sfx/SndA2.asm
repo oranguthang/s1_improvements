@@ -1,3 +1,6 @@
+; Original Sonic 1 sound effect $A2. Not assembled: s1.sounddriver.asm uses
+; "SndA2 - Super Transform.asm" for this slot. Kept for reference.
+
 SndA2_Header:
 	smpsHeaderStartSong 1
 	smpsHeaderVoice     SndA2_Voices

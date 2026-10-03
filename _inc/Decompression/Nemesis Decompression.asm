@@ -6,6 +6,11 @@
 ; 	a0 = art address
 ; 
 ; For format explanation see http://info.sonicretro.org/Nemesis_compression
+;
+; Not assembled in this project: all art now loads as moduled Kosinski through
+; the DMA queue (see "_inc/Moduled PLC.asm"). Kept from the Sonic Retro
+; disassembly for reference and for mods that bring Nemesis art back; include
+; it from sonic.asm again to use it.
 ; ---------------------------------------------------------------------------
 
 NemDec:

@@ -1031,8 +1031,32 @@
         "15": 12
       }
     },
+    "artnem/HUD.nem": {
+      "source": "artnem/HUD.nem",
+      "source_group": "s1",
+      "ranges": [
+        [
+          0,
+          24
+        ]
+      ],
+      "colours": {
+        "15": 12
+      }
+    },
     "artkosm/HUD - Life Counter Icon.kosm": {
       "source": "artkosm/HUD - Life Counter Icon.kosm",
+      "ranges": [
+        [
+          0,
+          12
+        ]
+      ],
+      "text_tiles": 4
+    },
+    "artnem/HUD - Life Counter Icon.nem": {
+      "source": "artnem/HUD - Life Counter Icon.nem",
+      "source_group": "s1",
       "ranges": [
         [
           0,
