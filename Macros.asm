@@ -162,6 +162,7 @@ disable_display:	macro
 		move.w	(v_vdp_buffer1).w,d0			; get buffered copy of vreg_mode2
 		andi.b	#%10111111,d0				; clear bit 6 (disable display; fill with background color)
 		move.w	d0,(vdp_control_port).l			; write to VDP
+		move.w	d0,(v_vdp_buffer1).w			; keep the buffer current for water HBlank
 		endm
 
 ; ---------------------------------------------------------------------------
@@ -172,6 +173,7 @@ enable_display:	macro
 		move.w	(v_vdp_buffer1).w,d0			; get buffered copy of vreg_mode2
 		ori.b	#%01000000,d0				; set bit 6 (enable display)
 		move.w	d0,(vdp_control_port).l			; write to VDP
+		move.w	d0,(v_vdp_buffer1).w			; keep the buffer current for water HBlank
 		endm
 
 ; ---------------------------------------------------------------------------

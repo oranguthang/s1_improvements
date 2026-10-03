@@ -162,7 +162,9 @@ PLC_LZ:		plcheader
 		plcm	KosM_LzBlock1,	ArtTile_LZ_Block_1		; block
 		plcm	KosM_LzBlock2,	ArtTile_LZ_Block_2		; blocks
 		plcm	KosM_Splash,	ArtTile_LZ_Splash		; waterfalls and splash
+	if WaterSurfaceSprites
 		plcm	KosM_Water,	ArtTile_LZ_Water_Surface	; water surface
+	endif
 		plcm	KosM_LzSpikeBall, ArtTile_LZ_Spikeball_Chain	; spiked ball
 		plcm	KosM_FlapDoor,	ArtTile_LZ_Flapping_Door	; flapping door
 		plcm	KosM_Bubbles,	ArtTile_LZ_Bubbles		; bubbles and numbers

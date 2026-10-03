@@ -200,7 +200,9 @@ v_jpadpress_p2:	ds.b 1
 v_jpadhold_6btn_p2: ds.b 1
 v_jpadpress_6btn_p2: ds.b 1
 v_vdp_buffer1:		ds.w	1				; VDP instruction buffer of register $81 (used for enabling/disabling display)
-			ds.b	6				; unused
+v_water_transition:	ds.l	1				; WaterSurfaceGradual: latched pointer to the first visible three-colour transfer
+v_hblank_line_latched:	ds.b	1				; scanline last sent to VDP, stable during the active frame
+v_water_skip:		ds.b	1				; WaterSurfaceGradual: transition groups already above the viewport
 v_generictimer:		ds.w	1				; generic timer, decrements to 0 in VBlank (word)
 v_scrposy_vdp:		ds.w	1				; screen position y (VDP)
 v_bgscrposy_vdp:	ds.w	1				; background screen position y (VDP)
@@ -208,7 +210,7 @@ v_scrposx_vdp:		ds.w	1				; screen position x (VDP)
 v_bgscrposx_vdp:	ds.w	1				; background screen position x (VDP)
 v_bg3scrposy_vdp:	ds.w	1
 v_bg3scrposx_vdp:	ds.w	1
-			ds.b	2				; unused
+v_water_transition_count: ds.w	1				; WaterSurfaceGradual: latched visible transfer count minus one
 v_hblank_hreg:		ds.w	1				; VDP H.interrupt register buffer (8Axx) (previously called v_hbla_hreg)
 v_hblank_line:		equ	v_hblank_hreg+1			; screen line where water starts and palette is changed by HBlank (previously called v_hbla_line)
 v_pfade_start:		ds.b	1				; palette fading - start position in bytes

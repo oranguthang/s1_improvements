@@ -159,6 +159,23 @@ PalCycle_GHZ:
 ; ---------------------------------------------------------------------------
 
 PalCycle_LZ:
+	if WaterSurfaceLine
+		; Water edge: the blanked surface line shows line 2, colour 0 (see
+		; WaterSurface_Backdrop). Tiles never draw colour 0, so it can shimmer
+		; freely; both buffers keep the same value so the line never splits.
+		move.w	(v_framecount).w,d0
+		lsr.w	#2,d0					; next shade every 8 frames
+		andi.w	#3<<1,d0				; four shades, word offsets
+		lea	(Pal_LZCyc_WaterEdge).l,a0
+		cmpi.b	#act4,(v_act).w			; check if on act 4 (SBZ3)
+		bne.s	.waterEdge
+		lea	(Pal_SBZ3Cyc_WaterEdge).l,a0
+	.waterEdge:
+		move.w	(a0,d0.w),d0
+		move.w	d0,(v_palette_line_2).w
+		move.w	d0,(v_palette_water_line_2).w
+	endif
+
 		; Waterfalls
 		subq.w	#1,(v_pcyc_time).w			; decrement timer for waterfalls
 		bpl.s	.conveyorBelts				; if time remains, branch
@@ -411,6 +428,10 @@ Pal_LZCyc_Waterfall:	binclude	"palette/Cycle - LZ Waterfall.bin"
 Pal_LZCyc_Conveyor:	binclude	"palette/Cycle - LZ Conveyor Belt.bin"
 Pal_LZCyc_ConveyorUW:	binclude	"palette/Cycle - LZ Conveyor Belt Underwater.bin"
 Pal_SBZ3Cyc_Waterfall:	binclude	"palette/Cycle - SBZ3 Waterfall.bin"
+	if WaterSurfaceLine
+Pal_LZCyc_WaterEdge:	binclude	"palette/Cycle - LZ Water Edge.bin"
+Pal_SBZ3Cyc_WaterEdge:	binclude	"palette/Cycle - SBZ3 Water Edge.bin"
+	endif
 Pal_MZCyc_Unused:	binclude	"palette/Cycle - MZ (Unused).bin"
 Pal_SLZCyc_Lights:	binclude	"palette/Cycle - SLZ.bin"
 Pal_SYZCyc_BlackYellow:	binclude	"palette/Cycle - SYZ1.bin"

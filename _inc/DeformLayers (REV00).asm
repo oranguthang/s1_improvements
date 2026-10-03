@@ -135,6 +135,7 @@ Deform_GHZ:
 ; ---------------------------------------------------------------------------
 
 Deform_LZ:
+        bsr.w   LZWater_UpdateBoundary           ; use the camera position updated in DeformLayers
 		; plain background scroll
 		move.w	(v_scrshiftx).w,d4
 		ext.l	d4

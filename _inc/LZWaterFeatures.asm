@@ -3,6 +3,49 @@
 ; Subroutine to do special water effects in Labyrinth Zone
 ; ---------------------------------------------------------------------------
 
+; The water surface is chosen in sonic.asm. Each option sets the H-int line
+; from v_waterpos1 in LZWater_UpdateBoundary and changes the palette in HBlank.
+; VBlank latches that line for the displayed frame, after MarkeyJester's
+; correction to ProjectFM's surface removal.
+;
+; WaterSurfaceSprites: the original game. H-int is raised at the surface and
+; HBlank copies the whole underwater palette behind the surface sprites.
+;
+; WaterSurfaceLine: H-int is raised on the line above the surface. HBlank
+; blanks the line below it, copies the whole underwater palette by DMA there,
+; and resumes the display, so every layer and object changes on one line. The
+; blanked line shows the backdrop colour as the edge of the water; sprites may
+; be skipped on the next line. Sonic 3 & Knuckles also blanks the display
+; mid-frame for a DMA (Competition mode's H-int).
+;
+; WaterSurfaceGradual: no surface at all. As in Sonic 3 & Knuckles, each
+; table entry transfers three consecutive colours on its own line. Groups are
+; ranked by the screen area they recolour in LZ1-3 and SBZ3: background
+; $64-$68 covers 84% of its pixels, foreground $42-$4C 95%, then the player's
+; fur follows. Only colours that differ underwater for any player are listed;
+; fades, the waterfall cycle and Super cycles keep the others equal in both
+; buffers. The conveyor cycle ($76-$7A) differs and is included.
+	if WaterSurfaceGradual
+WaterTransition_LZ:
+		dc.w	WaterTransition_LZ_Count-1
+		dc.w	$64,$46,$04,$42,$12,$0A,$78,$18,$0C,$24
+		dc.w	$34,$4C,$38,$26,$50,$6A,$70,$72,$7A
+WaterTransition_LZ_End:
+WaterTransition_LZ_Count equ (WaterTransition_LZ_End-WaterTransition_LZ-2)/2
+		even
+	endif
+
+	if WaterSurfaceSprites
+WaterSurface_FirstLine equ 0			; the sprites cover the copy; ripples start at the water height
+	else
+WaterSurface_FirstLine equ 2			; first line below v_waterpos1 with underwater colours; splashes end above it
+	endif
+	if WaterSurfaceLine
+WaterSurface_LastHint equ 220			; latest H-int line whose blank and underwater lines are still visible
+WaterSurface_Backdrop equ vreg_bgcolor|1<<4|0	; surface edge: line 2, colour 0, a zone-specific water shade cycled by PalCycle_LZ
+Level_Backdrop equ vreg_bgcolor|2<<4|0		; normal backdrop (line 3; colour 0)
+	endif
+
 LZWaterFeatures:
 		cmpi.b	#id_LZ,(v_zone).w			; check if level is LZ
 		bne.s	.return					; if not, don't run any water effects at all
@@ -27,24 +70,54 @@ LZWaterFeatures:
 		add.w	(v_waterpos2).w,d0			; add internal water height without surface sway
 		move.w	d0,(v_waterpos1).w			; set water height including surface sway
 
-		move.w	(v_waterpos1).w,d0			; get water height including surface sway again (could've used d0 again...)
-		sub.w	(v_screenposy).w,d0			; subtract current camera Y-position
-		bhs.s	.checkWaterVisible			; if water is below top of screen, branch
-		tst.w	d0					; check result again (redundant)
-		bpl.s	.checkWaterVisible			; if water is below top of screen, branch
-		move.b	#223,(v_hblank_line).w			; HBlank interrupt every 224 scanlines (starts at 0)
-		move.b	#1,(f_wtr_state).w			; set screen is all underwater
-
-	.checkWaterVisible:
-		cmpi.w	#223,d0					; is water within 223 pixels of top of screen?
-		blo.s	.setHBlankLine				; if yes, branch
-		move.w	#223,d0					; HBlank interrupt every 224 scanlines (starts at 0)
-
-	.setHBlankLine:
-		move.b	d0,(v_hblank_line).w			; set chosen HBlank trigger scanline for swapping to underwater palette
+		bra.s	LZWater_UpdateBoundary
 
 	.return:
-		rts						; return
+		rts
+
+; Recalculate after camera scrolling too: palette and row scroll must describe
+; the same viewport. Physics continues to use the actual oscillating water Y.
+LZWater_UpdateBoundary:
+		clr.b	(f_wtr_state).w				; clear "screen is completely underwater" flag
+	if WaterSurfaceGradual
+		clr.b	(v_water_skip).w
+	endif
+		move.w	(v_waterpos1).w,d0
+		sub.w	(v_screenposy).w,d0			; screen line of the surface
+	if WaterSurfaceLine
+		subq.w	#WaterSurface_FirstLine-1,d0		; H-int is raised on the line above it
+		bmi.s	.allUnderwater				; surface at the top: no line left to blank
+		cmpi.w	#WaterSurface_LastHint,d0
+		bls.s	.setLine				; branch if the boundary is visible
+		move.w	#223,d0					; surface below the screen: stay dry
+		bra.s	.setLine
+	else
+		bpl.s	.visible				; branch if the surface is not above the screen
+	if WaterSurfaceGradual
+		cmpi.w	#-WaterTransition_LZ_Count,d0
+		ble.s	.allUnderwater
+		neg.w	d0
+		move.b	d0,(v_water_skip).w			; VBlank preloads the groups clipped off the top
+		moveq	#0,d0
+		bra.s	.setLine
+	else
+		bra.s	.allUnderwater
+	endif
+
+	.visible:
+		cmpi.w	#223,d0					; is the surface within the screen?
+		blo.s	.setLine				; if yes, branch
+		move.w	#223,d0					; HBlank interrupt every 224 scanlines (starts at 0)
+		bra.s	.setLine
+	endif
+
+	.allUnderwater:
+		move.b	#1,(f_wtr_state).w			; VBlank loads the whole underwater palette
+		move.w	#223,d0
+
+	.setLine:
+		move.b	d0,(v_hblank_line).w			; H-int line for the next frame
+		rts
 ; End of function LZWaterFeatures
 
 

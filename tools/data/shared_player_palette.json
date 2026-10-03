@@ -1605,10 +1605,16 @@
       "source": "palette/Sonic - SBZ3 Underwater.bin"
     },
     "palette/Labyrinth Zone Underwater.bin": {
-      "source": "palette/Labyrinth Zone Underwater.bin"
+      "source": "palette/Labyrinth Zone Underwater.bin",
+      "colours": {
+        "16": "0242"
+      }
     },
     "palette/SBZ Act 3 Underwater.bin": {
-      "source": "palette/SBZ Act 3 Underwater.bin"
+      "source": "palette/SBZ Act 3 Underwater.bin",
+      "colours": {
+        "16": "0424"
+      }
     },
     "palette/Special Stage.bin": {
       "source": "palette/Special Stage.bin"

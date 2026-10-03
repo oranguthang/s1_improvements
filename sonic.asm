@@ -47,6 +47,24 @@ AddressSRAM = 3
 ;	| 0 = odd+even; 2 = even only; 3 = odd only
 ;	| (odd only is the most common setting)
 
+WaterSurfaceSprites = 0
+;	| If 1, Labyrinth and Scrap Brain Act 3 keep the original surface sprites, which
+;	|       hide the full underwater palette copy made at the surface
+WaterSurfaceLine = 0
+;	| If 1, there are no surface sprites: one line is blanked at the surface and
+;	|       drawn as a shimmering edge while the full underwater palette is copied,
+;	|       so everything below changes at once
+WaterSurfaceGradual = 1
+;	| If 1, there is no surface at all: three colours change per line, as in
+;	|       Sonic 3 & Knuckles, so less visible colours follow a few lines lower
+;	| Enable exactly one water surface option.
+
+	if (WaterSurfaceSprites|WaterSurfaceLine|WaterSurfaceGradual)&~1
+		error "Water surface options must be 0 or 1"
+	elseif WaterSurfaceSprites+WaterSurfaceLine+WaterSurfaceGradual<>1
+		error "Enable exactly one of WaterSurfaceSprites, WaterSurfaceLine and WaterSurfaceGradual"
+	endif
+
 ZoneCount = 6
 ;	| Used for the "zonewarning" macro. Do not change, unless more zones get added.
 ;	| Discrete zones are: GHZ, LZ, MZ, SLZ, SYZ, and SBZ
@@ -768,14 +786,7 @@ VBlank_Lag:
 		move.w	#1,(f_hblank_pal).w			; set HBlank flag
 		stopZ80						; stop Z80 for CRAM transfers
 		waitZ80						; wait until Z80 has stopped
-		tst.b	(f_wtr_state).w				; is the screen completely underwater?
-		bne.s	.waterAbove 				; if not, branch
-		writeCRAM	v_palette,0			; write regular palette buffer to CRAM
-		bra.s	.waterBelow				; skip over
-	.waterAbove:
-		writeCRAM	v_palette_water,0		; write water palette buffer to CRAM
-	.waterBelow:
-		move.w	(v_hblank_hreg).w,(a5)			; write HBlank trigger scan line for water palette swap to VDP
+		bsr.w	VBlank_WaterPalette			; palette and water transition for this displayed frame
 		startZ80					; restart Z80
 
 		bra.w	VBlank_Music				; branch back to update sound driver and resume operation
@@ -855,14 +866,7 @@ VBlank_Levels:
 		waitZ80						; wait until Z80 has stopped
 		bsr.w	ReadJoypads				; read joypads and update buffered inputs in RAM
 
-		tst.b	(f_wtr_state).w				; is the screen completely underwater?
-		bne.s	.waterAbove 				; if not, branch
-		writeCRAM	v_palette,0			; write regular palette buffer to CRAM
-		bra.s	.waterBelow				; skip over
-	.waterAbove:
-		writeCRAM	v_palette_water,0		; write water palette buffer to CRAM
-	.waterBelow:
-		move.w	(v_hblank_hreg).w,(a5)			; write HBlank trigger scan line for water palette swap to VDP
+		bsr.w	VBlank_WaterPalette			; palette and water transition for this displayed frame
 
 		writeVRAM	v_hscrolltablebuffer,vram_hscroll ; transfer H-scroll buffer table to actual H-scroll VRAM
 		writeVRAM	v_spritetablebuffer,vram_sprites  ; transfer sprite buffer table to actual sprites VRAM
@@ -970,14 +974,7 @@ VBlank_Ending:
 		waitZ80						; wait until Z80 has stopped
 		bsr.w	ReadJoypads				; read joypads and update buffered inputs in RAM
 
-		tst.b	(f_wtr_state).w				; is the screen completely underwater?
-		bne.s	.waterAbove 				; if not, branch
-		writeCRAM	v_palette,0			; write regular palette buffer to CRAM
-		bra.s	.waterBelow				; skip over
-	.waterAbove:
-		writeCRAM	v_palette_water,0		; write water palette buffer to CRAM
-	.waterBelow:
-		move.w	(v_hblank_hreg).w,(a5)			; write HBlank trigger scan line for water palette swap to VDP
+		bsr.w	VBlank_WaterPalette			; palette and water transition for this displayed frame
 
 		writeVRAM	v_hscrolltablebuffer,vram_hscroll ; transfer H-scroll buffer table to actual H-scroll VRAM
 		writeVRAM	v_spritetablebuffer,vram_sprites  ; transfer sprite buffer table to actual sprites VRAM
@@ -1016,8 +1013,7 @@ VBlank_Unused0E:
 
 ; loc_F9A: VBla_12:
 VBlank_PaletteFade:
-		bsr.w	VBlank_StandardTransfers		; do standard screen transfers
-		move.w	(v_hblank_hreg).w,(a5)			; write HBlank trigger scan line for water palette swap to VDP
+		bsr.w	VBlank_StandardTransfers		; also latches the displayed water boundary
 	rts						; queued art is decompressed outside VBlank
 
 ; ===========================================================================
@@ -1055,13 +1051,7 @@ VBlank_StandardTransfers:
 		waitZ80						; wait until Z80 has stopped
 		bsr.w	ReadJoypads				; read joypads and update buffered inputs in RAM
 
-		tst.b	(f_wtr_state).w				; is the screen completely underwater?
-		bne.s	.waterAbove 				; if not, branch
-		writeCRAM	v_palette,0			; write regular palette buffer to CRAM
-		bra.s	.waterBelow				; skip over
-	.waterAbove:
-		writeCRAM	v_palette_water,0		; write water palette buffer to CRAM
-	.waterBelow:
+		bsr.w	VBlank_WaterPalette			; palette and water transition for this displayed frame
 
 		writeVRAM	v_spritetablebuffer,vram_sprites  ; transfer sprite buffer table to actual sprites VRAM
 		writeVRAM	v_hscrolltablebuffer,vram_hscroll ; transfer H-scroll buffer table to actual H-scroll VRAM
@@ -1073,6 +1063,65 @@ VBlank_StandardTransfers:
 ; End of VBlank (as a whole)
 
 
+; Load the palette shown from the top of the frame and latch the H-int line
+; for the same frame. Caller owns the Z80 bus. All VBlank entry points
+; preserve the scratch registers.
+VBlank_WaterPalette:
+	if WaterSurfaceGradual
+		; If the surface is just above the viewport, preload only its off-screen
+		; groups; HBlank finishes the remaining groups at the top, instead of
+		; snapping to a wholly underwater palette.
+		lea	(WaterTransition_LZ+2).l,a2
+		moveq	#WaterTransition_LZ_Count-1,d1
+		moveq	#0,d2
+		cmpi.b	#id_LZ,(v_zone).w
+		bne.s	.latch
+		move.b	(v_gamemode).w,d0
+		andi.b	#$7F,d0
+		cmpi.b	#id_Level,d0
+		beq.s	.getSkip
+		cmpi.b	#id_Demo,d0
+		bne.s	.latch
+	.getSkip:
+		move.b	(v_water_skip).w,d2
+	.latch:
+		sub.w	d2,d1
+		move.w	d1,(v_water_transition_count).w
+		move.w	d2,d0
+		add.w	d0,d0
+		lea	(a2,d0.w),a3
+		move.l	a3,(v_water_transition).w
+
+		tst.b	(f_wtr_state).w				; is the screen completely underwater?
+		bne.s	.allUnderwater				; if yes, branch
+		writeCRAM	v_palette,0			; write regular palette buffer to CRAM
+		subq.w	#1,d2
+		bmi.s	.setLine
+	.clippedGroup:
+		moveq	#0,d0
+		move.w	(a2)+,d0
+		lea	(v_palette_water).w,a0
+		adda.w	d0,a0
+		addi.w	#$C000,d0
+		swap	d0
+		move.l	d0,(a5)
+		move.l	(a0)+,(vdp_data_port).l
+		move.w	(a0)+,(vdp_data_port).l
+		dbf	d2,.clippedGroup
+		bra.s	.setLine
+	else
+		tst.b	(f_wtr_state).w				; is the screen completely underwater?
+		bne.s	.allUnderwater				; if yes, branch
+		writeCRAM	v_palette,0			; write regular palette buffer to CRAM
+		bra.s	.setLine
+	endif
+	.allUnderwater:
+		writeCRAM	v_palette_water,0		; write water palette buffer to CRAM
+	.setLine:
+		move.w	(v_hblank_hreg).w,(a5)			; write HBlank trigger scan line for water palette swap to VDP
+		move.b	(v_hblank_line).w,(v_hblank_line_latched).w ; the line the VDP will use this frame
+		rts
+
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
 ; Horizontal interrupt (exclusively used for the LZ water palette effect)
@@ -1080,11 +1129,16 @@ VBlank_StandardTransfers:
 
 ; PalToCRAM: <-- old misnomer
 HBlank:
-		disable_ints					; disable interrupts (VBlank in this context)
+		disable_ints					; the deferred sound driver must not be re-entered by VBlank
 		tst.w	(f_hblank_pal).w			; is palette set to change?
+	if WaterSurfaceLine
+		beq.w	.nochg					; if not, branch
+	else
 		beq.s	.nochg					; if not, branch
+	endif
 		move.w	#0,(f_hblank_pal).w			; clear palette change flag
 
+	if WaterSurfaceSprites
 		movem.l	a0-a1,-(sp)				; backup a0 and a1 registers
 		lea	(vdp_data_port).l,a1			; load VDP data port to a1
 		lea	(v_palette_water).w,a0			; get water palette from RAM
@@ -1092,8 +1146,87 @@ HBlank:
 		rept (4*$10)/2					; overwrite full palette (4 rows, 2 colors per move)
 			move.l	(a0)+,(a1)			; move water palette to CRAM
 		endr						; repeat at assembly time
-		move.w	#vreg_hintrate|223,4(a1)			; reset horizontal interrupt counter
+		move.w	#vreg_hintrate|223,4(a1)		; reset horizontal interrupt counter
 		movem.l	(sp)+,a0-a1				; restore a0 and a1
+
+	elseif WaterSurfaceLine
+		movem.l	d0-d2/a5,-(sp)
+		lea	(vdp_control_port).l,a5
+		move.w	#vreg_hintrate|223,(a5)			; no further H-ints this frame
+		move.b	(v_hblank_line_latched).w,d0		; line before the surface, as used by the VDP
+		cmpi.b	#WaterSurface_LastHint,d0
+		bhi.s	.done					; surface below the visible lines (or H-int in VBlank)
+
+		stopZ80						; the Z80 must not access the 68K bus during DMA
+		waitZ80
+		; Prepare the palette DMA while the surface line is still being drawn.
+		move.l	#vreg_dmalen|((((v_palette_water_end-v_palette_water)>>1)&$FF00)<<8)|(((v_palette_water_end-v_palette_water)>>1)&$FF),(a5)
+		move.l	#vreg_dmasrc|(((v_palette_water>>1)&$FF00)<<8)|((v_palette_water>>1)&$FF),(a5)
+		move.w	#vreg_dmamode|((((v_palette_water>>1)&$FF0000)>>16)&$7F),(a5)
+		move.w	#$80,-(sp)				; DMA trigger word must be read from RAM
+		move.w	(v_vdp_buffer1).w,d1
+		move.w	d1,d2					; display state to restore
+		andi.b	#$BF,d1					; display disabled
+		addq.b	#2,d0					; V counter once the surface line is complete
+
+		; The V counter advances as each line's active display ends.
+	.waitSurface:
+		cmp.b	(vdp_counter).l,d0
+		bhi.s	.waitSurface
+		move.w	d1,(a5)					; blank the line below the surface
+		move.w	#WaterSurface_Backdrop,(a5)		; draw it as the edge of the water
+		move.w	#$C000,(a5)				; CRAM address 0
+		move.w	(sp)+,(a5)				; copy the whole underwater palette
+		addq.b	#1,d0
+	.waitBlank:
+		cmp.b	(vdp_counter).l,d0
+		bhi.s	.waitBlank
+		move.w	d2,(a5)					; resume the display: everything below is underwater
+		move.w	#Level_Backdrop,(a5)
+		startZ80
+
+	.done:
+		movem.l	(sp)+,d0-d2/a5
+
+	else
+		movem.l	d0-d1/a0-a2,-(sp)
+		lea	(vdp_data_port).l,a1
+		move.w	#vreg_hintrate|223,4(a1)
+		stopZ80
+		waitZ80
+		movea.l	(v_water_transition).w,a2
+		moveq	#$D,d0					; 20 fewer delay cycles; mask/count read add 16, NOP adds four
+	.alignTransfer:
+		dbf	d0,.alignTransfer
+		nop						; retain the tutorial's first-transfer phase
+
+		move.w	(v_water_transition_count).w,d1		; excludes groups already preloaded during VBlank
+		move.b	(v_hblank_line_latched).w,d0		; VDP's scanline, not next frame's water height
+		subi.b	#220-WaterTransition_LZ_Count,d0
+		bcs.s	.transferColors
+		sub.b	d0,d1					; shorten the transition near the screen bottom
+		bcs.s	.skipTransfer
+
+	.transferColors:
+		move.w	(a2)+,d0				; first colour's byte offset
+		lea	(v_palette_water).w,a0			; current character, Super cycle and fading buffer
+		adda.w	d0,a0
+		addi.w	#$C000,d0
+		swap	d0
+		move.l	d0,4(a1)				; select that colour in CRAM
+		move.l	(a0)+,(a1)				; two colours
+		move.w	(a0)+,(a1)				; third colour
+		nop
+		nop
+		moveq	#$24,d0					; match one scanline before the next group
+	.waitNextLine:
+		dbf	d0,.waitNextLine
+		dbf	d1,.transferColors
+
+	.skipTransfer:
+		startZ80
+		movem.l	(sp)+,d0-d1/a0-a2
+	endif
 
 		tst.b	(f_doupdatesinhblank).w			; was frame update delayed by water surface being near the top of the screen?
 		bne.s	.delayed_transfer			; if yes, resume transfer now
@@ -2461,12 +2594,19 @@ Level_KeepMidRingFlags:
 		move.w	#vreg_planesize|%000001,(a6)		; 64-cell hscroll size
 		move.w	#vreg_mode1|%000100,(a6)		; use 8-colour mode
 		move.w	#vreg_bgcolor|2<<4|0,(a6)		; set background colour (line 3; colour 0)
+		enable_display					; levels never hide the screen; also refreshes the register buffer used by water HBlank
 		move.w	#vreg_hintrate|223,(v_hblank_hreg).w	; set palette change position (for water)
 		move.w	(v_hblank_hreg).w,(a6)			; write to VDP
+		move.b	(v_hblank_line).w,(v_hblank_line_latched).w
 
 		cmpi.b	#id_LZ,(v_zone).w			; is level LZ?
 		bne.s	Level_LoadPal				; if not, branch
 		move.w	#vreg_mode1|%010100,(a6)		; enable horizontal interrupts (HBlank)
+	if WaterSurfaceGradual
+		move.l	#WaterTransition_LZ+2,(v_water_transition).w
+		move.w	#WaterTransition_LZ_Count-1,(v_water_transition_count).w
+		clr.b	(v_water_skip).w
+	endif
 		moveq	#0,d0					; clear d0
 		move.b	(v_act).w,d0				; get current LZ act
 		add.w	d0,d0					; double for word-based indexing
@@ -2603,12 +2743,14 @@ Level_ChkWater:
 		move.w	#0,(v_jpadhold2).w			; clear button input states for Sonic player object
 		move.w	#0,(v_jpadhold1).w			; clear actual button input states for controller 1
 
+	if WaterSurfaceSprites
 		cmpi.b	#id_LZ,(v_zone).w			; is level LZ?
 		bne.s	Level_LoadObj				; if not, branch
 		move.b	#id_WaterSurface,(v_watersurface1).w	; load water surface object A
 		move.w	#$60,(v_watersurface1+obX).w		; set base X-position for surface A
 		move.b	#id_WaterSurface,(v_watersurface2).w	; load water surface object B
 		move.w	#$120,(v_watersurface2+obX).w		; set base X-position for surface B
+	endif
 
 Level_LoadObj:
 		cmpi.b	#id_SLZ,(v_zone).w		; camera-relative foreground exists at every start
@@ -3439,6 +3581,7 @@ GM_Ending:
 		move.w	#vreg_bgcolor|2<<4|0,(a6)		; set background colour (line 3; colour 0)
 		move.w	#vreg_hintrate|223,(v_hblank_hreg).w	; set palette change position (for water)
 		move.w	(v_hblank_hreg).w,(a6)			; write to VDP
+		move.b	(v_hblank_line).w,(v_hblank_line_latched).w
 		move.w	#30,(v_air).w				; replenish air
 
 		move.w	#id_EndZ_good,(v_zone_act).w		; set to good ending by default (level number 600, extra flowers)

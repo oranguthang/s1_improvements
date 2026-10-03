@@ -91,7 +91,11 @@ def expected_outputs() -> dict[Path, bytes]:
         )
         outputs[root / name] = packed
     for name, asset in config["palettes"].items():
-        outputs[root / name] = (source / asset["source"]).read_bytes()
+        data = bytearray((source / asset["source"]).read_bytes())
+        # Colour 0 of a line is never drawn by tiles; the water edge uses it.
+        for index, word in asset.get("colours", {}).items():
+            data[int(index) * 2 : int(index) * 2 + 2] = int(word, 16).to_bytes(2, "big")
+        outputs[root / name] = bytes(data)
     return outputs
 
 

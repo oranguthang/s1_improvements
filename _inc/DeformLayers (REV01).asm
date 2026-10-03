@@ -172,6 +172,7 @@ Deform_GHZ:
 ; ---------------------------------------------------------------------------
 
 Deform_LZ:
+        bsr.w   LZWater_UpdateBoundary           ; use the camera position updated in DeformLayers
 		; plain background scroll
 		move.w	(v_scrshiftx).w,d4
 		ext.l	d4
@@ -208,11 +209,14 @@ Deform_LZ:
 ; REV01 - additional water ripple effects
 
 		move.w	(v_waterpos1).w,d4
+	if WaterSurface_FirstLine
+		addq.w	#WaterSurface_FirstLine,d4	; ripple from the first line with underwater colours
+	endif
 		move.w	(v_screenposy).w,d5
 
 		; write normal scroll before meeting water position
 	.normalLoop:
-		cmp.w	d4,d5					; is current scanline at or below actual water y pos?
+		cmp.w	d4,d5					; is current scanline at or below the visible water line?
 		bge.s	.underwaterLoop				; if yes, branch
 		move.l	d0,(a1)+				; write to v_hscrolltablebuffer without ripple effect
 		addq.w	#1,d5					; next scanline

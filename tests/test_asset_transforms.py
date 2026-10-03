@@ -302,3 +302,31 @@ def test_invincibility_stars_use_shared_colours() -> None:
         ]
         for colour in colours:
             assert len({p[colour * 2 : colour * 2 + 2] for p in palettes}) == 1
+
+
+def test_water_transition_covers_changed_colours() -> None:
+    """WaterSurfaceGradual: a colour left out of the table stays dry underwater."""
+    import re
+
+    source = (ROOT / "_inc/LZWaterFeatures.asm").read_text()
+    block = source.split("WaterTransition_LZ:", 1)[1].split("WaterTransition_LZ_End:", 1)[0]
+    words = [int(value, 16) for value in re.findall(r"\$([0-9A-F]+)", block)]
+    covered = set()
+    for offset in words:
+        assert offset % 2 == 0 and offset // 32 == (offset + 4) // 32, hex(offset)
+        covered |= {offset // 2, offset // 2 + 1, offset // 2 + 2}
+
+    def words_of(name: str) -> list[bytes]:
+        data = (ROOT / "palette" / name).read_bytes()
+        return [data[i : i + 2] for i in range(0, len(data), 2)]
+
+    changed = {16 * 3 + 0xB, 16 * 3 + 0xC, 16 * 3 + 0xD}  # conveyor cycle
+    for zone, dry, wet in (
+        ("LZ", "Labyrinth Zone.bin", "Labyrinth Zone Underwater.bin"),
+        ("SBZ3", "SBZ Act 3.bin", "SBZ Act 3 Underwater.bin"),
+    ):
+        for player in ("Sonic", "Tails", "Knuckles"):
+            above = words_of(f"{player}.bin") + words_of(dry)
+            below = words_of(f"{player} - {zone} Underwater.bin") + words_of(wet)[16:]
+            changed |= {i for i in range(64) if i % 16 and above[i] != below[i]}
+    assert changed <= covered, sorted(hex(i * 2) for i in changed - covered)

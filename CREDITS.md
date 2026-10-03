@@ -20,6 +20,10 @@ Their character-specific endings use the official Sonic the Hedgehog mobile rema
 
 The independent title resources follow [Make an Alternative Title Screen](https://info.sonicretro.org/SCHG_How-to:Make_an_Alternative_Title_Screen). The source archive is retained with the resource inputs for repeatable extraction.
 
+## Water rendering
+
+The surface-free water options follow ProjectFM's [Removing the Water Surface Object in Sonic 1](https://sonicresearch.org/community/index.php?threads/removing-the-water-surface-object-in-sonic-1.5975/), including MarkeyJester's correction for latching the displayed water scanline during VBlank. The gradual option transfers three colours per scanline as Sonic 3 & Knuckles does; the line option instead blanks one line and copies the full underwater palette by DMA, as Sonic 3 & Knuckles' Competition-mode H-int blanks the display for its mid-frame DMA.
+
 ## MD Debugger
 
 MD Debugger and ConvSym are by [Vladikcomper](https://github.com/vladikcomper/md-modules). The included MIT license is in `_debug/md-debugger/LICENSE`.
