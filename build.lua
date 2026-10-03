@@ -47,6 +47,17 @@ end
 local compression = improved_dac_driver_compression and "kosinski-optimised" or "kosinski"
 common.build_rom_and_handle_failure("sonic", output, "-D MDDebugger=1", "-p=FF -z=0," .. compression .. ",Size_of_DAC_driver_guess,after", false, "https://github.com/sonicretro/s1disasm")
 
+-- Binary resources are read by words (KosM and Enigma headers) or used as DMA
+-- sources, so each must start at an even address. An odd one is an address
+-- error on real hardware and silent garbage on lenient emulators.
+for line in io.lines("sonic.lst") do
+    local address, label = line:match("^%s*%d+/%s*(%x+) :%s+([%w_]+):%s+binclude")
+    if address and tonumber(address, 16) % 2 == 1 then
+        print(label .. " starts at an odd address ($" .. address .. "); put 'even' before it.")
+        os.exit(1)
+    end
+end
+
 if include_symbols then
     local before = assert(io.open(output .. ".bin", "rb"))
     local size_before = before:seek("end")

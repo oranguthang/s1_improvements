@@ -4716,7 +4716,9 @@ KosM_TitleCard:	binclude	"artkosm/Title Cards.kosm"
 KosM_Hud:	binclude	"artkosm/HUD.kosm" ; HUD (rings, time, score)
 		even
 KosM_Lives:	binclude	"artkosm/HUD - Life Counter Icon.kosm"
+		even
 KosM_TailsLives: binclude "artkosm/HUD - Tails Life Counter Icon.kosm"
+		even
 KosM_KnucklesLives: binclude "artkosm/HUD - Knuckles Life Counter Icon.kosm"
 		even
 KosM_RingSparkles:	binclude	"artkosm/Ring Sparkles.kosm" ; resident sparkle tiles; ring frames are DMA'd (#42)
