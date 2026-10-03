@@ -120,8 +120,8 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
         player_palettes(
             "Knuckles",
             (0x0206, 0x0080, 0x020C, 0x064E),
-            (0x0024, 0x0442, 0x0468, 0x068A),
-            (0x0426, 0x0646, 0x086A, 0x0CAE),
+            (0x0224, 0x0442, 0x0448, 0x066A),
+            (0x0426, 0x0646, 0x062A, 0x086C),
         )
     )
     return outputs

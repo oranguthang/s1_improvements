@@ -275,7 +275,7 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
             "Tails",
             (0x0468, 0x068C, 0x008E, 0x00AE),
             (0x0244, 0x0466, 0x0488, 0x06AA),
-            (0x0446, 0x0668, 0x068A, 0x08AC),
+            (0x0446, 0x046A, 0x068C, 0x08AE),
         )
     )
     return outputs
