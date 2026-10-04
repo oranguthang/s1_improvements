@@ -21,7 +21,8 @@ SLIDE = 0x7C
 CLIMB = 0x7E
 LEDGE = 0x84
 WATER_TURN_EXTRA = 0x93
-FRAME_COUNT = WATER_TURN_EXTRA + 4
+TRANSFORM = WATER_TURN_EXTRA + 4  # S3K Super transformation frames $EB-$ED
+FRAME_COUNT = TRANSFORM + 3
 
 
 def frame_plan() -> list[tuple[int, int, int]]:
@@ -94,6 +95,8 @@ def frame_plan() -> list[tuple[int, int, int]]:
     # S3K has no water-spin art: cycle the ten glide headings instead.
     for step in range(4):
         assign(WATER_TURN_EXTRA + step, 0xC6 + step)
+    for step in range(3):
+        assign(TRANSFORM + step, 0xEB + step)
     return plan
 
 

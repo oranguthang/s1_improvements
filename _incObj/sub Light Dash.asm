@@ -516,6 +516,8 @@ Sonic_LightDashPose:
         beq.s .knuckles
         tst.b (v_supersonic).w
         beq.s .frameReady
+        cmpi.b #Character_Sonic,(v_character_p1).w
+        bne.s .frameReady               ; Super Tails keeps his own frame numbers
         lea .superFrames(pc),a1
         bra.s .frameReady
 .knuckles:

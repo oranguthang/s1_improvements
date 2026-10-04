@@ -865,7 +865,10 @@ CharacterAsset_PaletteID: equ 70
 CharacterAsset_WaterID: equ 71
 CharacterAsset_SBZ3ID: equ 72
 CharacterAsset_HUD: equ 73
-CharacterAsset_Size: equ 74
+CharacterAsset_CycleStep: equ 74	; Super cycle frames per steady step, minus one
+CharacterAsset_CycleHold: equ 75	; frames on the last steady step, minus one
+CharacterAsset_CycleLast: equ 76	; byte offset of the last steady cycle frame
+CharacterAsset_Size: equ 78
 
 ; Read one pointer using a descriptor getter; target must not be a3.
 ; The lookup preserves all input registers and flags except target and a3;

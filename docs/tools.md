@@ -36,6 +36,7 @@ python -m s1tools player figure8 --verify
 python -m s1tools player air --verify
 python -m s1tools player tails
 python -m s1tools player knuckles
+python -m s1tools player super-forms
 python -m s1tools player palette
 python -m s1tools player ui
 python -m s1tools player endings
@@ -46,6 +47,8 @@ Use `--apply` instead of `--verify` to regenerate. Order matters: Super base ass
 `player tails` verifies the solo Tails resources; `player tails --apply` regenerates them independently of Sonic's appended artwork. It reads the bundled Sonic 3 & Knuckles body/tail art and mapping/DPLC tables, repacks them to the Sonic 1 frame conventions, and generates the lives icon. It preserves indexed pixels, applies an explicit colour-index remap and rejects frames larger than the existing 32-tile player VRAM slot. Directional rolling composites retain the original S3K body origin and independently mirrored tail pieces for eight velocity headings and a four-phase swish. Their generated frame bounds are used by the runtime pose selector.
 
 `player knuckles` verifies the solo Knuckles art, mappings, DPLC and lives icon; `--apply` regenerates them. It adapts S3K walk/run frame counts and includes glide, fall, slide, climbing and ledge poses. Both solo importers apply explicit colour-index maps into the common player palette.
+
+`player super-forms` verifies the Super Tails and Super Knuckles palettes and cycles; `--apply` regenerates them. The dry cycles are Sonic 3 & Knuckles' `PalCycle_SuperTails` and `PalCycle_SuperHyperKnuckles` colours, placed in each character's protected slots. Underwater versions apply a colour transform in OKLab space, fitted on the character's own dry-to-Labyrinth and dry-to-Scrap Brain Act 3 normal palettes. Six fade entries lead from the normal palette into the steady cycle. Run it after `player tails` and `player knuckles`, whose palettes it reads.
 
 `player palette` verifies the common dry/underwater palette and reindexed Sonic, HUD, object and level resources; `--apply` regenerates them from the bundled `shared/` inputs. The range manifest retains mixed-palette sheet boundaries and records the mappings or tilemaps used for selection. Reindex the common resources before generating player imports and remaps; those recipes already target the shared indices. Invincibility stars use shared white/gray slots, preserving their original shapes and transparency in all three art formats; they do not change with the selected character.
 

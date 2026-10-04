@@ -46,6 +46,12 @@ palid_TailsSBZ3Water:    makePalEntry Pal_TailsSBZ3Water,v_palette_line_1
 palid_Knuckles:          makePalEntry Pal_Knuckles,v_palette_line_1
 palid_KnucklesWater:     makePalEntry Pal_KnucklesWater,v_palette_line_1
 palid_KnucklesSBZ3Water: makePalEntry Pal_KnucklesSBZ3Water,v_palette_line_1
+palid_SuperTails: makePalEntry Pal_SuperTails,v_palette_line_1
+palid_SuperTailsWater: makePalEntry Pal_SuperTailsWater,v_palette_line_1
+palid_SuperTailsSBZ3Water: makePalEntry Pal_SuperTailsSBZ3Water,v_palette_line_1
+palid_SuperKnuckles: makePalEntry Pal_SuperKnuckles,v_palette_line_1
+palid_SuperKnucklesWater: makePalEntry Pal_SuperKnucklesWater,v_palette_line_1
+palid_SuperKnucklesSBZ3Water: makePalEntry Pal_SuperKnucklesSBZ3Water,v_palette_line_1
 	even
 
 
@@ -80,6 +86,12 @@ Pal_TailsSBZ3Water: bincludeEndMarker "palette/Tails - SBZ3 Underwater.bin"
 Pal_Knuckles:          bincludeEndMarker "palette/Knuckles.bin"
 Pal_KnucklesWater:     bincludeEndMarker "palette/Knuckles - LZ Underwater.bin"
 Pal_KnucklesSBZ3Water: bincludeEndMarker "palette/Knuckles - SBZ3 Underwater.bin"
+Pal_SuperTails: bincludeEndMarker "palette/Super Tails.bin"
+Pal_SuperTailsWater: bincludeEndMarker "palette/Super Tails - LZ Underwater.bin"
+Pal_SuperTailsSBZ3Water: bincludeEndMarker "palette/Super Tails - SBZ3 Underwater.bin"
+Pal_SuperKnuckles: bincludeEndMarker "palette/Super Knuckles.bin"
+Pal_SuperKnucklesWater: bincludeEndMarker "palette/Super Knuckles - LZ Underwater.bin"
+Pal_SuperKnucklesSBZ3Water: bincludeEndMarker "palette/Super Knuckles - SBZ3 Underwater.bin"
 
 Pal_SuperSonic:
 		dc.w $0000, $0000, $04AA, $0ACA, $0ECC, $0EEE, $0EEE, $0CC0

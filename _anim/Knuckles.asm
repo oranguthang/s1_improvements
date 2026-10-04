@@ -32,7 +32,7 @@ Ani_Knuckles:
         dc.w KnucklesAni_Float3-Ani_Knuckles
         dc.w KnucklesAni_Float4-Ani_Knuckles
         dc.w KnucklesAni_SpinDash-Ani_Knuckles
-        dc.w KnucklesAni_Null-Ani_Knuckles
+        dc.w KnucklesAni_Transform-Ani_Knuckles ; $20
         dc.w KnucklesAni_Figure8-Ani_Knuckles
         dc.w KnucklesAni_Fall-Ani_Knuckles
 
@@ -204,4 +204,8 @@ KnucklesAni_Figure8: dc.b $FF,fr_Run11,fr_Run12,fr_Run13,fr_Run14,afEnd,afEnd,af
 
 ; A relaxed walking cycle on spring descent.
 KnucklesAni_Fall: dc.b 3,fr_Walk11,fr_Walk12,fr_Walk13,fr_Walk14,fr_Walk15,fr_Walk16,afEnd
+
+; S3K Super transformation: curl, pose and flash (frames $EB-$ED).
+KnucklesAni_Transform: dc.b 2,knux_transform_frame,knux_transform_frame,knux_transform_frame+1,knux_transform_frame+2,knux_transform_frame+1,knux_transform_frame+2,knux_transform_frame+1,knux_transform_frame+2,knux_transform_frame+1,knux_transform_frame+2,knux_transform_frame+1,knux_transform_frame+2,afChange,id_Walk
+		even
 	even

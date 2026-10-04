@@ -72,19 +72,26 @@ PCSuper_Revert:
 		character_asset CharacterAsset_Cycle,a0,GetPlayer1Assets_Super
 		bra.w	PCSuper_CopyColours
 
-; Cycle the ten steady Super Sonic palette frames every eight game frames.
+; Cycle the steady Super palette frames. Super Sonic steps every eight game
+; frames through ten frames; Tails and Knuckles follow their S3K timing.
 PCSuper_Normal:
 		subq.b	#1,(v_superpal_timer).w
 		bpl.w	PCSuper_Return
-		move.b	#7,(v_superpal_timer).w
+		move.l	a3,-(sp)
+		jsr	(GetPlayer1Assets_Super).l		; each form sets its own step, hold and length
+		move.b	CharacterAsset_CycleStep(a3),(v_superpal_timer).w
 		move.w	(v_superpal_frame).w,d0
 		addq.w	#8,(v_superpal_frame).w
-		cmpi.w	#$78,(v_superpal_frame).w
-		bls.s	.copy
+		moveq	#0,d1
+		move.b	CharacterAsset_CycleLast(a3),d1
+		cmp.w	(v_superpal_frame).w,d1
+		bhs.s	.copy
 		move.w	#$30,(v_superpal_frame).w
+		move.b	CharacterAsset_CycleHold(a3),(v_superpal_timer).w ; the last frame may pause before the loop
 
 	.copy:
-		character_asset CharacterAsset_Cycle,a0,GetPlayer1Assets_Super
+		movea.l	CharacterAsset_Cycle(a3),a0
+		movea.l	(sp)+,a3
 
 PCSuper_CopyColours:
 		lea	(v_palette+$4).w,a1
@@ -501,6 +508,12 @@ Pal_SBZCyc_ConveyAct2:	binclude	"palette/Cycle - SBZ 10.bin"	; conveyor belts in
 ; ---------------------------------------------------------------------------
 
 Pal_SuperSonicCycle:	binclude	"palette/Cycle - Super Sonic.bin"
+Pal_SuperTailsCycle:	binclude	"palette/Cycle - Super Tails.bin"
+Pal_SuperTailsCycle_LZWater:	binclude	"palette/Cycle - Super Tails LZ Underwater.bin"
+Pal_SuperTailsCycle_SBZ3Water:	binclude	"palette/Cycle - Super Tails SBZ3 Underwater.bin"
+Pal_SuperKnucklesCycle:	binclude	"palette/Cycle - Super Knuckles.bin"
+Pal_SuperKnucklesCycle_LZWater:	binclude	"palette/Cycle - Super Knuckles LZ Underwater.bin"
+Pal_SuperKnucklesCycle_SBZ3Water:	binclude	"palette/Cycle - Super Knuckles SBZ3 Underwater.bin"
 Pal_SuperSonicCycle_LZWater:	binclude	"palette/Cycle - Super Sonic LZ Underwater.bin"
 Pal_SuperSonicCycle_SBZ3Water:	binclude	"palette/Cycle - Super Sonic SBZ3 Underwater.bin"
 		even

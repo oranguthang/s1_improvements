@@ -52,6 +52,12 @@ With all six Chaos Emeralds and enough rings, press A+B, A+C or B+C while airbor
 
 Labyrinth uses a subdued blue-grey cycle. Scrap Brain Act 3 uses a related pink-grey cycle. Both use ten steady-cycle entries, with a restrained pulse in the darker fur shades. Water crossings and reversion restore the correct zone palette.
 
+## Super Tails and Super Knuckles
+
+Solo Tails and Knuckles use the same emerald, ring and drain rules. Press two jump buttons together (A+B, A+C or B+C, within six frames) while airborne and rolling; unlike Sonic, holding one button and pressing another does not count, because B/C held after a jump already starts flight or gliding. The combo is checked before flight and gliding, so it never also starts them.
+
+As in Sonic 3 & Knuckles, both keep their normal sprites and change only fur colours: Tails cycles through a yellow ramp, Knuckles through a pink ramp, each with its S3K timing. Each plays the S3K transformation pose. Labyrinth and Scrap Brain Act 3 use underwater versions of both cycles. Super movement uses the S3K values for these characters: top speed $800, acceleration $18 and deceleration $C0, halved underwater. Super Knuckles glides and climbs faster.
+
 ## Act entry
 
 Title cards begin moving after the level fade. Control resumes as they move away, with level and animal graphics loaded through the entry sequence.

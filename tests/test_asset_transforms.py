@@ -54,6 +54,27 @@ def test_solo_character_palettes_protect_object_colours(suffix: str) -> None:
         assert palette[4:12] != reference[4:12]
 
 
+@pytest.mark.parametrize("suffix", ["", " - LZ Underwater", " - SBZ3 Underwater"])
+@pytest.mark.parametrize(("name", "fixed", "last"), [("Tails", 2, 0x58), ("Knuckles", 3, 0x78)])
+def test_super_partner_cycles_keep_shared_colours(
+    suffix: str, name: str, fixed: int, last: int
+) -> None:
+    """Super cycles change fur only; Tails' index 2 and Knuckles' shoes stay put."""
+    normal = (ROOT / f"palette/{name}{suffix}.bin").read_bytes()
+    static = (ROOT / f"palette/Super {name}{suffix}.bin").read_bytes()
+    cycle = (ROOT / f"palette/Cycle - Super {name}{suffix.replace(' - ', ' ')}.bin").read_bytes()
+    assert static[:4] == normal[:4] and static[12:] == normal[12:]
+    # CharacterAsset_CycleLast in _inc/Character Assets.asm reads the last entry.
+    assert len(cycle) >= last + 8
+    # S3K's Super Tails cycle starts on his normal colours, then pulses yellow.
+    assert any(cycle[entry : entry + 8] != normal[4:12] for entry in range(0x30, last + 8, 8))
+    assert cycle[:8] == normal[4:12]  # the fade starts from the normal form
+    assert cycle[0x30:0x38] == static[4:12]  # and ends on the static Super palette
+    slot = (fixed - 2) * 2
+    for entry in range(0, len(cycle), 8):
+        assert cycle[entry + slot : entry + slot + 2] == normal[fixed * 2 : fixed * 2 + 2]
+
+
 def run(*command: str) -> str:
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT / "tools")
@@ -92,6 +113,7 @@ def test_nemesis_pixels_preserve_template(name: str) -> None:
         ("player", "air", "--verify"),
         ("player", "tails"),
         ("player", "knuckles"),
+        ("player", "super-forms"),
         ("player", "palette"),
         ("player", "ui"),
         ("player", "endings"),

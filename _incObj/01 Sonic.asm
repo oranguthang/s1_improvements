@@ -89,6 +89,14 @@ Sonic_Control:	; Routine 2
         tst.b d0
         bne.s .ignoremodes
 .normalModeControl:
+		cmpi.b	#Character_Sonic,(v_character_p1).w
+		beq.s	.abilities				; Sonic checks Super combos in Sonic_MdJump2
+		move.b	obStatus(a0),d0
+		andi.b	#6,d0
+		cmpi.b	#6,d0					; airborne and rolling?
+		bne.s	.abilities
+		bsr.w	Sonic_ToggleSuper			; partners: a Super combo takes priority over flight or gliding
+.abilities:
 		jsr (Knuckles_GlideControl).l
 		tst.b d0
 		bne.s .ignoremodes
@@ -375,7 +383,10 @@ Sonic_MdRoll:	; While Sonic is on the ground and rolling
 
 ; Obj01_MdJump2:
 Sonic_MdJump2:	; While Sonic is in the air and rolling (usually, but not limited to, jumping)
+		cmpi.b	#Character_Sonic,(v_character_p1).w
+		bne.s	.comboChecked			; partners checked it before their abilities
 		bsr.w	Sonic_ToggleSuper			; toggle Super Sonic with a jump-button combo
+	.comboChecked:
 		jsr (Sonic_CancelCharge).l		; cancel either grounded charge
 		jsr (Sonic_LightDashStart).l
 		bsr.w	Sonic_HomingAttack			; trigger a homing dash on a new button press
@@ -2380,7 +2391,9 @@ Sonic_Animate:
 		cmpi.b	#$FF,d0					; is this a walk/run animation?
 		bne.s	.timedSpecial
 		tst.b	(v_supersonic).w
-		bne.s	.walkrunSetup				; Super orientation is recalculated every frame
+		beq.s	.timedSpecial
+		cmpi.b	#Character_Sonic,(v_character_p1).w
+		beq.s	.walkrunSetup				; Super Sonic's orientation is recalculated every frame
 
 	.timedSpecial:
 		subq.b	#1,obTimeFrame(a0)			; subtract 1 from frame duration
@@ -2430,8 +2443,11 @@ Sonic_Animate:
 
 ; loc_13A9C:
 .nomodspeed:
-        tst.b (v_supersonic).w           ; Super Sonic keeps his Sonic 2 flying run at every speed
-        bne.w .superwalkrun
+        tst.b (v_supersonic).w
+        beq.s .normalwalkrun
+        cmpi.b #Character_Sonic,(v_character_p1).w
+        beq.w .superwalkrun              ; Super Sonic keeps his Sonic 2 flying run at every speed
+.normalwalkrun:                         ; Super Tails and Knuckles keep their normal frame layout
         move.w #$A00,d1                  ; CD mach-speed threshold, halved underwater
         btst #6,obStatus(a0)
         beq.s .figureThreshold
@@ -2722,8 +2738,6 @@ Sonic_ChkDebugToggle:
 ; ---------------------------------------------------------------------------
 
 Sonic_ToggleSuper:
-		cmpi.b #Character_Sonic,(v_character_p1).w
-		bne.w .return
 		btst	#7,objoff_3F(a0)	; is Super toggle locked until button release?
 		beq.s	.checktimer		; if not, branch
 		move.b	(v_jpadhold2).w,d0
@@ -2747,7 +2761,10 @@ Sonic_ToggleSuper:
 		move.b	objoff_3F(a0),d1
 		andi.b	#btnABC,d1
 		or.b	d0,d1			; merge with recent jump-button presses
+		cmpi.b	#Character_Sonic,(v_character_p1).w
+		bne.s	.pressesOnly		; partners hold jump while pressing B/C to fly or glide
 		or.b	(v_jpadhold2).w,d1	; allow holding one button and pressing another
+	.pressesOnly:
 		andi.b	#btnABC,d1
 		move.b	d1,objoff_3F(a0)
 		move.b	#6,objoff_3D(a0)	; keep the combo window short
@@ -2785,8 +2802,6 @@ Sonic_ToggleSuper:
 ; ---------------------------------------------------------------------------
 
 Sonic_ActivateSuper:
-		cmpi.b #Character_Sonic,(v_character_p1).w
-		bne.w .return
 		tst.b	(v_supersonic).w	; is Sonic already Super?
 		beq.s	.chk_emeralds		; if not, branch
 		bra.w	.return
@@ -3014,6 +3029,8 @@ Sonic_RecoverFromDebugDeath:
 Sonic_ApplySpeedSettings:
 		tst.b	(v_supersonic).w	; is Sonic super?
 		beq.s	.normal			; if not, branch
+		cmpi.b	#Character_Sonic,(v_character_p1).w
+		bne.s	.superpartner		; Super Tails and Knuckles use S3K's slower values
 		btst	#6,obStatus(a0)		; is Sonic underwater?
 		beq.s	.superdry		; if not, branch
 		move.w	#$500,(v_sonspeedmax).w
@@ -3025,6 +3042,20 @@ Sonic_ApplySpeedSettings:
 		move.w	#$A00,(v_sonspeedmax).w
 		move.w	#$30,(v_sonspeedacc).w
 		move.w	#$100,(v_sonspeeddec).w
+		rts
+
+.superpartner:
+		btst	#6,obStatus(a0)
+		beq.s	.superpartnerdry
+		move.w	#$400,(v_sonspeedmax).w
+		move.w	#$C,(v_sonspeedacc).w
+		move.w	#$60,(v_sonspeeddec).w
+		rts
+
+.superpartnerdry:
+		move.w	#$800,(v_sonspeedmax).w
+		move.w	#$18,(v_sonspeedacc).w
+		move.w	#$C0,(v_sonspeeddec).w
 		rts
 
 .normal:

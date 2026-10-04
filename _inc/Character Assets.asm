@@ -186,8 +186,8 @@ ApplyPlayerFadeColours:
 
 CharacterAssets:
         dc.l CharacterAssets_Sonic,CharacterAssets_SuperSonic
-        dc.l CharacterAssets_Tails,CharacterAssets_Tails ; no Super Tails yet
-        dc.l CharacterAssets_Knuckles,CharacterAssets_Knuckles ; no Super Knuckles yet
+        dc.l CharacterAssets_Tails,CharacterAssets_SuperTails
+        dc.l CharacterAssets_Knuckles,CharacterAssets_SuperKnuckles
 CharacterAssets_End:
         if (CharacterAssets_End-CharacterAssets)<>Character_Count*8
         fatal "Character table count mismatch"
@@ -199,6 +199,7 @@ CharacterAssets_Sonic:
         dc.l SonAni_Run,SonAni_Walk,SonAni_Roll,SonAni_Roll2,SonAni_Push,SonAni_Figure8
         dc.l Art_Sonic
         dc.b 0,0,palid_Sonic,palid_LZSonWater,palid_SBZ3SonWat,plcid_PlayerHUD
+        dc.b 7,7,$78,0
 CharacterAssets_SuperSonic:
         dc.l Art_SuperSonic,Map_SuperSonic,SuperSonicDynPLC,Ani_SuperSonic
         dc.l Pal_SuperSonic,Pal_SuperSonicWater,Pal_SuperSonicSBZ3Water
@@ -207,6 +208,7 @@ CharacterAssets_SuperSonic:
         dc.l Art_Sonic
         dc.b fr_SuperSpringTwirl1,fr_SuperAirPosesEnd
         dc.b palid_SuperSonic,palid_SuperSonicWater,palid_SuperSonicSBZ3Water,plcid_PlayerHUD
+        dc.b 7,7,$78,0                 ; ten steady frames, eight game frames each
 CharacterAssets_RecordsEnd:
         if (CharacterAssets_SuperSonic-CharacterAssets_Sonic)<>CharacterAsset_Size
         fatal "Normal character descriptor size mismatch"
@@ -221,9 +223,22 @@ CharacterAssets_Tails:
         dc.l TailsAni_Run,TailsAni_Walk,TailsAni_Roll,TailsAni_Roll2,TailsAni_Push,TailsAni_Figure8
         dc.l Art_Tails
         dc.b 0,0,palid_Tails,palid_TailsWater,palid_TailsSBZ3Water,plcid_TailsHUD
+        dc.b 7,7,$78,0
 CharacterAssets_TailsEnd:
         if (CharacterAssets_TailsEnd-CharacterAssets_Tails)<>CharacterAsset_Size
         fatal "Tails character descriptor size mismatch"
+        endif
+CharacterAssets_SuperTails:
+        dc.l Art_Tails,Map_Tails,TailsDynPLC,Ani_Tails
+        dc.l Pal_SuperTails,Pal_SuperTailsWater,Pal_SuperTailsSBZ3Water
+        dc.l Pal_SuperTailsCycle,Pal_SuperTailsCycle_LZWater,Pal_SuperTailsCycle_SBZ3Water
+        dc.l TailsAni_Run,TailsAni_Walk,TailsAni_Roll,TailsAni_Roll2,TailsAni_Push,TailsAni_Figure8
+        dc.l Art_Tails
+        dc.b 0,0,palid_SuperTails,palid_SuperTailsWater,palid_SuperTailsSBZ3Water,plcid_TailsHUD
+        dc.b 11,11,$58,0          ; S3K: six frames, twelve game frames each
+CharacterAssets_SuperTailsEnd:
+        if (CharacterAssets_SuperTailsEnd-CharacterAssets_SuperTails)<>CharacterAsset_Size
+        fatal "Super Tails character descriptor size mismatch"
         endif
 CharacterAssets_Knuckles:
         dc.l Art_Knuckles,Map_Knuckles,KnucklesDynPLC,Ani_Knuckles
@@ -232,8 +247,21 @@ CharacterAssets_Knuckles:
         dc.l KnucklesAni_Run,KnucklesAni_Walk,KnucklesAni_Roll,KnucklesAni_Roll2,KnucklesAni_Push,KnucklesAni_Figure8
         dc.l Art_Knuckles
         dc.b 0,0,palid_Knuckles,palid_KnucklesWater,palid_KnucklesSBZ3Water,plcid_KnucklesHUD
+        dc.b 7,7,$78,0
 CharacterAssets_KnucklesEnd:
         if (CharacterAssets_KnucklesEnd-CharacterAssets_Knuckles)<>CharacterAsset_Size
         fatal "Knuckles character descriptor size mismatch"
+        endif
+CharacterAssets_SuperKnuckles:
+        dc.l Art_Knuckles,Map_Knuckles,KnucklesDynPLC,Ani_Knuckles
+        dc.l Pal_SuperKnuckles,Pal_SuperKnucklesWater,Pal_SuperKnucklesSBZ3Water
+        dc.l Pal_SuperKnucklesCycle,Pal_SuperKnucklesCycle_LZWater,Pal_SuperKnucklesCycle_SBZ3Water
+        dc.l KnucklesAni_Run,KnucklesAni_Walk,KnucklesAni_Roll,KnucklesAni_Roll2,KnucklesAni_Push,KnucklesAni_Figure8
+        dc.l Art_Knuckles
+        dc.b 0,0,palid_SuperKnuckles,palid_SuperKnucklesWater,palid_SuperKnucklesSBZ3Water,plcid_KnucklesHUD
+        dc.b 2,14,$78,0          ; S3K: ten frames of three, the last held for fifteen
+CharacterAssets_SuperKnucklesEnd:
+        if (CharacterAssets_SuperKnucklesEnd-CharacterAssets_SuperKnuckles)<>CharacterAsset_Size
+        fatal "Super Knuckles character descriptor size mismatch"
         endif
         even

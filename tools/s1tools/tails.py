@@ -15,7 +15,14 @@ from s1tools.shared_palette import life_icon, player_palettes
 BASE = "General/Sprites/Tails/"
 # The selected solo player's fur uses protected colours 2..5.
 COLOURS = (0, 6, 5, 4, 2, 9, 12, 13, 5, 4, 10, 11, 7, 8, 9, 1)
-FRAME_COUNT = 151
+# Player art moves S3K's dark orange (11) to the free protected slot 3, so the
+# Super cycle can brighten it as S3K does without touching shared skin colour 11.
+PLAYER_COLOURS = (*COLOURS[:11], 3, *COLOURS[12:])
+# S3K's Super transformation frames $EB-$ED follow the gameplay frames.
+TRANSFORM_FRAME_FIRST = 151
+FRAME_COUNT = TRANSFORM_FRAME_FIRST + 3
+# S3K reads body frames from $D1 onward from a separate extra sheet.
+EXTRA_BODY_FIRST = 0xD1
 ROLL_FRAME_FIRST = FRAME_COUNT
 ROLL_FRAME_END = ROLL_FRAME_FIRST + 3 * 8 * 4
 # S3K's directional tails: horizontal/diagonal/vertical poses plus both flips.
@@ -182,6 +189,8 @@ def frame_plan() -> list[tuple[int, int, int, int]]:
     # S2 tails animation. Pack it with both alternating balance body poses.
     for step in range(8):
         assign(0x8F + step, 0x9A + (step // 2) % 2, 0x29 + step % 4)
+    for step in range(3):
+        assign(TRANSFORM_FRAME_FIRST + step, 0xEB + step)
     return plan
 
 
@@ -227,6 +236,7 @@ def emit_frames(
 def expected_outputs(source: Path) -> dict[Path, bytes]:
     root = get_root()
     body = (source / (BASE + "Art/Tails.bin")).read_bytes()
+    extra = (source / (BASE + "Art/Tails Extra.bin")).read_bytes()
     tail = (source / (BASE + "Art/Tails tails.bin")).read_bytes()
     body_maps = raw_table(source / (BASE + "Map - Tails.asm"))
     body_cues = raw_table(source / (BASE + "DPLC - Tails.asm"))
@@ -234,19 +244,22 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
     tail_cues = raw_table(source / (BASE + "DPLC - Tails tails.asm"))
     frames = []
     for body_id, tail_id, dx, dy in frame_plan():
-        data, pieces = frame(body, body_maps, body_cues, body_id)
+        sheet = extra if body_id >= EXTRA_BODY_FIRST else body
+        data, pieces = frame(sheet, body_maps, body_cues, body_id, PLAYER_COLOURS)
         if tail_id:
-            tail_data, tail_pieces = frame(tail, tail_maps, tail_cues, tail_id)
+            tail_data, tail_pieces = frame(tail, tail_maps, tail_cues, tail_id, PLAYER_COLOURS)
             pieces += [(*p[:4], p[4] + len(data) // 32, *p[5:]) for p in tail_pieces]
             data += tail_data
         frames.append((data, [(x + dx, y + dy, *rest) for x, y, *rest in pieces]))
     # Keep the three body phases and the four-tick tail cycle independent.
     # Bake tail-only mirroring into pieces so the body keeps its own facing.
     for body_id in range(0x96, 0x99):
-        body_data, body_pieces = frame(body, body_maps, body_cues, body_id)
+        body_data, body_pieces = frame(body, body_maps, body_cues, body_id, PLAYER_COLOURS)
         for tail_first, flips in ROLL_TAILS:
             for phase in range(4):
-                tail_data, tail_pieces = frame(tail, tail_maps, tail_cues, tail_first + phase)
+                tail_data, tail_pieces = frame(
+                    tail, tail_maps, tail_cues, tail_first + phase, PLAYER_COLOURS
+                )
                 pieces = list(body_pieces)
                 for x, y, w, h, tile, xf, yf, pal, priority in tail_pieces:
                     if flips & 1:
@@ -257,6 +270,7 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
                 frames.append((body_data + tail_data, pieces))
     art, mappings, cues = emit_frames("Tails", frames)
     mappings = (
+        f"fr_TailsTransform equ ${TRANSFORM_FRAME_FIRST:X}\n"
         f"; Runtime-selected roll composites, separate from animation commands.\n"
         f"fr_TailsRollFirst equ ${ROLL_FRAME_FIRST:X}\n"
         f"fr_TailsRollEnd equ ${ROLL_FRAME_END:X}\n\n"
@@ -273,9 +287,9 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
     outputs.update(
         player_palettes(
             "Tails",
-            (0x0468, 0x068C, 0x008E, 0x00AE),
-            (0x0244, 0x0466, 0x0488, 0x06AA),
-            (0x0446, 0x046A, 0x068C, 0x08AE),
+            (0x0468, 0x046A, 0x008E, 0x00AE),
+            (0x0244, 0x0266, 0x0488, 0x06AA),
+            (0x0446, 0x086C, 0x068C, 0x08AE),
         )
     )
     return outputs

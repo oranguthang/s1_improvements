@@ -12,6 +12,8 @@ Character resource selection adapts Selbi's [Adding Extra Characters](https://in
 
 Solo Tails body/tail art and Knuckles art, mappings, DPLC and lives icons originate from the [Sonic 3 & Knuckles disassembly](https://github.com/sonicretro/skdisasm), using the resource versions in [sk_improvements](https://github.com/oranguthang/sk_improvements). The importer repacks the frames and adapts palette indices and origins for Sonic 1. Flight uses the ascent-pulse and endurance approach from Sonic 3 & Knuckles; tail attacks use its Touch_Enemy/Check_TailsAttack angle check. Knuckles gliding, climbing and ledge transitions adapt its movement rules to Sonic 1 terrain collision.
 
+Super Tails and Super Knuckles adapt Sonic 3 & Knuckles' `Tails_Transform`/`Knux_Transform`, the `PalCycle_SuperTails` and `PalCycle_SuperHyperKnuckles` colour cycles and the transformation poses. Underwater cycles are derived from them for Sonic 1's water palettes.
+
 Tails and Knuckles signpost portraits also use the original S3K end-sign art and DPLC. The 1UP monitor portraits reuse the S3K lives icons. Act-clear character names reuse the Sonic 1 title-card alphabet.
 
 Their character-specific endings use the official Sonic the Hedgehog mobile remaster artwork, extracted by Parky33 and available in the [Ending sprite sheet](https://www.spriters-resource.com/mobile/sonicthehedgehogmobile/asset/65174/). The importer preserves pixel shapes and pose dimensions, adapts colours to the shared player palette and repacks mapping origins for the existing ending graphics slot. The blue emerald uses the independent sky palette.

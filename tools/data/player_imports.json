@@ -634,6 +634,9 @@
     "sk/General/Sprites/Signpost/End Signs.bin": "f7bde4e6f77a21a9747df2476ec176d9fd6f1b1ce73b5bcd3178b8210b74b218",
     "sk/General/Sprites/Signpost/Map - End Signs.asm": "9b2326a154e3182dba1afe00a8395de4586ad427091f263a0804fa1f1027ab7f",
     "sk/General/Sprites/Signpost/DPLC - End Signs.asm": "55ad4c53ad6f4b7c034388d2e2d75e4f6b144edcb75d537df510258e112ffb8e",
-    "mobile/ending.png": "920337485f7088ade90576f71366da79562857d09c94c5f297ce780e8c268fcb"
+    "mobile/ending.png": "920337485f7088ade90576f71366da79562857d09c94c5f297ce780e8c268fcb",
+    "sk/General/Sprites/Tails/Art/Tails Extra.bin": "7c67072d8f043a3b54584684834a2ec2df87a0dbbe102d71a804ee9b91569a45",
+    "sk/General/Sprites/Tails/Art/Super Tails birds.bin": "3bc8c28722eb5ad2276e8afe2088ab0543d3f8a1886325f447638bfc3763c1f5",
+    "sk/General/Sprites/Tails/Map - Super Tails birds.asm": "3d9b892f70e39f7c58dd6b3cd62f43ac9b56c42a90fd2cc2f771b32b45008d9e"
   }
 }

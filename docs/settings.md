@@ -18,7 +18,7 @@ CHEATS uses Up/Down to select, Left/Right/A/B/C to change, and Start to leave.
 
 ALL EMERALDS overlays the six earned emeralds without altering the earned list. Disabling it reveals only earned progress. With six effective emeralds, every uncollected giant ring flashes and awards 50 rings without entering a Special Stage.
 
-Selecting zero required rings switches drain OFF. Enabling drain at zero changes the threshold to 10. DEBUG applies on level/Special Stage entry. B toggles placement; A+B/A+C/B+C while controlling airborne rolling Sonic can transform before placement is entered. Returning from placement restores the current form. Death rescue reverts Super and power-ups; ordinary music keeps its playback position, and shoes only restore normal tempo.
+Selecting zero required rings switches drain OFF. Enabling drain at zero changes the threshold to 10. DEBUG applies on level/Special Stage entry. B toggles placement; A+B/A+C/B+C while controlling the airborne rolling player can transform before placement is entered. Returning from placement restores the current form. Death rescue reverts Super and power-ups; ordinary music keeps its playback position, and shoes only restore normal tempo.
 
 ## SRAM record
 
@@ -34,13 +34,13 @@ God Mode prevents damage, drowning and time-over death. Crossing the lower death
 
 Select TAILS in OPTIONS before starting a game or using Level Select. Jump with A/B/C, then press B or C again in midair to fly; repeated presses supply ascent pulses. Flight lasts up to eight seconds before exhaustion and resets on landing. The flying tail rotor damages badniks and bosses above Tails, as in S3K; side and bottom contacts remain vulnerable. Final Zone's cylinder fight is an exception: flying Tails can also attack Eggman from the side. Underwater the same controls use swimming poses without a tail attack; the normal air supply still applies. A retains Light Dash. Spin Dash and Peel-Out are available; Sonic's Homing Attack is replaced by flight. Debug's standalone B still enters placement mode.
 
-Tails has no Super form, even with all emeralds granted. Giant-ring bonuses still use the effective emerald count. Player art, underwater palettes and the lives icon follow the selected character. Large title illustrations and the small Continue counter illustrations retain Sonic's original artwork. His ending uses the official mobile Tails poses. The rolling body stays aligned with the floor. Its tails follow movement in eight directions and swish independently of the body animation, as in S3K.
+With six effective emeralds Tails can become Super Tails (see [Gameplay](gameplay.md#super-tails-and-super-knuckles)). Giant-ring bonuses use the effective emerald count. Player art, underwater palettes and the lives icon follow the selected character. Large title illustrations and the small Continue counter illustrations retain Sonic's original artwork. His ending uses the official mobile Tails poses. The rolling body stays aligned with the floor. Its tails follow movement in eight directions and swish independently of the body animation, as in S3K.
 
 ## Solo Knuckles
 
 Select KNUCKLES in OPTIONS. Jump with A/B/C, then hold B or C after a second press to glide. Release to fall. Gliding into a vertical terrain wall grabs it; Up/Down climbs, B/C jumps away, and holding away releases the wall. At the top Knuckles climbs onto the ledge. His jump is lower than Sonic's. Gliding can defeat badniks, damage bosses (including Eggman in Final Zone's cylinders), and break monitors and compatible walls. A retains Light Dash; standalone B retains its debug-placement function when debug is enabled.
 
-Knuckles has no Super form. His fur uses protected palette slots 2/4/5, with a separate red/pink ramp and underwater tints; green shoe panels use protected slot 3. Objects retain their three gray shades independently of the selected character. The lives label uses the S3K KTE abbreviation. Large title illustrations and Continue counters remain Sonic artwork. Water tunnels approximate rotation by cycling the ten Sonic 3 & Knuckles glide headings; the original game has no dedicated Knuckles water-spin artwork. Only one playable character is supported.
+With six effective emeralds Knuckles can become Super Knuckles. His fur uses protected palette slots 2/4/5, with a separate red/pink ramp and underwater tints; green shoe panels use protected slot 3. Objects retain their three gray shades independently of the selected character. The lives label uses the S3K KTE abbreviation. Large title illustrations and Continue counters remain Sonic artwork. Water tunnels approximate rotation by cycling the ten Sonic 3 & Knuckles glide headings; the original game has no dedicated Knuckles water-spin artwork. Only one playable character is supported.
 
 ## Debug display
 

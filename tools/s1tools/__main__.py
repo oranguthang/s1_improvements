@@ -40,6 +40,7 @@ COMMANDS = {
         "knuckles": ("knuckles", "main"),
         "tails": ("tails", "main"),
         "super": ("player", "super_main"),
+        "super-forms": ("super_forms", "main"),
         "figure8": ("player", "figure8_main"),
         "air": ("player", "air_main"),
     },

@@ -6,6 +6,7 @@ knux_fall_frame: equ $7A
 knux_slide_frame: equ $7C
 knux_climb_frame: equ $7E
 knux_ledge_frame: equ $84
+knux_transform_frame: equ $97		; S3K Super transformation frames $EB-$ED
 
 Knuckles_GlideControl:
         cmpi.b #Character_Knuckles,(v_character_p1).w
@@ -78,6 +79,9 @@ Knuckles_GlideControl:
         andi.b #$7F,d1
         bne.w .speed
         addq.w #4,d0
+        tst.b (v_supersonic).w
+        beq.w .speed
+        addq.w #8,d0                    ; S3K: Super Knuckles glides faster
 .speed:
         move.w d0,(v_knux_speed).w
         move.b (v_knux_turn).w,d0
@@ -259,6 +263,10 @@ Knuckles_Climb:
         cmp.w obY(a0),d0
         bge.w .moved
         subq.w #1,obY(a0)
+        tst.b (v_supersonic).w
+        beq.w .upReady
+        subq.w #1,obY(a0)               ; S3K: Super Knuckles climbs twice as fast
+.upReady:
         moveq #1,d0
         bra.w .animate
 .down:
@@ -270,6 +278,10 @@ Knuckles_Climb:
         tst.w d1
         ble.w Knuckles_ClimbFloor
         addq.w #1,obY(a0)
+        tst.b (v_supersonic).w
+        beq.w .downReady
+        addq.w #1,obY(a0)
+.downReady:
         moveq #-1,d0
 .animate:
         tst.b (v_knux_timer).w
