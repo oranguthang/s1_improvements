@@ -155,6 +155,7 @@ id_CreditsText:		objptr	CreditsText		; 8A
 id_EndEggman:		objptr	EndEggman		; 8B
 id_TryChaos:		objptr	TryChaos		; 8C
 id_SuperSonicStars:	objptr	SuperSonicStars		; 8D
+id_SuperTailsFlickies:	objptr	SuperTailsFlickies	; 8E
 
 ; ---------------------------------------------------------------------------
 

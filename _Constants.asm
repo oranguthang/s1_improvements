@@ -628,6 +628,7 @@ ArtTile_Shield:			equ $541			; 18-tile DPLC slot shared by shield and all stars
 Shield_Slot_Tiles:		equ 18
 ArtTile_Invincibility:		equ ArtTile_Shield		; never shown with the shield
 ArtTile_SuperSonicStars:	equ ArtTile_Shield		; 14 tiles; shield hidden and stars removed while Super
+ArtTile_SuperTailsFlickies:	equ ArtTile_Shield		; 14 tiles; Super Tails has no stars
 ArtTile_Game_Over:		equ $55E			; $553-$57F no longer hold shield/stars art
 ArtTile_Title_Card:		equ $580
 ArtTile_Animal_1:		equ $580

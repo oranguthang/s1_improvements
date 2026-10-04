@@ -4445,6 +4445,9 @@ Art_InvincibilityStars_End:
 Art_Shield:	binclude	"artunc/Shield.unc"	; generated shield frames
 Art_Shield_End:
 		even
+Art_SuperTailsFlickies:	binclude	"artunc/Super Tails Flickies.unc"
+Art_SuperTailsFlickies_End:
+		even
 	if (Art_SuperSonicStars_End-Art_SuperSonicStars)<>14*tile_size
 		error "artunc/Super Sonic Stars.unc must hold 14 tiles"
 	endif
@@ -4454,7 +4457,10 @@ Art_Shield_End:
 	if (Art_Shield_End-Art_Shield)<>27*tile_size
 		error "artunc/Shield.unc must hold 27 tiles"
 	endif
-	if (MOMPASS>1)&&((Art_SuperSonicStars>>17)<>((Art_Shield_End-1)>>17))
+	if (Art_SuperTailsFlickies_End-Art_SuperTailsFlickies)<>14*tile_size
+		error "artunc/Super Tails Flickies.unc must hold 14 tiles"
+	endif
+	if (MOMPASS>1)&&((Art_SuperSonicStars>>17)<>((Art_SuperTailsFlickies_End-1)>>17))
 		error "Shield/star DMA art crosses a 128kB boundary; the DMA would be corrupted. Move or align it."
 	endif
 Art_SpinDust:	binclude	"artunc/SpinDust.unc"
@@ -5446,6 +5452,9 @@ TailsDynPLC: include "_maps/Tails - Dynamic Gfx Script.asm"
 		include "_anim/Tails.asm"
 		include "_incObj/Tails Flight.asm"
 		include "_incObj/Knuckles Glide.asm"
+		include	"_incObj/8E Super Tails Flickies.asm"
+Map_SuperTailsFlickies:	include	"_maps/Super Tails Flickies.asm"
+		even
 Map_Knuckles: include "_maps/Knuckles.asm"
 KnucklesDynPLC: include "_maps/Knuckles - Dynamic Gfx Script.asm"
 		include "_anim/Knuckles.asm"

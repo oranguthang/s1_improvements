@@ -70,7 +70,7 @@ Set render bit 6 and a nonzero `obSubSprites` to opt in. Up to seven children us
 
 ## Shield, stars and points VRAM
 
-Shield, invincibility and Super stars share the protected `$541–$552` slot and use mutually exclusive loading. Points occupy `$553–$55B`. Keep their tile ranges independent from Game Over and debug text. Loading a new owner must also change the active mappings/DPLC state.
+Shield, invincibility, Super stars and Super Tails' Flickies share the protected `$541–$552` slot and use mutually exclusive loading. `v_shieldartkey` names the resident owner: a shield/stars DPLC key, `$4000` for Super stars or `$4001` for the 14 Flicky tiles. Points occupy `$553–$55B`. Keep their tile ranges independent from Game Over and debug text. Loading a new owner must also change the active mappings/DPLC state.
 
 ## Ring animation
 
@@ -107,6 +107,8 @@ The animation driver still expects Sonic's animation IDs, frame conventions and 
 `_incObj/Tails Flight.asm` implements solo flight and swimming. B/C starts flight or adds an ascent pulse; A retains Light Dash. The eight-second endurance and flight flags reset on landing, damage, death and debug placement. Tails uses the existing player collision dimensions. The importer adapts Sonic 3 & Knuckles mapping origins and samples six walk frames per orientation. Separate tail frames are packed with the body, keeping every DMA frame within the existing 32-tile player slot.
 
 `_incObj/Knuckles Glide.asm` implements solo gliding, terrain-wall climbing, wall jumps and ledge transitions. Its compact glide hitbox returns to the standing size after release, landing, damage or death. Gliding attacks enemies, monitors and compatible smashable walls. Ordinary solid objects remain non-climbable. The S3K importer preserves indexed pixels, packs each frame into the same 32-tile player slot and maps the normal/Super resource pair to the normal artwork. Knuckles uses a lower jump than Sonic and keeps normal running poses at high speed.
+
+`_incObj/8E Super Tails Flickies.asm` ports S3K's `Obj_SuperTailsBirds`. `Sonic_ActivateSuper` spawns the four birds in the stars' object slots `v_starsobj1`–`v_starsobj4`; reversion and death clear the Super stars only when that slot really holds them, so the Flickies can fly away. A bird targets objects whose collision type is a badnik or boss (`obColType` nonzero, top bits clear), reading the collision queue and falling back to a scan of level object RAM. Hits reuse `React_DestroyBadnik` (points combo, animal and explosion) and `React_DamageBoss` (boss hit counter and defeat flag) from `Sonic ReactToItem.asm`, so player collisions and Flickies score identically. The include stays at the end of the object code: placing it near object $8D pushes existing short branches in Scrap Brain objects out of range.
 
 The shared-art range is inclusive at `SharedFirst` and exclusive at `SharedEnd`; equal values disable it. Super Sonic uses this range for the original spring/air-pose art. DPLC offsets within that range refer to `SharedArt`. Super palette cycles retain the existing eight-byte frame format and transformation/reversion sequence; the steady-frame count and timing come from the descriptor. Palette refresh changes only indices 2–5, so replacement characters must account for the other shared colours.
 

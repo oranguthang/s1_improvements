@@ -2848,7 +2848,21 @@ Sonic_ActivateSuper:
 	.clearstars:
 		clr.l	(a1)+
 		dbf	d1,.clearstars
+		cmpi.b	#Character_Tails,(v_character_p1).w
+		beq.s	.flickies
 		move.b	#id_SuperSonicStars,(v_superstars).w
+		bra.s	.starsReady
+	.flickies:
+		lea	(v_starsobj1).w,a1		; S3K: Super Tails gets four Super Flickies instead of stars
+		moveq	#0,d0
+		moveq	#4-1,d1
+	.spawnFlicky:
+		move.b	#id_SuperTailsFlickies,obID(a1)
+		move.b	d0,flicky_angle(a1)
+		addi.b	#$40,d0				; a quarter turn apart
+		lea	object_size(a1),a1
+		dbf	d1,.spawnFlicky
+	.starsReady:
 		clr.b	objoff_3D(a0)
 		move.b	#$80,objoff_3F(a0)
 		bsr.w	Sonic_ApplySpeedSettings
@@ -2938,12 +2952,15 @@ Sonic_ResetSuperState:
 	.animready:
 		move.b	#-1,obPrevAni(a0)
 		move.b	#-1,(v_sonframenum).w
+		cmpi.b	#id_SuperSonicStars,(v_superstars).w
+		bne.s	.starsCleared			; Super Tails' first Flicky flies away by itself
 		clr.b	(v_superstars).w
 		; Keep its mappings for a sprite already queued this frame, but make a
 		; later invincibility monitor start this slot from Shi_Main with an
 		; even trail lag (the Super stars use objoff_30 as a 0/1 flag).
 		clr.b	(v_superstars+obRoutine).w
 		clr.b	(v_superstars+objoff_30).w
+	.starsCleared:
 		clr.w	(v_shieldartkey).w		; the shield reloads its tiles over the Super stars
 		tst.b	(v_shield).w
 		beq.s	.noshield

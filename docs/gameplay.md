@@ -58,6 +58,8 @@ Solo Tails and Knuckles use the same emerald, ring and drain rules. Press two ju
 
 As in Sonic 3 & Knuckles, both keep their normal sprites and change only fur colours: Tails cycles through a yellow ramp, Knuckles through a pink ramp, each with its S3K timing. Each plays the S3K transformation pose. Labyrinth and Scrap Brain Act 3 use underwater versions of both cycles. Super movement uses the S3K values for these characters: top speed $800, acceleration $18 and deceleration $C0, halved underwater. Super Knuckles glides and climbs faster.
 
+Super Tails summons four Super Flickies instead of stars. They circle him, pick a visible badnik or boss and fly into it. Badniks are destroyed and score as if Tails had hit them; a boss loses one hit. Two birds never chase the same target, and a bird waits two seconds after a hit before searching again. When Tails reverts or dies they fly off towards the top left. The Flickies use the stars' VRAM slot; shields remain hidden while Super, as for Sonic.
+
 ## Act entry
 
 Title cards begin moving after the level fade. Control resumes as they move away, with level and animal graphics loaded through the entry sequence.

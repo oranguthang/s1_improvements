@@ -307,6 +307,9 @@ React_BossHit:
 		neg.w	obVelY(a0)				; repel Sonic verticallly
 		asr.w	obVelX(a0)				; halve current X-speed
 		asr.w	obVelY(a0)				; halve current Y-speed
+
+; Damage the boss at a1 without moving the player (also used by Super Flickies).
+React_DamageBoss:
 		move.b	#col_none,obColType(a1)			; set boss to no collision while it's damaged
 
 		subq.b	#1,obBossHits(a1)			; decrement 1 boss HP
@@ -318,6 +321,31 @@ React_BossHit:
 ; ===========================================================================
 
 React_BadnikHit:
+		bsr.s	React_DestroyBadnik
+
+		; Bounce Sonic vertically
+		tst.w	obVelY(a0)				; is Sonic moving upwards?
+		bmi.s	.slowFromBelow				; if yes, branch
+		move.w	obY(a0),d0				; get Sonic's Y-position
+		cmp.w	obY(a1),d0				; was Sonic below badnik on impact?
+		bhs.s	.boostFromBelow				; if yes, branch
+		neg.w	obVelY(a0)				; negate Sonic's Y-speed to make him bounce upwards
+		bsr.w	React_ResetHomingAttack
+		rts						; return
+
+	.slowFromBelow:
+		addi.w	#$100,obVelY(a0)			; slow down Sonic going up if badnik touched from below
+		bsr.w	React_ResetHomingAttack
+		rts						; return
+
+	.boostFromBelow:
+		subi.w	#$100,obVelY(a0)			; add a bit of boost speed when touching from below
+		bsr.w	React_ResetHomingAttack
+		rts						; return
+
+; Break the badnik at a1 into points, an explosion and an animal without moving
+; the player (also used by Super Flickies). Preserves a0/a1.
+React_DestroyBadnik:
 		bset	#7,obStatus(a1)				; set flag that badnik has been broken (pretty much unused, badnik gets replaced by explosion)
 
 		; Points and points object
@@ -340,26 +368,7 @@ React_BadnikHit:
 		; Change badnik into gray explosion
 		_move.b	#id_ExplosionItem,obID(a1)		; change badnik into an to explosion/animal object
 		move.b	#0,obRoutine(a1)			; set to "ExItem_Animal" routine to also spawn animal/points objects
-
-		; Bounce Sonic vertically
-		tst.w	obVelY(a0)				; is Sonic moving upwards?
-		bmi.s	.slowFromBelow				; if yes, branch
-		move.w	obY(a0),d0				; get Sonic's Y-position
-		cmp.w	obY(a1),d0				; was Sonic below badnik on impact?
-		bhs.s	.boostFromBelow				; if yes, branch
-		neg.w	obVelY(a0)				; negate Sonic's Y-speed to make him bounce upwards
-		bsr.w	React_ResetHomingAttack
-		rts						; return
-
-	.slowFromBelow:
-		addi.w	#$100,obVelY(a0)			; slow down Sonic going up if badnik touched from below
-		bsr.w	React_ResetHomingAttack
-		rts						; return
-
-	.boostFromBelow:
-		subi.w	#$100,obVelY(a0)			; add a bit of boost speed when touching from below
-		bsr.w	React_ResetHomingAttack
-		rts						; return
+		rts
 
 ; ---------------------------------------------------------------------------
 
@@ -525,9 +534,12 @@ KillSonic:
 		clr.b	(v_superpal_state).w
 		character_asset CharacterAsset_Map,obMap(a0),GetPlayer1Assets_Normal
 		move.b	#-1,(v_sonframenum).w
+		cmpi.b	#id_SuperSonicStars,(v_superstars).w
+		bne.s	.starsCleared				; Super Tails' first Flicky flies away by itself
 		clr.b	(v_superstars).w
 		clr.b	(v_superstars+obRoutine).w		; restart cleanly if the slot is reused
 		clr.b	(v_superstars+objoff_30).w		; Super stars flag = invincibility stars lag
+	.starsCleared:
 		clr.w	(v_shieldartkey).w			; slot may still hold Super stars tiles
 		; The palette copy uses a1/a2. Crushers keep their object pointer in a2,
 		; and the death sound still needs that killing object below.

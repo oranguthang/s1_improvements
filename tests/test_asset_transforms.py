@@ -75,6 +75,12 @@ def test_super_partner_cycles_keep_shared_colours(
         assert cycle[entry + slot : entry + slot + 2] == normal[fixed * 2 : fixed * 2 + 2]
 
 
+def test_super_flickies_fit_their_vram_slot() -> None:
+    art = (ROOT / "artunc/Super Tails Flickies.unc").read_bytes()
+    assert len(art) == 14 * 32  # ArtTile_SuperTailsFlickies, below the points
+    assert any(art)
+
+
 def run(*command: str) -> str:
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT / "tools")
