@@ -94,4 +94,4 @@ Press A in the air facing a chain of at least three ordinary placed rings. Both 
 
 ## Good ending
 
-With six effective emeralds, Sonic approaches as Super using the original cutscene timing and Ending music. When the emeralds glow, the regular reversion cycle fades him back to blue. Animals, logo and enlarged ending sprites then use their normal palette.
+With six effective emeralds, the selected character approaches as Super using the original cutscene timing and Ending music; Tails and Knuckles keep their normal sprites with the Super fur cycle. When the emeralds glow, the regular reversion cycle fades back to the normal colours. Animals, logo and enlarged ending sprites then use their normal palette.

@@ -40,7 +40,6 @@ ESon_Main:	; Routine 0
 ; ===========================================================================
 
 ESon_GoodEnding:
-		bsr.w ESon_UseCinematicPalette
 		addq.b	#2,ob2ndRout(a0)			; advance to ESon_MakeEmeralds
         jsr (GetEndingCharacterMap).l
 		move.b	#sprite_cam_field,obRender(a0)		; set to playfield-positioned mode
@@ -55,6 +54,20 @@ ESon_MakeEmeralds:
 		subq.w	#1,eson_time(a0)			; decrement timer to stare at hands
 		bne.s	.return					; if time remains, branch
 
+		; Start the normal Super-to-normal palette fade with the emerald glow.
+		; Keep the cinematic mappings, movement and Ending music untouched.
+		tst.b	(v_supersonic).w
+		beq.s	.emeralds
+		clr.b	(v_supersonic).w
+		move.b	#2,(v_superpal_state).w
+		move.b	#3,(v_superpal_timer).w
+		move.w	#$28,(v_superpal_frame).w
+		clr.w	(v_superframe).w
+		character_asset CharacterAsset_Palette,a1,GetPlayer1Assets_Normal
+		move.l	4(a1),(v_palette_fading+4).w
+		move.l	8(a1),(v_palette_fading+8).w
+
+.emeralds:
 		addq.b	#2,ob2ndRout(a0)			; advance to ESon_Animate ($4)
 		move.w	#(0<<8)+1,obAnim(a0)			; set to "hold" animation and restart it immediately
 		move.b	#id_EndChaos,(v_endemeralds).w		; load ending sequence chaos emeralds objects
@@ -130,7 +143,7 @@ ESon_BadEnding:	; Routine $10
 	.return:
 		rts						; return
 
-; All three endings use normal forms and keep shared object colours intact.
+; The bad ending uses normal forms and keeps shared object colours intact.
 ESon_UseCinematicPalette:
 		clr.b (v_supersonic).w
 		clr.b (v_superpal_state).w

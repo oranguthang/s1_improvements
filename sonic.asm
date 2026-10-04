@@ -3639,7 +3639,7 @@ End_LoadSonic:
 		move.b	d0,(v_shield).w				; clear shield
 		move.b	d0,(v_invinc).w				; clear invincibility
 		move.b	d0,(v_shoes).w				; clear speed shoes
-        move.b d0,(v_supersonic).w ; endings currently use normal forms only
+		; v_unused1 aliases v_supersonic; preserve the cinematic form.
 		move.w	d0,(v_debuguse).w			; exit debug mode if necessary
 		move.w	d0,(f_restart).w			; clear level restart flag
 		move.w	d0,(v_framecount).w			; reset frames since level start to 0
@@ -3761,6 +3761,36 @@ End_SlowFade:
 ; which have plenty of resources to teach you! This subroutine is a Moore machine.
 ; Once you understand these concepts, Sonic 1's game logic will make a lot more sense to you!
 ; ---------------------------------------------------------------------------
+
+; Good-ending Super presentation uses the normal cutscene movement constants.
+; Do not call Sonic_ActivateSuper: it changes physics, music and star objects.
+End_InitSuper:
+		jsr	(HasAllEmeralds).l
+		bne.s	.return
+		move.b	#1,(v_supersonic).w
+		character_asset CharacterAsset_Map,obMap(a0),GetPlayer1Assets_Super
+		move.b	#-1,obPrevAni(a0)
+		move.b	#-1,(v_sonframenum).w
+		bsr.s	End_SuperFadePalette
+.return:
+		rts
+
+; The initial fade-in targets the first steady Super frame. ESon_MakeEmeralds
+; restores the normal colours later. Only the four fur colours change.
+End_SuperFadePalette:
+		tst.b	(v_supersonic).w
+		beq.s	.return
+		move.l	a3,-(sp)
+		jsr	(GetPlayer1Assets_Super).l
+		move.b	#-1,(v_superpal_state).w
+		move.b	CharacterAsset_CycleStep(a3),(v_superpal_timer).w
+		move.w	#$38,(v_superpal_frame).w
+		movea.l	CharacterAsset_Cycle(a3),a1
+		move.l	$30(a1),(v_palette_fading+4).w
+		move.l	$34(a1),(v_palette_fading+8).w
+		movea.l	(sp)+,a3
+.return:
+		rts
 
 End_MoveSonic:
 		move.b	(v_sonicend).w,d0			; get ending cutscene routine number
