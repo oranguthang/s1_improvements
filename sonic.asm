@@ -3308,6 +3308,7 @@ GM_Special:		; white fade-out from previous game mode
 		jsr	(SS_Load).l				; load SS layout data (based on last stage entered and collected emeralds)
 		; Line 0 keeps the stage's blue (walls, glass, GOAL, blue emerald); the
 		; other characters' balls use SSBall_Art and SSBall_Palette instead.
+		jsr	(ApplySpecialStageColours).l		; Tails' line 1 turns orange
 
 	if FixBugs
 		; Set custom level boundaries so that the fixed

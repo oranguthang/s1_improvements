@@ -252,9 +252,9 @@ def emit_frames(
 
 # The Special Stage keeps its own blue in palette line 0 (walls, glass, GOAL,
 # the blue emerald), so the rolling frames there use separately coloured
-# tiles. Tails' ball is drawn on line 1, whose yellow-wall ramp matches his
-# fur as closely as the stage allows (a golden orange); the peach muzzle takes
-# the palest shade there.
+# tiles. Tails' ball is drawn on line 1, whose yellow-wall ramp the stage
+# replaces with his orange (SSLine1_Tails); the peach muzzle takes the
+# lightest orange there.
 SS_BALL_FRAMES = range(0x2E, 0x33)
 SS_BALL_COLOURS = {10: 5}
 
