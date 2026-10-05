@@ -392,7 +392,11 @@ Pow_ChkRings:
 Pow_ChkS:
 		cmpi.b	#7,d0					; does monitor contain 'S'?
 		bne.s	Pow_ChkGoggles				; if not, branch
+	if FeatureSuper
+		jmp	(Tails_SpawnFlickies).l			; Super Tails' Flickies; nothing for anyone else
+	else
 		nop						; 'S' does nothing by default
+	endif
 ; ===========================================================================
 
 Pow_ChkGoggles:

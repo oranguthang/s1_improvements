@@ -2963,19 +2963,8 @@ Sonic_ActivateSuper:
 		clr.l	(a1)+
 		dbf	d1,.clearstars
 		cmpi.b	#Character_Tails,(v_character_p1).w
-		beq.s	.flickies
+		beq.s	.starsReady			; prototype S3K: Super Tails has no stars or Flickies (see Tails_SpawnFlickies)
 		move.b	#id_SuperSonicStars,(v_superstars).w
-		bra.s	.starsReady
-	.flickies:
-		lea	(v_starsobj1).w,a1		; S3K: Super Tails gets four Super Flickies instead of stars
-		moveq	#0,d0
-		moveq	#4-1,d1
-	.spawnFlicky:
-		move.b	#id_SuperTailsFlickies,obID(a1)
-		move.b	d0,flicky_angle(a1)
-		addi.b	#$40,d0				; a quarter turn apart
-		lea	object_size(a1),a1
-		dbf	d1,.spawnFlicky
 	.starsReady:
 		clr.b	objoff_3D(a0)
 		move.b	#$80,objoff_3F(a0)
@@ -2987,6 +2976,38 @@ Sonic_ActivateSuper:
 .return:
 		rts
 ; End of function Sonic_ActivateSuper
+
+; ---------------------------------------------------------------------------
+; Release Super Tails' four Super Flickies, as the 'S' monitor does for him
+; in the Sonic 3 & Knuckles prototypes (the final game gives them to the
+; Super Emerald form). They use the stars' object slots v_starsobj1-4.
+; ---------------------------------------------------------------------------
+
+Tails_SpawnFlickies:
+		cmpi.b	#Character_Tails,(v_character_p1).w
+		bne.s	.return
+		tst.b	(v_supersonic).w		; only Super Tails calls them
+		beq.s	.return
+		cmpi.b	#id_SuperTailsFlickies,(v_starsobj1).w	; already out?
+		beq.s	.return
+		lea	(v_starsobj1).w,a1
+		moveq	#(object_size*4)/4-1,d1
+	.clear:
+		clr.l	(a1)+
+		dbf	d1,.clear
+		lea	(v_starsobj1).w,a1
+		moveq	#0,d0
+		moveq	#4-1,d1
+	.spawnFlicky:
+		move.b	#id_SuperTailsFlickies,obID(a1)
+		move.b	d0,flicky_angle(a1)
+		addi.b	#$40,d0				; a quarter turn apart
+		lea	object_size(a1),a1
+		dbf	d1,.spawnFlicky
+		move.w	#sfx_SuperTransform,d0
+		jmp	(QueueSound2).l
+	.return:
+		rts
 
 ; ---------------------------------------------------------------------------
 ; Subroutine doing the extra logic for Super Sonic

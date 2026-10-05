@@ -419,6 +419,7 @@ dbugcommon:	macro
 		dbug	Map_Monitor,	id_Monitor,		5,	7,	ArtTile_Monitor	; invincibility
 		dbug	Map_Monitor,	id_Monitor,		2,	4,	ArtTile_Monitor	; extra life
 		dbug	Map_Monitor,	id_Monitor,		1,	3,	ArtTile_Monitor	; Eggman
+		dbug	Map_Monitor,	id_Monitor,		7,	9,	ArtTile_Monitor	; 'S' (Super Tails' Flickies)
 		dbug	Map_Lamp,	id_Lamppost,		1,	0,	ArtTile_Lamppost
 		endm
 
