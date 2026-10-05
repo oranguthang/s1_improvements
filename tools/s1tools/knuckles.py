@@ -22,7 +22,10 @@ CLIMB = 0x7E
 LEDGE = 0x84
 WATER_TURN_EXTRA = 0x93
 TRANSFORM = WATER_TURN_EXTRA + 4  # S3K Super transformation frames $EB-$ED
-FRAME_COUNT = TRANSFORM + 3
+# All eight S3K walk frames for each of the four floor orientations. The
+# six-frame S1 walk slots above stay for the other scripts that reuse them.
+WALK8 = TRANSFORM + 3
+FRAME_COUNT = WALK8 + 4 * 8
 
 
 def frame_plan() -> list[tuple[int, int, int]]:
@@ -97,6 +100,9 @@ def frame_plan() -> list[tuple[int, int, int]]:
         assign(WATER_TURN_EXTRA + step, 0xC6 + step)
     for step in range(3):
         assign(TRANSFORM + step, 0xEB + step)
+    for group in range(4):
+        for step in range(8):
+            assign(WALK8 + group * 8 + step, 1 + group * 8 + step)
     return plan
 
 

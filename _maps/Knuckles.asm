@@ -154,6 +154,38 @@ KnucklesMap_internal: mappingsTable
 	mappingsTableEntry.w KnucklesMap_97
 	mappingsTableEntry.w KnucklesMap_98
 	mappingsTableEntry.w KnucklesMap_99
+	mappingsTableEntry.w KnucklesMap_9A
+	mappingsTableEntry.w KnucklesMap_9B
+	mappingsTableEntry.w KnucklesMap_9C
+	mappingsTableEntry.w KnucklesMap_9D
+	mappingsTableEntry.w KnucklesMap_9E
+	mappingsTableEntry.w KnucklesMap_9F
+	mappingsTableEntry.w KnucklesMap_A0
+	mappingsTableEntry.w KnucklesMap_A1
+	mappingsTableEntry.w KnucklesMap_A2
+	mappingsTableEntry.w KnucklesMap_A3
+	mappingsTableEntry.w KnucklesMap_A4
+	mappingsTableEntry.w KnucklesMap_A5
+	mappingsTableEntry.w KnucklesMap_A6
+	mappingsTableEntry.w KnucklesMap_A7
+	mappingsTableEntry.w KnucklesMap_A8
+	mappingsTableEntry.w KnucklesMap_A9
+	mappingsTableEntry.w KnucklesMap_AA
+	mappingsTableEntry.w KnucklesMap_AB
+	mappingsTableEntry.w KnucklesMap_AC
+	mappingsTableEntry.w KnucklesMap_AD
+	mappingsTableEntry.w KnucklesMap_AE
+	mappingsTableEntry.w KnucklesMap_AF
+	mappingsTableEntry.w KnucklesMap_B0
+	mappingsTableEntry.w KnucklesMap_B1
+	mappingsTableEntry.w KnucklesMap_B2
+	mappingsTableEntry.w KnucklesMap_B3
+	mappingsTableEntry.w KnucklesMap_B4
+	mappingsTableEntry.w KnucklesMap_B5
+	mappingsTableEntry.w KnucklesMap_B6
+	mappingsTableEntry.w KnucklesMap_B7
+	mappingsTableEntry.w KnucklesMap_B8
+	mappingsTableEntry.w KnucklesMap_B9
 
 KnucklesMap_00: spriteHeader
 KnucklesMap_00_End
@@ -1063,5 +1095,202 @@ KnucklesMap_99: spriteHeader
 	spritePiece -22, -12, 4, 4, 4, 0, 0, 0, 0
 	spritePiece 10, -12, 1, 4, 20, 0, 0, 0, 0
 KnucklesMap_99_End
+
+KnucklesMap_9A: spriteHeader
+	spritePiece -13, -20, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -13, -12, 4, 3, 3, 0, 0, 0, 0
+	spritePiece -21, -4, 1, 3, 15, 0, 0, 0, 0
+	spritePiece 3, 12, 2, 1, 18, 0, 0, 0, 0
+KnucklesMap_9A_End
+
+KnucklesMap_9B: spriteHeader
+	spritePiece -7, -20, 2, 1, 0, 0, 0, 0, 0
+	spritePiece -15, -12, 4, 4, 2, 0, 0, 0, 0
+	spritePiece -23, -4, 1, 3, 18, 0, 0, 0, 0
+KnucklesMap_9B_End
+
+KnucklesMap_9C: spriteHeader
+	spritePiece -12, -20, 3, 2, 0, 0, 0, 0, 0
+	spritePiece -20, -4, 4, 2, 6, 0, 0, 0, 0
+	spritePiece -12, 12, 2, 1, 14, 0, 0, 0, 0
+KnucklesMap_9C_End
+
+KnucklesMap_9D: spriteHeader
+	spritePiece -11, -20, 3, 2, 0, 0, 0, 0, 0
+	spritePiece -19, -4, 4, 3, 6, 0, 0, 0, 0
+KnucklesMap_9D_End
+
+KnucklesMap_9E: spriteHeader
+	spritePiece -13, -20, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -13, -12, 4, 3, 3, 0, 0, 0, 0
+	spritePiece -21, -4, 1, 2, 15, 0, 0, 0, 0
+	spritePiece -21, 12, 4, 1, 17, 0, 0, 0, 0
+KnucklesMap_9E_End
+
+KnucklesMap_9F: spriteHeader
+	spritePiece -6, -22, 2, 1, 0, 0, 0, 0, 0
+	spritePiece -14, -14, 3, 1, 2, 0, 0, 0, 0
+	spritePiece -14, -6, 4, 3, 5, 0, 0, 0, 0
+	spritePiece -22, 2, 1, 2, 17, 0, 0, 0, 0
+KnucklesMap_9F_End
+
+KnucklesMap_A0: spriteHeader
+	spritePiece -9, -20, 2, 1, 0, 0, 0, 0, 0
+	spritePiece -17, -12, 4, 3, 2, 0, 0, 0, 0
+	spritePiece -17, 12, 3, 1, 14, 0, 0, 0, 0
+KnucklesMap_A0_End
+
+KnucklesMap_A1: spriteHeader
+	spritePiece -13, -20, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -13, -12, 3, 1, 3, 0, 0, 0, 0
+	spritePiece -13, -4, 4, 3, 6, 0, 0, 0, 0
+	spritePiece -21, -4, 1, 1, 18, 0, 0, 0, 0
+KnucklesMap_A1_End
+
+KnucklesMap_A2: spriteHeader
+	spritePiece -14, -19, 4, 3, 0, 0, 0, 0, 0
+	spritePiece -14, 5, 3, 1, 12, 0, 0, 0, 0
+	spritePiece -6, 13, 2, 2, 15, 0, 0, 0, 0
+KnucklesMap_A2_End
+
+KnucklesMap_A3: spriteHeader
+	spritePiece -16, -17, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 16, -9, 1, 3, 16, 0, 0, 0, 0
+	spritePiece -8, 15, 2, 1, 19, 0, 0, 0, 0
+KnucklesMap_A3_End
+
+KnucklesMap_A4: spriteHeader
+	spritePiece -12, -17, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -12, -9, 4, 3, 3, 0, 0, 0, 0
+	spritePiece 4, 15, 1, 1, 15, 0, 0, 0, 0
+KnucklesMap_A4_End
+
+KnucklesMap_A5: spriteHeader
+	spritePiece -13, -16, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -13, -8, 4, 2, 3, 0, 0, 0, 0
+	spritePiece -13, 8, 3, 1, 11, 0, 0, 0, 0
+	spritePiece -5, 16, 2, 1, 14, 0, 0, 0, 0
+KnucklesMap_A5_End
+
+KnucklesMap_A6: spriteHeader
+	spritePiece -14, -21, 4, 4, 0, 0, 0, 0, 0
+	spritePiece -14, 11, 2, 1, 16, 0, 0, 0, 0
+	spritePiece -6, 19, 2, 1, 18, 0, 0, 0, 0
+KnucklesMap_A6_End
+
+KnucklesMap_A7: spriteHeader
+	spritePiece -11, -17, 4, 3, 0, 0, 0, 0, 0
+	spritePiece -11, 7, 2, 2, 12, 0, 0, 0, 0
+KnucklesMap_A7_End
+
+KnucklesMap_A8: spriteHeader
+	spritePiece -11, -16, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -11, -8, 4, 3, 3, 0, 0, 0, 0
+	spritePiece 5, 16, 1, 1, 15, 0, 0, 0, 0
+KnucklesMap_A8_End
+
+KnucklesMap_A9: spriteHeader
+	spritePiece -13, -20, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -13, -12, 4, 3, 3, 0, 0, 0, 0
+	spritePiece -5, 12, 2, 1, 15, 0, 0, 0, 0
+KnucklesMap_A9_End
+
+KnucklesMap_AA: spriteHeader
+	spritePiece -12, -18, 4, 1, 0, 0, 0, 0, 0
+	spritePiece -20, -10, 4, 3, 4, 0, 0, 0, 0
+	spritePiece 12, -10, 1, 1, 16, 0, 0, 0, 0
+	spritePiece -4, 14, 3, 1, 17, 0, 0, 0, 0
+KnucklesMap_AA_End
+
+KnucklesMap_AB: spriteHeader
+	spritePiece -12, -16, 4, 1, 0, 0, 0, 0, 0
+	spritePiece -20, -8, 4, 2, 4, 0, 0, 0, 0
+	spritePiece 12, -8, 1, 1, 12, 0, 0, 0, 0
+	spritePiece -12, 8, 4, 2, 13, 0, 0, 0, 0
+KnucklesMap_AB_End
+
+KnucklesMap_AC: spriteHeader
+	spritePiece -20, -11, 4, 3, 0, 0, 0, 0, 0
+	spritePiece 12, -3, 1, 2, 12, 0, 0, 0, 0
+	spritePiece -4, 13, 2, 1, 14, 0, 0, 0, 0
+KnucklesMap_AC_End
+
+KnucklesMap_AD: spriteHeader
+	spritePiece -20, -12, 2, 3, 0, 0, 0, 0, 0
+	spritePiece -4, -12, 3, 4, 6, 0, 0, 0, 0
+KnucklesMap_AD_End
+
+KnucklesMap_AE: spriteHeader
+	spritePiece -12, -19, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -20, -11, 4, 3, 3, 0, 0, 0, 0
+	spritePiece 12, -11, 1, 1, 15, 0, 0, 0, 0
+	spritePiece -4, 13, 3, 1, 16, 0, 0, 0, 0
+KnucklesMap_AE_End
+
+KnucklesMap_AF: spriteHeader
+	spritePiece -5, -17, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -13, -9, 4, 3, 3, 0, 0, 0, 0
+	spritePiece -21, -9, 1, 2, 15, 0, 0, 0, 0
+	spritePiece 3, 15, 2, 1, 17, 0, 0, 0, 0
+KnucklesMap_AF_End
+
+KnucklesMap_B0: spriteHeader
+	spritePiece -12, -14, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -12, -6, 4, 3, 3, 0, 0, 0, 0
+	spritePiece -20, -6, 1, 2, 15, 0, 0, 0, 0
+KnucklesMap_B0_End
+
+KnucklesMap_B1: spriteHeader
+	spritePiece -4, -18, 2, 1, 0, 0, 0, 0, 0
+	spritePiece -20, -10, 4, 3, 2, 0, 0, 0, 0
+	spritePiece 12, -10, 1, 3, 14, 0, 0, 0, 0
+	spritePiece -4, 14, 1, 1, 17, 0, 0, 0, 0
+KnucklesMap_B1_End
+
+KnucklesMap_B2: spriteHeader
+	spritePiece -18, -16, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -18, -8, 4, 3, 3, 0, 0, 0, 0
+	spritePiece 14, -8, 2, 2, 15, 0, 0, 0, 0
+KnucklesMap_B2_End
+
+KnucklesMap_B3: spriteHeader
+	spritePiece -9, -23, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -17, -15, 4, 4, 3, 0, 0, 0, 0
+	spritePiece 15, -7, 1, 2, 19, 0, 0, 0, 0
+KnucklesMap_B3_End
+
+KnucklesMap_B4: spriteHeader
+	spritePiece -8, -21, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -16, -13, 4, 3, 3, 0, 0, 0, 0
+	spritePiece 16, -13, 1, 1, 15, 0, 0, 0, 0
+KnucklesMap_B4_End
+
+KnucklesMap_B5: spriteHeader
+	spritePiece -6, -20, 2, 1, 0, 0, 0, 0, 0
+	spritePiece -14, -12, 4, 3, 2, 0, 0, 0, 0
+	spritePiece 18, -12, 1, 2, 14, 0, 0, 0, 0
+KnucklesMap_B5_End
+
+KnucklesMap_B6: spriteHeader
+	spritePiece -21, -18, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 11, -10, 2, 3, 16, 0, 0, 0, 0
+KnucklesMap_B6_End
+
+KnucklesMap_B7: spriteHeader
+	spritePiece -18, -19, 3, 4, 0, 0, 0, 0, 0
+	spritePiece 6, -3, 2, 2, 12, 0, 0, 0, 0
+KnucklesMap_B7_End
+
+KnucklesMap_B8: spriteHeader
+	spritePiece -7, -21, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -15, -13, 4, 3, 3, 0, 0, 0, 0
+	spritePiece 17, -13, 1, 1, 15, 0, 0, 0, 0
+KnucklesMap_B8_End
+
+KnucklesMap_B9: spriteHeader
+	spritePiece -10, -20, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -18, -12, 4, 3, 3, 0, 0, 0, 0
+	spritePiece 14, -12, 1, 2, 15, 0, 0, 0, 0
+KnucklesMap_B9_End
 
 	even

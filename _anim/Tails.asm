@@ -36,13 +36,17 @@ Ani_Tails:
         dc.w TailsAni_Figure8-Ani_Tails
         dc.w TailsAni_Fall-Ani_Tails
 
+; Eight S3K walk frames per floor orientation (descriptor walk count 8), in
+; S3K's order (7, 8, 1-6).
 TailsAni_Walk:	dc.b $FF
-		dc.b fr_Walk11, fr_Walk12, fr_Walk13, fr_Walk14, fr_Walk15, fr_Walk16
+		dc.b fr_TailsWalk+6, fr_TailsWalk+7, fr_TailsWalk, fr_TailsWalk+1
+		dc.b fr_TailsWalk+2, fr_TailsWalk+3, fr_TailsWalk+4, fr_TailsWalk+5
 		dc.b afEnd
 		even
 
+; Walk and run share the frame index, so the run pads to eight entries.
 TailsAni_Run:	dc.b $FF
-		dc.b fr_Run11,  fr_Run12,  fr_Run13,  fr_Run14,  afEnd,     afEnd
+		dc.b fr_Run11,  fr_Run12,  fr_Run13,  fr_Run14,  afEnd,     afEnd, afEnd, afEnd
 		dc.b afEnd
 		even
 
@@ -69,17 +73,18 @@ TailsAni_Push:	dc.b $FD
 ; 	dc.b afBack, 5		; go back specified number of frames
 ; 	dc.b afChange, id_Surf	; switch to a different animation
 
-TailsAni_Wait: dc.b 7,$80,$81,$82,$83,$84,afEnd
+; The tails object swishes the tails over these still body poses.
+TailsAni_Wait: dc.b 7,fr_Stand,afEnd
         even
 
 TailsAni_Balance:	dc.b 9
-		dc.b $8F,$90,$91,$92,$93,$94,$95,$96
+		dc.b fr_Balance1,fr_Balance1,fr_Balance2,fr_Balance2
 		dc.b afEnd
 		even
 
-TailsAni_LookUp: dc.b 7,$85,$86,$87,$88,$89,afEnd
+TailsAni_LookUp: dc.b 7,fr_LookUp,afEnd
         even
-TailsAni_Duck: dc.b 7,$8A,$8B,$8C,$8D,$8E,afEnd
+TailsAni_Duck: dc.b 7,fr_Duck,afEnd
         even
 
 TailsAni_Warp1:	dc.b 63

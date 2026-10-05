@@ -20,14 +20,18 @@ COLOURS = (0, 6, 5, 4, 2, 9, 12, 13, 5, 4, 10, 11, 7, 8, 9, 1)
 PLAYER_COLOURS = (*COLOURS[:11], 3, *COLOURS[12:])
 # S3K's Super transformation frames $EB-$ED follow the gameplay frames.
 TRANSFORM_FRAME_FIRST = 151
-FRAME_COUNT = TRANSFORM_FRAME_FIRST + 3
+# All eight S3K walk frames for each of the four floor orientations.
+WALK8 = TRANSFORM_FRAME_FIRST + 3
+FRAME_COUNT = WALK8 + 4 * 8
 # S3K reads body frames from $D1 onward from a separate extra sheet.
 EXTRA_BODY_FIRST = 0xD1
-ROLL_FRAME_FIRST = FRAME_COUNT
-ROLL_FRAME_END = ROLL_FRAME_FIRST + 3 * 8 * 4
-# S3K's directional tails: horizontal/diagonal/vertical poses plus both flips.
-# Headings follow velocity clockwise from right, before the player's X flip.
-ROLL_TAILS = ((5, 0), (17, 3), (13, 3), (9, 3), (5, 3), (17, 0), (13, 0), (9, 0))
+# The tails are a separate object, as in S3K (Obj_Tails_Tail), drawn from the
+# second half of the player VRAM slot. Body frames that show them must fit the
+# first half. Tail frames are S3K's own, shifted down like the body frames
+# that show them: 1-4 spin dash, 5-$14 rolling headings (no shift), 4 pixels
+# for the rest.
+TAIL_FRAMES = 0x2D
+BODY_TILES_WITH_TAIL = 16
 
 
 def number(value: str) -> int:
@@ -191,7 +195,16 @@ def frame_plan() -> list[tuple[int, int, int, int]]:
         assign(0x8F + step, 0x9A + (step // 2) % 2, 0x29 + step % 4)
     for step in range(3):
         assign(TRANSFORM_FRAME_FIRST + step, 0xEB + step)
+    for group, (dx, dy) in enumerate(offsets):
+        for step in range(8):
+            assign(WALK8 + group * 8 + step, 1 + group * 8 + step, dx=dx, dy=dy)
     return plan
+
+
+def tail_shift(index: int) -> int:
+    if 1 <= index <= 4:
+        return 5
+    return 0 if 5 <= index <= 0x14 else 4
 
 
 def emit_frames(
@@ -246,39 +259,28 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
     for body_id, tail_id, dx, dy in frame_plan():
         sheet = extra if body_id >= EXTRA_BODY_FIRST else body
         data, pieces = frame(sheet, body_maps, body_cues, body_id, PLAYER_COLOURS)
-        if tail_id:
-            tail_data, tail_pieces = frame(tail, tail_maps, tail_cues, tail_id, PLAYER_COLOURS)
-            pieces += [(*p[:4], p[4] + len(data) // 32, *p[5:]) for p in tail_pieces]
-            data += tail_data
+        if tail_id and len(data) // 32 > BODY_TILES_WITH_TAIL:
+            raise ValueError(f"Body frame {body_id:02X} would overlap the tails art")
         frames.append((data, [(x + dx, y + dy, *rest) for x, y, *rest in pieces]))
-    # Keep the three body phases and the four-tick tail cycle independent.
-    # Bake tail-only mirroring into pieces so the body keeps its own facing.
-    for body_id in range(0x96, 0x99):
-        body_data, body_pieces = frame(body, body_maps, body_cues, body_id, PLAYER_COLOURS)
-        for tail_first, flips in ROLL_TAILS:
-            for phase in range(4):
-                tail_data, tail_pieces = frame(
-                    tail, tail_maps, tail_cues, tail_first + phase, PLAYER_COLOURS
-                )
-                pieces = list(body_pieces)
-                for x, y, w, h, tile, xf, yf, pal, priority in tail_pieces:
-                    if flips & 1:
-                        x, xf = -x - w * 8, xf ^ 1
-                    if flips & 2:
-                        y, yf = -y - h * 8, yf ^ 1
-                    pieces.append((x, y, w, h, tile + len(body_data) // 32, xf, yf, pal, priority))
-                frames.append((body_data + tail_data, pieces))
+    tail_frames = []
+    for index in range(TAIL_FRAMES):
+        data, pieces = frame(tail, tail_maps, tail_cues, index, PLAYER_COLOURS)
+        if len(data) // 32 > 32 - BODY_TILES_WITH_TAIL:
+            raise ValueError(f"Tail frame {index:02X} exceeds the tails art slot")
+        shift = tail_shift(index)
+        tail_frames.append((data, [(x, y + shift, *rest) for x, y, *rest in pieces]))
     art, mappings, cues = emit_frames("Tails", frames)
     mappings = (
-        f"fr_TailsTransform equ ${TRANSFORM_FRAME_FIRST:X}\n"
-        f"; Runtime-selected roll composites, separate from animation commands.\n"
-        f"fr_TailsRollFirst equ ${ROLL_FRAME_FIRST:X}\n"
-        f"fr_TailsRollEnd equ ${ROLL_FRAME_END:X}\n\n"
+        f"fr_TailsTransform equ ${TRANSFORM_FRAME_FIRST:X}\nfr_TailsWalk equ ${WALK8:X}\n\n"
     ).encode("ascii") + mappings
+    tail_art, tail_mappings, tail_cues = emit_frames("TailsTail", tail_frames)
     outputs = {
         root / "artunc/Tails.unc": art,
         root / "_maps/Tails.asm": mappings,
         root / "_maps/Tails - Dynamic Gfx Script.asm": cues,
+        root / "artunc/Tails Tail.unc": tail_art,
+        root / "_maps/Tails Tail.asm": tail_mappings,
+        root / "_maps/Tails Tail - Dynamic Gfx Script.asm": tail_cues,
     }
     icon = nemesis_decode((source / "General/Sprites/HUD Icon/Tails Life Icon.bin").read_bytes())
     outputs[root / "artkosm/HUD - Tails Life Counter Icon.kosm"] = encode_moduled(

@@ -5521,6 +5521,9 @@ Art_RingFrames_End:
 ; Debug symbols are appended directly after this blob, before fixing the header.
 Map_Tails: include "_maps/Tails.asm"
 TailsDynPLC: include "_maps/Tails - Dynamic Gfx Script.asm"
+Map_TailsTail:	include "_maps/Tails Tail.asm"
+TailsTailDynPLC: include "_maps/Tails Tail - Dynamic Gfx Script.asm"
+		include	"_incObj/8F Tails Tail.asm"
 		include "_anim/Tails.asm"
 		include "_incObj/Tails Flight.asm"
 		include "_incObj/Knuckles Glide.asm"
@@ -5533,6 +5536,11 @@ KnucklesDynPLC: include "_maps/Knuckles - Dynamic Gfx Script.asm"
 		align $20000                   ; all Tails DPLC sources must stay within one DMA bank
 Art_Tails: binclude "artunc/Tails.unc"
 Art_Tails_size: equ *-Art_Tails
+Art_TailsTail: binclude "artunc/Tails Tail.unc"	; same DMA bank as the body
+Art_TailsTail_End:
+	if (MOMPASS>1)&&((Art_Tails>>17)<>((Art_TailsTail_End-1)>>17))
+		error "Tails' tails art must share the body's 128 KiB DMA bank"
+	endif
 	if (Art_Tails_size>$20000)&(MOMPASS=1)
 		error "Tails art exceeds a 128 KiB DMA bank. Split or repack the resource."
 	endif

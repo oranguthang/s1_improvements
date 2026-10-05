@@ -153,6 +153,38 @@ KnucklesDPLC_internal: mappingsTable
 	mappingsTableEntry.w KnucklesPLC_97
 	mappingsTableEntry.w KnucklesPLC_98
 	mappingsTableEntry.w KnucklesPLC_99
+	mappingsTableEntry.w KnucklesPLC_9A
+	mappingsTableEntry.w KnucklesPLC_9B
+	mappingsTableEntry.w KnucklesPLC_9C
+	mappingsTableEntry.w KnucklesPLC_9D
+	mappingsTableEntry.w KnucklesPLC_9E
+	mappingsTableEntry.w KnucklesPLC_9F
+	mappingsTableEntry.w KnucklesPLC_A0
+	mappingsTableEntry.w KnucklesPLC_A1
+	mappingsTableEntry.w KnucklesPLC_A2
+	mappingsTableEntry.w KnucklesPLC_A3
+	mappingsTableEntry.w KnucklesPLC_A4
+	mappingsTableEntry.w KnucklesPLC_A5
+	mappingsTableEntry.w KnucklesPLC_A6
+	mappingsTableEntry.w KnucklesPLC_A7
+	mappingsTableEntry.w KnucklesPLC_A8
+	mappingsTableEntry.w KnucklesPLC_A9
+	mappingsTableEntry.w KnucklesPLC_AA
+	mappingsTableEntry.w KnucklesPLC_AB
+	mappingsTableEntry.w KnucklesPLC_AC
+	mappingsTableEntry.w KnucklesPLC_AD
+	mappingsTableEntry.w KnucklesPLC_AE
+	mappingsTableEntry.w KnucklesPLC_AF
+	mappingsTableEntry.w KnucklesPLC_B0
+	mappingsTableEntry.w KnucklesPLC_B1
+	mappingsTableEntry.w KnucklesPLC_B2
+	mappingsTableEntry.w KnucklesPLC_B3
+	mappingsTableEntry.w KnucklesPLC_B4
+	mappingsTableEntry.w KnucklesPLC_B5
+	mappingsTableEntry.w KnucklesPLC_B6
+	mappingsTableEntry.w KnucklesPLC_B7
+	mappingsTableEntry.w KnucklesPLC_B8
+	mappingsTableEntry.w KnucklesPLC_B9
 
 KnucklesPLC_00: dplcHeader
 KnucklesPLC_00_End
@@ -868,5 +900,155 @@ KnucklesPLC_99: dplcHeader
 	dplcEntry 16, $7B7
 	dplcEntry 8, $7C7
 KnucklesPLC_99_End
+
+KnucklesPLC_9A: dplcHeader
+	dplcEntry 16, $56
+	dplcEntry 4, $66
+KnucklesPLC_9A_End
+
+KnucklesPLC_9B: dplcHeader
+	dplcEntry 16, $6A
+	dplcEntry 5, $7A
+KnucklesPLC_9B_End
+
+KnucklesPLC_9C: dplcHeader
+	dplcEntry 16, $7CF
+KnucklesPLC_9C_End
+
+KnucklesPLC_9D: dplcHeader
+	dplcEntry 16, $7F
+	dplcEntry 2, $8F
+KnucklesPLC_9D_End
+
+KnucklesPLC_9E: dplcHeader
+	dplcEntry 16, $91
+	dplcEntry 5, $A1
+KnucklesPLC_9E_End
+
+KnucklesPLC_9F: dplcHeader
+	dplcEntry 16, $A6
+	dplcEntry 3, $B6
+KnucklesPLC_9F_End
+
+KnucklesPLC_A0: dplcHeader
+	dplcEntry 16, $7DF
+	dplcEntry 1, $7EF
+KnucklesPLC_A0_End
+
+KnucklesPLC_A1: dplcHeader
+	dplcEntry 16, $B9
+	dplcEntry 3, $C9
+KnucklesPLC_A1_End
+
+KnucklesPLC_A2: dplcHeader
+	dplcEntry 16, $CC
+	dplcEntry 3, $DC
+KnucklesPLC_A2_End
+
+KnucklesPLC_A3: dplcHeader
+	dplcEntry 16, $DF
+	dplcEntry 5, $EF
+KnucklesPLC_A3_End
+
+KnucklesPLC_A4: dplcHeader
+	dplcEntry 16, $7F0
+KnucklesPLC_A4_End
+
+KnucklesPLC_A5: dplcHeader
+	dplcEntry 16, $F4
+KnucklesPLC_A5_End
+
+KnucklesPLC_A6: dplcHeader
+	dplcEntry 16, $104
+	dplcEntry 4, $114
+KnucklesPLC_A6_End
+
+KnucklesPLC_A7: dplcHeader
+	dplcEntry 16, $118
+KnucklesPLC_A7_End
+
+KnucklesPLC_A8: dplcHeader
+	dplcEntry 16, $800
+KnucklesPLC_A8_End
+
+KnucklesPLC_A9: dplcHeader
+	dplcEntry 16, $128
+	dplcEntry 1, $138
+KnucklesPLC_A9_End
+
+KnucklesPLC_AA: dplcHeader
+	dplcEntry 16, $139
+	dplcEntry 4, $149
+KnucklesPLC_AA_End
+
+KnucklesPLC_AB: dplcHeader
+	dplcEntry 16, $14D
+	dplcEntry 5, $15D
+KnucklesPLC_AB_End
+
+KnucklesPLC_AC: dplcHeader
+	dplcEntry 16, $810
+KnucklesPLC_AC_End
+
+KnucklesPLC_AD: dplcHeader
+	dplcEntry 16, $162
+	dplcEntry 2, $172
+KnucklesPLC_AD_End
+
+KnucklesPLC_AE: dplcHeader
+	dplcEntry 16, $174
+	dplcEntry 3, $184
+KnucklesPLC_AE_End
+
+KnucklesPLC_AF: dplcHeader
+	dplcEntry 16, $187
+	dplcEntry 3, $197
+KnucklesPLC_AF_End
+
+KnucklesPLC_B0: dplcHeader
+	dplcEntry 16, $820
+	dplcEntry 1, $830
+KnucklesPLC_B0_End
+
+KnucklesPLC_B1: dplcHeader
+	dplcEntry 16, $19A
+	dplcEntry 2, $1AA
+KnucklesPLC_B1_End
+
+KnucklesPLC_B2: dplcHeader
+	dplcEntry 16, $1AC
+	dplcEntry 3, $1BC
+KnucklesPLC_B2_End
+
+KnucklesPLC_B3: dplcHeader
+	dplcEntry 16, $1BF
+	dplcEntry 5, $1CF
+KnucklesPLC_B3_End
+
+KnucklesPLC_B4: dplcHeader
+	dplcEntry 16, $831
+KnucklesPLC_B4_End
+
+KnucklesPLC_B5: dplcHeader
+	dplcEntry 16, $1D4
+KnucklesPLC_B5_End
+
+KnucklesPLC_B6: dplcHeader
+	dplcEntry 16, $1E4
+	dplcEntry 6, $1F4
+KnucklesPLC_B6_End
+
+KnucklesPLC_B7: dplcHeader
+	dplcEntry 16, $1FA
+KnucklesPLC_B7_End
+
+KnucklesPLC_B8: dplcHeader
+	dplcEntry 16, $841
+KnucklesPLC_B8_End
+
+KnucklesPLC_B9: dplcHeader
+	dplcEntry 16, $20A
+	dplcEntry 1, $21A
+KnucklesPLC_B9_End
 
 	even

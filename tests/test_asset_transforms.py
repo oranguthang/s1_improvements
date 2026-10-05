@@ -32,6 +32,47 @@ def test_knuckles_gameplay_pose_sources() -> None:
     assert [plan[i][0] for i in range(0x58, 0x5E)] == list(range(0x86, 0x8C))
 
 
+def test_knuckles_frame_constants_match_the_importer() -> None:
+    import re
+
+    from s1tools import knuckles
+
+    source = (ROOT / "_incObj/Knuckles Glide.asm").read_text(encoding="utf-8")
+    values = {
+        name: int(value, 16)
+        for name, value in re.findall(r"^(knux_\w+): equ \$(\w+)", source, re.M)
+    }
+    assert values["knux_transform_frame"] == knuckles.TRANSFORM
+    assert values["knux_walk_frame"] == knuckles.WALK8
+    plan = knuckles.frame_plan()
+    # Eight S3K walk frames per orientation, in S1 orientation order.
+    assert [plan[knuckles.WALK8 + i][0] for i in range(32)] == list(range(1, 33))
+    assert knuckles.FRAME_COUNT <= 0x100
+
+
+def test_tails_tail_object_matches_the_importer() -> None:
+    import re
+
+    from s1tools import tails
+
+    header = (ROOT / "_maps/Tails.asm").read_text(encoding="utf-8")
+    assert re.search(r"^fr_TailsWalk equ \$(\w+)", header, re.M)[1] == f"{tails.WALK8:X}"
+    assert tails.FRAME_COUNT <= 0x100
+    constants = (ROOT / "_Constants.asm").read_text(encoding="utf-8")
+    slot = int(re.search(r"^Tails_Tail_Tiles:\s+equ (\d+)", constants, re.M)[1])
+    assert slot == 32 - tails.BODY_TILES_WITH_TAIL
+    source = (ROOT / "_incObj/8F Tails Tail.asm").read_text(encoding="utf-8")
+    scripts = re.findall(r"^\.\w+:\s+dc\.b (.+)$", source, re.M)
+    frames = [
+        int(value.replace("$", ""), 16 if "$" in value else 10)
+        for line in scripts
+        for value in (part.strip() for part in line.split(",")[1:])
+        if not value.startswith(("af", "tailani"))
+    ]
+    # Every scripted tail frame exists in the imported tail mappings.
+    assert max(frames) < tails.TAIL_FRAMES
+
+
 @pytest.mark.parametrize("suffix", ["", " - LZ Underwater", " - SBZ3 Underwater"])
 def test_solo_character_palettes_protect_object_colours(suffix: str) -> None:
     from s1tools.common import get_source

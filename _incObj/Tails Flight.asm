@@ -106,64 +106,8 @@ Tails_FlightControl:
         moveq #0,d0
         rts
 
-; S3K's directional rolling tail follows velocity, with a four-tick swish.
-; Composite mappings keep it in the same player DMA slot as the body.
-Tails_RollPose:
-        cmpi.b #Character_Tails,(v_character_p1).w
-        bne.w .return
-        tst.b (v_lightdash).w
-        bne.w .return
-        cmpi.b #id_Roll,obAnim(a0)
-        beq.s .rolling
-        cmpi.b #id_Roll2,obAnim(a0)
-        bne.w .return
-.rolling:
-        moveq #0,d4
-        move.b obFrame(a0),d4
-        cmpi.w #fr_TailsRollFirst,d4
-        blo.s .bodyFrame
-        cmpi.w #fr_TailsRollEnd,d4
-        bhs.w .return
-        subi.w #fr_TailsRollFirst,d4
-        lsr.w #5,d4                    ; recover body phase on animation delay frames
-        bra.s .direction
-.bodyFrame:
-        subi.w #fr_Roll1,d4
-        cmpi.w #fr_Roll5-fr_Roll1,d4
-        bhi.w .return
-        move.b .bodyPhases(pc,d4.w),d4
-.direction:
-        move.w obVelX(a0),d1
-        move.w obVelY(a0),d2
-        jsr (CalcAngle).l
-        btst #0,obStatus(a0)
-        beq.s .heading
-        neg.b d0                      ; mirror velocity into the body's local coordinates
-        addi.b #$80,d0
-.heading:
-        addi.b #$10,d0                 ; round to the nearest of eight headings
-        lsr.b #5,d0
-        andi.w #7,d0
-        lsl.w #2,d0
-        lsl.w #5,d4
-        add.w d4,d0
-        move.w (v_framecount).w,d1
-        lsr.w #2,d1
-        andi.w #3,d1
-        add.w d1,d0
-        addi.w #fr_TailsRollFirst,d0
-        move.b d0,obFrame(a0)
-        andi.b #~(sprite_xflip|sprite_yflip),obRender(a0)
-        move.b obStatus(a0),d0
-        andi.b #sprite_xflip,d0
-        or.b d0,obRender(a0)
-.return:
-        rts
-.bodyPhases:
-        dc.b 0,1,2,0,1
-        even
-
-; The tail rotor is packed with the body in the same bounded player DMA slot.
+; Flight and swimming poses. The tails object animates the rotor while flying;
+; the swimming poses draw their tails in the body art.
 Tails_FlightPose:
         cmpi.b #Character_Tails,(v_character_p1).w
         bne.w .return
@@ -182,12 +126,10 @@ Tails_FlightPose:
         move.w (v_framecount).w,d0
         btst #6,obStatus(a0)
         bne.s .swim
-        lsr.w #1,d0
-        andi.w #1,d0
-        addi.b #$75,d0
+        moveq #$75,d0                  ; flying
         tst.w obVelY(a0)
         bpl.s .fatigue
-        addq.b #2,d0
+        moveq #$77,d0                  ; ascending
 .fatigue:
         tst.w (v_tails_flytime).w
         bne.s .frame

@@ -36,13 +36,17 @@ Ani_Knuckles:
         dc.w KnucklesAni_Figure8-Ani_Knuckles
         dc.w KnucklesAni_Fall-Ani_Knuckles
 
+; The descriptor selects eight walking frames: Sonic_Animate adds 8 per
+; floor orientation. The order follows S3K's walk script (7, 8, 1-6).
 KnucklesAni_Walk:	dc.b $FF
-		dc.b fr_Walk11, fr_Walk12, fr_Walk13, fr_Walk14, fr_Walk15, fr_Walk16
+		dc.b knux_walk_frame+6, knux_walk_frame+7, knux_walk_frame, knux_walk_frame+1
+		dc.b knux_walk_frame+2, knux_walk_frame+3, knux_walk_frame+4, knux_walk_frame+5
 		dc.b afEnd
 		even
 
+; Walk and run share the frame index, so the run pads to eight entries.
 KnucklesAni_Run:	dc.b $FF
-		dc.b fr_Run11,  fr_Run12,  fr_Run13,  fr_Run14,  afEnd,     afEnd
+		dc.b fr_Run11,  fr_Run12,  fr_Run13,  fr_Run14,  afEnd,     afEnd, afEnd, afEnd
 		dc.b afEnd
 		even
 

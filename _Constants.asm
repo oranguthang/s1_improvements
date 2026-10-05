@@ -659,6 +659,8 @@ ArtTile_HUDRings:		equ ArtTile_HUD+$30
 
 ArtTile_Sonic:			equ $780
 Sonic_Slot_Tiles:		equ 32			; Super frames use up to 31 tiles; ends before spin dust
+Tails_Tail_Tiles:		equ 16			; Tails' tails use the second half of the player slot
+ArtTile_Tails_Tail:		equ ArtTile_Sonic+Sonic_Slot_Tiles-Tails_Tail_Tiles
 ArtTile_Points:			equ ArtTile_Shield+Shield_Slot_Tiles ; $553-$55B, after shield/stars
 Points_Tiles:			equ 9
 ArtTile_Debug_Stats:		equ ArtTile_Points+Points_Tiles ; SPR label and decimal sprite count
@@ -885,6 +887,7 @@ CharacterAsset_HUD: equ 73
 CharacterAsset_CycleStep: equ 74	; Super cycle frames per steady step, minus one
 CharacterAsset_CycleHold: equ 75	; frames on the last steady step, minus one
 CharacterAsset_CycleLast: equ 76	; byte offset of the last steady cycle frame
+CharacterAsset_WalkFrames: equ 77	; walking frames per floor orientation: 6 (Sonic 1) or 8
 CharacterAsset_Size: equ 78
 
 ; Read one pointer using a descriptor getter; target must not be a3.

@@ -60,6 +60,11 @@ Sonic_Main:	; Routine 0
 		bne.s	.notEnding
 		jsr	(End_InitSuper).l			; cinematic form, with normal scripted physics/music
 .notEnding:
+		cmpi.b	#Character_Tails,(v_character_p1).w
+		bne.s	.noTails
+		move.b	#id_TailsTail,(v_tailsobj).w		; Tails' tails are a separate object, as in S3K
+		clr.b	(v_tailsobj+obRoutine).w
+.noTails:
 ; ---------------------------------------------------------------------------
 
 ; Obj01_Control:
@@ -140,7 +145,6 @@ Sonic_Control:	; Routine 2
 		bsr.w Sonic_UpdateAirPose
 		bsr.w	Sonic_UpdateTransformPose
 		bsr.w	Sonic_Animate				; run Sonic's animation scripts
-		jsr (Tails_RollPose).l
 		jsr (Tails_FlightPose).l
 		jsr (Knuckles_GlidePose).l
 		jsr (Sonic_LightDashPose).l		; face the dash vector without changing collision angle
@@ -2495,9 +2499,15 @@ Sonic_Animate:
 		bhs.s	.running				; if yes, branch
 
 		movea.l CharacterAsset_Walk(a2),a1			; use walking animation instead
+		cmpi.b	#8,CharacterAsset_WalkFrames(a2)	; does this character have eight walking frames?
+		beq.s	.walk8					; if yes, branch (as in Sonic 2 and Sonic 3 & Knuckles)
 		move.b	d0,d1					; make octant modifier a multiple of 3
 		lsr.b	#1,d1					; (0, 3, 6, 9)
-		add.b	d1,d0					; this accounts for 6 total walking frames (Sonic 2 would change this to support 8)
+		add.b	d1,d0					; this accounts for 6 total walking frames
+		bra.s	.running
+
+	.walk8:
+		add.b	d0,d0					; make octant modifier a multiple of 4 (0, 4, 8, 12)
 
 ; loc_13AB4:
 .running:
