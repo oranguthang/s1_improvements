@@ -2992,7 +2992,8 @@ Sonic_Super:
 	if FeatureVictoryPoses
 ; ---------------------------------------------------------------------------
 ; Stop the landed player for the victory pose (signpost and capsule). The
-; controls stay locked; Sonic_Move selects id_Victory while he stands still.
+; controls stay locked; the results card sets victorypose when it appears
+; (Got_Main), and Sonic_Move then selects id_Victory while he stands still.
 ; ---------------------------------------------------------------------------
 
 Sonic_StartVictory:
@@ -3003,7 +3004,6 @@ Sonic_StartVictory:
 		jsr	(Sonic_CancelCharge).l			; a held Spin Dash or Peel-Out must not launch
 		clr.w	obVelX(a0)
 		clr.w	obInertia(a0)
-		move.b	#1,victorypose(a0)
 		movea.l	(sp)+,a0
 		rts
 	endif

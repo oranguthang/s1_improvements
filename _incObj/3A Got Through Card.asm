@@ -32,6 +32,12 @@ Got_ChkPLC:	; Routine 0
 ; ===========================================================================
 
 Got_Main:
+	if FeatureVictoryPoses
+		tst.b	(v_player+obID).w			; is the player still here (no giant ring)?
+		beq.s	.noPose
+		move.b	#1,(v_player+victorypose).w		; pose as the results come in
+	.noPose:
+	endif
 		movea.l	a0,a1					; set this root object to become the level name card
 		lea	(Map_Got).l,a3
 		cmpi.b	#Character_Tails,(v_character_p1).w
