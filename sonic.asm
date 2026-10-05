@@ -5571,11 +5571,6 @@ Art_RingFrames_End:
 
 ; ---------------------------------------------------------------------------
 
-; end of 'ROM'
-	if MDDebugger
-	include "_debug/md-debugger/ErrorHandler.asm"
-	endif
-; Debug symbols are appended directly after this blob, before fixing the header.
 Map_Tails: include "_maps/Tails.asm"
 TailsDynPLC: include "_maps/Tails - Dynamic Gfx Script.asm"
 Map_TailsTail:	include "_maps/Tails Tail.asm"
@@ -5636,6 +5631,21 @@ Art_KnucklesSS_End:
 		include	"_inc/Credits Text.asm"		; credits pages written as text
 	endif
 
+; ---------------------------------------------------------------------------
+; The MD Debugger reads its symbol table from the address directly after its
+; blob, and build.lua appends that table to the end of the file. Nothing may
+; follow the blob: add new ROM data above this point.
+; ---------------------------------------------------------------------------
+		even
+	if MDDebugger
+	include "_debug/md-debugger/ErrorHandler.asm"
+	endif
+ErrorHandler_End:
+
+; end of 'ROM'
 EndOfRom:
+	if ErrorHandler_End<>EndOfRom
+		error "Data was placed after the MD Debugger blob; its symbol table would be unreachable."
+	endif
 
 		END

@@ -60,18 +60,26 @@ common.build_rom_and_handle_failure("sonic", output, "-D MDDebugger=1", p2bin_op
 -- Binary resources are read by words (KosM and Enigma headers) or used as DMA
 -- sources, so each must start at an even address. An odd one is an address
 -- error on real hardware and silent garbage on lenient emulators.
+local error_handler_end
 for line in io.lines("sonic.lst") do
     local address, label = line:match("^%s*%d+/%s*(%x+) :%s+([%w_]+):%s+binclude")
     if address and tonumber(address, 16) % 2 == 1 then
         print(label .. " starts at an odd address ($" .. address .. "); put 'even' before it.")
         os.exit(1)
     end
+    error_handler_end = error_handler_end or line:match("^%s*%d+/%s*(%x+) :%s+ErrorHandler_End:")
 end
 
 if include_symbols then
     local before = assert(io.open(output .. ".bin", "rb"))
     local size_before = before:seek("end")
     before:close()
+    -- The debugger finds its symbol table directly after its blob, and ConvSym
+    -- appends the table to the end of the file, so the blob must end the file.
+    if not error_handler_end or tonumber(error_handler_end, 16) ~= size_before then
+        print(string.format("The MD Debugger blob ends at $%s, but the ROM is $%X bytes; symbols would be unreachable.", error_handler_end or "?", size_before))
+        os.exit(1)
+    end
     local shell_prefix = package.config:sub(1, 1) == "\\" and "call " or ""
     local ok = os.execute(shell_prefix .. '"' .. convsym .. '" sonic.lst ' .. output .. '.bin -input as_lst -range 0 FFFFFF -exclude -filter "(z.+)|(id_.+)|(plcid_.+)|(palid_.+)" -a')
     if not ok then os.exit(1) end
