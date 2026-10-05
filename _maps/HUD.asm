@@ -14,6 +14,10 @@ Map_HUD_internal:	mappingsTable
 
 	spritePiece	0, -$70, 4, 2, $10, 0, 0, 1, 1		; "TIME"
 	spritePiece	$28, -$70, 4, 2, $28, 0, 0, 1, 1	; time counter
+	if FeatureCentiseconds
+	spritePiece	$48, -$70, 1, 2, (ArtTile_HUDCentiSep-ArtTile_HUD), 0, 0, 1, 1	; second colon
+	spritePiece	$50, -$70, 2, 2, (ArtTile_HUDCentis-ArtTile_HUD), 0, 0, 1, 1	; hundredths
+	endif
 
 	spritePiece	0, -$60, 4, 2, 8, 0, 0, 1, 1		; "RING"
 	spritePiece	$20, -$60, 1, 2, 0, 0, 0, 1, 1		; "S"
@@ -33,6 +37,10 @@ Map_HUD_internal:	mappingsTable
 
 	spritePiece	0, -$70, 4, 2, $10, 0, 0, 1, 1		; "TIME"
 	spritePiece	$28, -$70, 4, 2, $28, 0, 0, 1, 1	; time counter
+	if FeatureCentiseconds
+	spritePiece	$48, -$70, 1, 2, (ArtTile_HUDCentiSep-ArtTile_HUD), 0, 0, 1, 1	; second colon
+	spritePiece	$50, -$70, 2, 2, (ArtTile_HUDCentis-ArtTile_HUD), 0, 0, 1, 1	; hundredths
+	endif
 
 	spritePiece	0, -$60, 4, 2, 8, 0, 0, 0, 1		; (red) "RING"
 	spritePiece	$20, -$60, 1, 2, 0, 0, 0, 0, 1		; (red) "S"
@@ -52,6 +60,10 @@ Map_HUD_internal:	mappingsTable
 
 	spritePiece	0, -$70, 4, 2, $10, 0, 0, 0, 1		; (red) "TIME"
 	spritePiece	$28, -$70, 4, 2, $28, 0, 0, 1, 1	; time counter
+	if FeatureCentiseconds
+	spritePiece	$48, -$70, 1, 2, (ArtTile_HUDCentiSep-ArtTile_HUD), 0, 0, 1, 1	; second colon
+	spritePiece	$50, -$70, 2, 2, (ArtTile_HUDCentis-ArtTile_HUD), 0, 0, 1, 1	; hundredths
+	endif
 
 	spritePiece	0, -$60, 4, 2, 8, 0, 0, 1, 1		; "RING"
 	spritePiece	$20, -$60, 1, 2, 0, 0, 0, 1, 1		; "S"
@@ -71,6 +83,10 @@ Map_HUD_internal:	mappingsTable
 
 	spritePiece	0, -$70, 4, 2, $10, 0, 0, 0, 1		; (red) "TIME"
 	spritePiece	$28, -$70, 4, 2, $28, 0, 0, 1, 1	; time counter
+	if FeatureCentiseconds
+	spritePiece	$48, -$70, 1, 2, (ArtTile_HUDCentiSep-ArtTile_HUD), 0, 0, 1, 1	; second colon
+	spritePiece	$50, -$70, 2, 2, (ArtTile_HUDCentis-ArtTile_HUD), 0, 0, 1, 1	; hundredths
+	endif
 
 	spritePiece	0, -$60, 4, 2, 8, 0, 0, 0, 1		; (red) "RING"
 	spritePiece	$20, -$60, 1, 2, 0, 0, 0, 0, 1		; (red) "S"

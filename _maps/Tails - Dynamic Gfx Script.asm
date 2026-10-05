@@ -185,6 +185,7 @@ TailsDPLC_internal: mappingsTable
 	mappingsTableEntry.w TailsPLC_B7
 	mappingsTableEntry.w TailsPLC_B8
 	mappingsTableEntry.w TailsPLC_B9
+	mappingsTableEntry.w TailsPLC_BA
 
 TailsPLC_00: dplcHeader
 TailsPLC_00_End
@@ -1020,5 +1021,9 @@ TailsPLC_B8_End
 TailsPLC_B9: dplcHeader
 	dplcEntry 15, $1F1
 TailsPLC_B9_End
+
+TailsPLC_BA: dplcHeader
+	dplcEntry 12, $63A
+TailsPLC_BA_End
 
 	even

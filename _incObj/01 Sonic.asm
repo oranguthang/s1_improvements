@@ -451,6 +451,13 @@ Sonic_Move:
 		bne.w	Sonic_ResetScr				; if not, branch
 		bclr	#5,obStatus(a0)				; clear pushing flag
 		move.b	#id_Wait,obAnim(a0)			; use "standing" animation
+	if FeatureVictoryPoses
+		tst.b	victorypose(a0)				; has the act ended?
+		beq.s	.notVictory				; if not, branch
+		move.b	#id_Victory,obAnim(a0)			; pose instead of balancing or looking around
+		bra.w	Sonic_ResetScr
+	.notVictory:
+	endif
 		btst	#3,obStatus(a0)				; is Sonic standing on a platform object?
 		beq.s	.chkbalance				; if not, branch
 
@@ -2962,6 +2969,25 @@ Sonic_Super:
 		bra.w	Sonic_Super_Return
 	else
 		bra.w	Sonic_Super_Return	; test mode: keep the ring count
+	endif
+
+	if FeatureVictoryPoses
+; ---------------------------------------------------------------------------
+; Stop the landed player for the victory pose (signpost and capsule). The
+; controls stay locked; Sonic_Move selects id_Victory while he stands still.
+; ---------------------------------------------------------------------------
+
+Sonic_StartVictory:
+		move.l	a0,-(sp)
+		lea	(v_player).w,a0
+		move.b	#1,(f_lockctrl).w			; lock controls
+		clr.w	(v_jpadhold2).w				; with no input held
+		jsr	(Sonic_CancelCharge).l			; a held Spin Dash or Peel-Out must not launch
+		clr.w	obVelX(a0)
+		clr.w	obInertia(a0)
+		move.b	#1,victorypose(a0)
+		movea.l	(sp)+,a0
+		rts
 	endif
 
 ; ---------------------------------------------------------------------------

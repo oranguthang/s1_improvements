@@ -98,6 +98,14 @@ FeatureTails = 1
 ;	| Tails can be selected in OPTIONS
 FeatureKnuckles = 1
 ;	| Knuckles can be selected in OPTIONS
+FeatureCentiseconds = 1
+;	| The HUD clock also shows hundredths of a second, as in Sonic CD
+FeatureS2Stars = 1
+;	| Sonic 2 invincibility stars; 0 keeps Sonic 1's four trailing stars
+FeatureVictoryPoses = 1
+;	| After the signpost or the capsule the player stays and poses, as in Sonic 3 & Knuckles
+FeatureMegaPCM = 1
+;	| Vladikcomper's Mega PCM 2 plays the DAC samples; 0 keeps Sonic 1's Z80 DAC driver
 
 ; Optional alternatives, off by default.
 FeatureInfiniteLives = 0
@@ -107,7 +115,7 @@ FeatureTextCredits = 0
 FeatureCDDrowning = 0
 ;	| If 1, low air beeps every second as in Sonic CD instead of playing the countdown music
 
-	if (FeatureSpinDash|FeaturePeelOut|FeatureAirRoll|FeatureHomingAttack|FeatureLightDash|FeatureSpringPoses|FeatureExtendedCamera|FeatureMomentum|FeatureRollJumpSteering|FeatureInstantTally|FeatureExtraLives|FeatureLamppostRings|FeatureSuper|FeatureTails|FeatureKnuckles|FeatureCDDrowning|FeatureInfiniteLives|FeatureTextCredits)&~1
+	if (FeatureSpinDash|FeaturePeelOut|FeatureAirRoll|FeatureHomingAttack|FeatureLightDash|FeatureSpringPoses|FeatureExtendedCamera|FeatureMomentum|FeatureRollJumpSteering|FeatureInstantTally|FeatureExtraLives|FeatureLamppostRings|FeatureSuper|FeatureTails|FeatureKnuckles|FeatureCentiseconds|FeatureS2Stars|FeatureVictoryPoses|FeatureMegaPCM|FeatureCDDrowning|FeatureInfiniteLives|FeatureTextCredits)&~1
 		error "Feature options must be 0 or 1"
 	endif
 
@@ -123,6 +131,9 @@ ZoneCount = 6
 ; ===========================================================================
 ; Simplifying macros and functions
 	include	"Macros.asm"
+	if FeatureMegaPCM
+	include	"MegaPCM/MegaPCM.Macros.asm"
+	endif
 
 ; ===========================================================================
 ; Equates section - Names for constants
@@ -1409,6 +1420,16 @@ ClearScreen:
 
 ; SoundDriverLoad: <-- old misnomer
 DACDriverLoad:
+	if FeatureMegaPCM
+		jsr	(MegaPCM_LoadDriver).l			; upload Mega PCM to the Z80
+		lea	(SampleTable).l,a0
+		jsr	(MegaPCM_LoadSampleTable).l
+		tst.w	d0					; was the sample table accepted?
+		beq.s	.sampleTableOk
+		illegal						; report it through the error handler
+	.sampleTableOk:
+		rts
+	else
 		nop						; delay
 		stopZ80						; request Z80 stop on
 		deassertZ80Reset				; request Z80 reset off
@@ -1423,6 +1444,7 @@ DACDriverLoad:
 		deassertZ80Reset				; request Z80 reset off
 		startZ80					; request Z80 stop off
 		rts						; return
+	endif
 ; End of function DACDriverLoad
 
 ; ===========================================================================
@@ -1800,7 +1822,11 @@ Sega_WaitEnd:
 		andi.b	#btnStart,d0				; is Start pressed?
 		beq.s	Sega_WaitEnd				; if not, loop post-chant routine
 		disable_ints
+	if FeatureMegaPCM
+		MPCM_stop					; stop the chant before entering the title screen
+	else
 		bsr.w	DACDriverLoad				; stop PCM before entering the title screen
+	endif
 		enable_ints
 ; ---------------------------------------------------------------------------
 
@@ -1825,7 +1851,9 @@ GM_Title:		; fading out from previous game mode
 
 		; screen setup and loading "SONIC TEAM PRESENTS" (STP) patterns
 		disable_ints					; disable ints while accessing the VDP
+	if FeatureMegaPCM=0
 		bsr.w	DACDriverLoad				; load Z80 driver
+	endif
 		lea	(vdp_control_port).l,a6			; load VDP control port
 		move.w	#vreg_mode1|%000100,(a6)		; use 8-colour mode
 		move.w	#vreg_fgvram|(vram_fg>>10),(a6)		; set foreground nametable address
@@ -4501,6 +4529,7 @@ SuperSonicDynPLC:	include	"_maps/Super Sonic - Dynamic Gfx Script.asm"
 Art_Sonic:	binclude	"artunc/Sonic.unc"
 Art_SonicFigure8: binclude "artunc/Sonic Figure8.unc"
 Art_SonicAirPoses: binclude "artunc/Sonic Air Poses.unc"
+Art_SonicVictory: binclude "artunc/Sonic Victory.unc"
 		even
 
 Art_SuperSonic:	binclude	"artunc/Super Sonic.unc"
@@ -4514,6 +4543,17 @@ Art_SuperSonicStars_End:
 Art_InvincibilityStars:	binclude	"artunc/Invincibility Stars Restore.unc"
 Art_InvincibilityStars_End:
 		even
+	if FeatureS2Stars
+Art_InvStarsS2:	binclude	"artunc/Invincibility Stars S2.unc"	; one DMA when invincibility starts
+Art_InvStarsS2_End:
+		even
+	if (Art_InvStarsS2_End-Art_InvStarsS2)<>34*tile_size
+		error "artunc/Invincibility Stars S2.unc must hold 34 tiles"
+	endif
+	if (MOMPASS>1)&&((Art_InvStarsS2>>17)<>((Art_InvStarsS2_End-1)>>17))
+		error "The Sonic 2 stars art must not cross a 128 KiB DMA bank"
+	endif
+	endif
 Art_Shield:	binclude	"artunc/Shield.unc"	; generated shield frames
 Art_Shield_End:
 		even
@@ -5480,6 +5520,10 @@ Rings_Null:	dc.w $FFFF, $FFFF
 
 ; ---------------------------------------------------------------------------
 
+	if FeatureMegaPCM
+		include	"MegaPCM/MegaPCM.asm"
+		include	"MegaPCM/SampleTable.asm"
+	endif
 SoundDriver:	include "s1.sounddriver.asm"
 		even
 
@@ -5524,6 +5568,10 @@ TailsDynPLC: include "_maps/Tails - Dynamic Gfx Script.asm"
 Map_TailsTail:	include "_maps/Tails Tail.asm"
 TailsTailDynPLC: include "_maps/Tails Tail - Dynamic Gfx Script.asm"
 		include	"_incObj/8F Tails Tail.asm"
+	if FeatureS2Stars
+		include	"_incObj/02 Invincibility Stars S2.asm"
+Map_InvStarsS2:	include	"_maps/Invincibility Stars S2.asm"
+	endif
 		include "_anim/Tails.asm"
 		include "_incObj/Tails Flight.asm"
 		include "_incObj/Knuckles Glide.asm"

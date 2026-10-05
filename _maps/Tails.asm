@@ -1,5 +1,6 @@
 fr_TailsTransform equ $97
 fr_TailsWalk equ $9A
+fr_TailsVictory equ $BA
 
 ; S3K Tails, repacked for the S1 player frame IDs.
 TailsMap_internal: mappingsTable
@@ -189,6 +190,7 @@ TailsMap_internal: mappingsTable
 	mappingsTableEntry.w TailsMap_B7
 	mappingsTableEntry.w TailsMap_B8
 	mappingsTableEntry.w TailsMap_B9
+	mappingsTableEntry.w TailsMap_BA
 
 TailsMap_00: spriteHeader
 TailsMap_00_End
@@ -1265,5 +1267,11 @@ TailsMap_B9: spriteHeader
 	spritePiece -23, -7, 1, 1, 13, 0, 0, 0, 0
 	spritePiece 9, 9, 1, 1, 14, 0, 0, 0, 0
 TailsMap_B9_End
+
+TailsMap_BA: spriteHeader
+	spritePiece -11, -16, 3, 3, 0, 0, 0, 0, 0
+	spritePiece -3, 8, 1, 1, 9, 0, 0, 0, 0
+	spritePiece -3, 16, 2, 1, 10, 0, 0, 0, 0
+TailsMap_BA_End
 
 	even

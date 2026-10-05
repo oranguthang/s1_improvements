@@ -1266,6 +1266,22 @@
         "6": 6
       }
     },
+    "artunc/Invincibility Stars S2.unc": {
+      "source": "art/nemesis/Invincibility stars.nem",
+      "source_group": "s2",
+      "ranges": [
+        [
+          0,
+          34
+        ]
+      ],
+      "colours": {
+        "3": 8,
+        "4": 7,
+        "5": 7,
+        "6": 6
+      }
+    },
     "artunc/Giant Ring Flash.unc": {
       "source": "artunc/Giant Ring Flash.unc",
       "ranges": [

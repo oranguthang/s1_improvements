@@ -346,6 +346,13 @@ Pow_ChkInvinc:
 		move.b	#1,(v_invinc).w				; make Sonic invincible
 		move.w	#20*60,(v_player+invtime).w		; set time limit for invincibility to 20 seconds
 
+	if FeatureS2Stars
+		cmpi.b	#id_InvStarsS2,(v_starsobj1).w		; are the stars already out?
+		beq.s	.starsOut				; if yes, keep them
+		move.b	#id_InvStarsS2,(v_starsobj1).w		; load the stars; they spawn the other groups
+		clr.b	(v_starsobj1+obRoutine).w
+	.starsOut:
+	else
 		move.b	#id_ShieldItem,(v_starsobj1).w		; load 1st stars object
 		move.b	#1,(v_starsobj1+obAnim).w		; set shortest travel delay
 		move.b	#id_ShieldItem,(v_starsobj2).w		; load 2nd stars object
@@ -354,6 +361,7 @@ Pow_ChkInvinc:
 		move.b	#3,(v_starsobj3+obAnim).w		; set long travel delay
 		move.b	#id_ShieldItem,(v_starsobj4).w		; load 4th stars object
 		move.b	#4,(v_starsobj4+obAnim).w		; set longest travel delay
+	endif
 
 		tst.b	(f_bossmusic).w			; is boss music active?
 		bne.s	Pow_NoMusic				; if yes, don't change music

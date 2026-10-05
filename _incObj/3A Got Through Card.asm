@@ -286,6 +286,9 @@ Got_SBZ2_MoveOut: ; Routine $E
 
 		addq.b	#2,obRoutine(a0)			; set to Got_SBZ2_Boundary
 		clr.b	(f_lockctrl).w				; unlock controls
+	if FeatureVictoryPoses
+		clr.b	(v_player+victorypose).w		; walk on into the cutscene
+	endif
 		move.w #id_FZ,d0
         jsr (GetActMusicFor).l		; next cutscene uses the configured FZ track
 		jmp	(QueueSound1).l				; play it

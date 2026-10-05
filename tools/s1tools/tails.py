@@ -22,7 +22,10 @@ PLAYER_COLOURS = (*COLOURS[:11], 3, *COLOURS[12:])
 TRANSFORM_FRAME_FIRST = 151
 # All eight S3K walk frames for each of the four floor orientations.
 WALK8 = TRANSFORM_FRAME_FIRST + 3
-FRAME_COUNT = WALK8 + 4 * 8
+# S3K's extra sheet pose $E7: Tails faces the camera with both arms raised.
+# The tails object shows nothing for this pose.
+VICTORY = WALK8 + 4 * 8
+FRAME_COUNT = VICTORY + 1
 # S3K reads body frames from $D1 onward from a separate extra sheet.
 EXTRA_BODY_FIRST = 0xD1
 # The tails are a separate object, as in S3K (Obj_Tails_Tail), drawn from the
@@ -195,6 +198,7 @@ def frame_plan() -> list[tuple[int, int, int, int]]:
         assign(0x8F + step, 0x9A + (step // 2) % 2, 0x29 + step % 4)
     for step in range(3):
         assign(TRANSFORM_FRAME_FIRST + step, 0xEB + step)
+    assign(VICTORY, 0xE7)
     for group, (dx, dy) in enumerate(offsets):
         for step in range(8):
             assign(WALK8 + group * 8 + step, 1 + group * 8 + step, dx=dx, dy=dy)
@@ -271,7 +275,8 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
         tail_frames.append((data, [(x, y + shift, *rest) for x, y, *rest in pieces]))
     art, mappings, cues = emit_frames("Tails", frames)
     mappings = (
-        f"fr_TailsTransform equ ${TRANSFORM_FRAME_FIRST:X}\nfr_TailsWalk equ ${WALK8:X}\n\n"
+        f"fr_TailsTransform equ ${TRANSFORM_FRAME_FIRST:X}\nfr_TailsWalk equ ${WALK8:X}\n"
+        f"fr_TailsVictory equ ${VICTORY:X}\n\n"
     ).encode("ascii") + mappings
     tail_art, tail_mappings, tail_cues = emit_frames("TailsTail", tail_frames)
     outputs = {

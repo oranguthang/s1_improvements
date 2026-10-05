@@ -104,7 +104,7 @@ v_knux_frame: ds.b 1                  ; climbing/ledge pose
 v_knux_timer: ds.b 1                  ; climbing/ledge animation timer
                     ds.b $200-4-colqueue_entries*2-2-(v_lightdash_end-v_lightdash_start)-12
 v_tracksonic:		ds.b	$100				; position tracking data for Sonic
-v_hscrolltablebuffer:	ds.b	$380				; scrolling table data
+v_hscrolltablebuffer:	ds.b	hscroll_table_size			; scrolling table data
 v_hscrolltablebuffer_end:
 			ds.b	$80				; would be unused, but data from v_hscrolltablebuffer can spill into here
 v_hscrolltablebuffer_end_padded:

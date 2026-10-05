@@ -25,7 +25,9 @@ TRANSFORM = WATER_TURN_EXTRA + 4  # S3K Super transformation frames $EB-$ED
 # All eight S3K walk frames for each of the four floor orientations. The
 # six-frame S1 walk slots above stay for the other scripts that reuse them.
 WALK8 = TRANSFORM + 3
-FRAME_COUNT = WALK8 + 4 * 8
+# S3K's victory animation: stand, punch, then hold the raised fist.
+VICTORY = WALK8 + 4 * 8
+FRAME_COUNT = VICTORY + 4
 
 
 def frame_plan() -> list[tuple[int, int, int]]:
@@ -79,6 +81,7 @@ def frame_plan() -> list[tuple[int, int, int]]:
         assign(index, source)
     for step in range(4):
         assign(0x45 + step, 0xCE + step)
+        assign(VICTORY + step, 0xB1 + step)
     for step in range(5):
         assign(0x4E + step, 0x86 + step)
     for step in range(6):

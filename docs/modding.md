@@ -20,6 +20,10 @@ The `Feature*` switches in `sonic.asm` turn this project's gameplay additions on
 | `FeatureLamppostRings` | Restarting from a lamppost starts with no rings. Returning from a giant ring still keeps them. |
 | `FeatureSuper` | No character can transform, and the good ending keeps the normal form. The CHEATS ring settings stay but have no effect. |
 | `FeatureTails`, `FeatureKnuckles` | OPTIONS skips that character, and a saved selection of it falls back to Sonic. Its art, ending and code stay in the ROM. |
+| `FeatureCentiseconds` | The HUD clock shows minutes and seconds only. |
+| `FeatureS2Stars` | Invincibility shows Sonic 1's four trailing stars instead of Sonic 2's (both use the shared white and gray). |
+| `FeatureVictoryPoses` | After the signpost the player runs off to the right, and after a capsule walks right, as in the original game. |
+| `FeatureMegaPCM` | Sonic 1's own Z80 DAC driver plays the drums, timpani and the SEGA chant again. |
 
 Three optional alternatives are off by default; 1 enables them:
 
@@ -103,13 +107,25 @@ Collidable objects are queued during object execution. Keep the existing count b
 
 Rotated wall graphics are streamed from `artunc/Special Walls.unc`. The source sheet and the DMA slot must match the wall mapping frame dimensions.
 
+## HUD centiseconds
+
+With `FeatureCentiseconds` the clock reads `0:00:00`, after Selbi's [Add Centiseconds HUD](https://info.sonicretro.org/SCHG_How-to:Add_Centiseconds_HUD). `Hud_FramesToCentis` turns the frame counter of the current second into hundredths. The second colon uses the two free tiles `$7BE–$7BF` after the ring sparkles; the digits use `$7FC–$7FF`, after the 224-line horizontal scroll table (`hscroll_table_size`). The clock starts once the level has faded in. Time Over still happens at 9:59.
+
+## Victory poses
+
+With `FeatureVictoryPoses` the signpost and the capsule wait until the player has landed, then `Sonic_StartVictory` locks the controls, stops the player and sets `victorypose` (player SST byte `$39`). `Sonic_Move` then selects `id_Victory` ($23) instead of the standing animation. The idea follows AleDrawer2008's [Add Victory Poses In Sonic 1](https://info.sonicretro.org/SCHG_How-to:Add_Victory_Poses_In_Sonic_1): Sonic shows the two-finger pose from that guide (`player air` imports it as `fr_Victory1`/`fr_Victory2`), Tails raises both arms (S3K frame $E7, `fr_TailsVictory`) and Knuckles plays S3K's punch and raised fist (`knux_victory_frame`). Every character's animation table needs an entry for $23; Super Sonic's points at his standing animation, because the act results revert Super forms first. The Scrap Brain Act 2 cutscene clears the flag so the player can walk on.
+
+## Sound driver
+
+With `FeatureMegaPCM`, Vladikcomper's [Mega PCM 2](https://github.com/vladikcomper/MegaPCM) replaces Sonic 1's Z80 DAC driver, integrated as in [Add Mega PCM 2 to Sonic 1](https://info.sonicretro.org/SCHG_How-to:Add_Mega_PCM_2_to_Sonic_1). `MegaPCM/` holds the driver blob, its macros and `SampleTable.asm`, whose samples are in `sound/dac/megapcm`. SMPS plays DAC notes $81–$8B through `MPCM_play`; the timpani pitches are separate sample entries. Mega PCM protects itself during DMA, so the `stopZ80`/`waitZ80`/`startZ80` macros assemble to nothing and only `WriteFMI`/`WriteFMII` pause the Z80 around YM2612 writes. The extended integration is included: pausing pauses the sample, the DAC panning follows the track, the DAC fades in and out with the music, and sound effects keep playing during fades. To add a sample, give it a free ID in `SampleTable` (and an `incdac` line) and use that note in a song's DAC track. With 0, `build.lua` compresses the original Z80 driver again.
+
 ## Sub-sprites
 
 Set render bit 6 and a nonzero `obSubSprites` to opt in. Up to seven children use three bytes each at `$29–$3D`: signed X offset, signed Y offset and frame. The parent keeps its normal mapping and graphics. Do not reuse this RAM as object scratch while children are enabled. GHZ bridges provide a grouped-object example.
 
 ## Shield, stars and points VRAM
 
-Shield, invincibility, Super stars and Super Tails' Flickies share the protected `$541–$552` slot and use mutually exclusive loading. `v_shieldartkey` names the resident owner: a shield/stars DPLC key, `$4000` for Super stars or `$4001` for the 14 Flicky tiles. Points occupy `$553–$55B`. Keep their tile ranges independent from Game Over and debug text. Loading a new owner must also change the active mappings/DPLC state.
+With `FeatureS2Stars` the invincibility stars are object $02 (`_incObj/02 Invincibility Stars S2.asm`), a port of Sonic 2's obj35 after KoiSAKANA's [guide](https://info.sonicretro.org/SCHG_How-to:Port_Sonic_2_invincibility_stars_to_Sonic_1). Four groups of two sub-sprites circle and trail the player. Their 34 tiles are DMA-transferred once to `$55E–$57F`, the Game Over area, which they can share because death, the act results and the giant ring all end invincibility; the debug coordinates stay hidden while the player is invincible. Otherwise shield, invincibility, Super stars and Super Tails' Flickies share the protected `$541–$552` slot and use mutually exclusive loading. `v_shieldartkey` names the resident owner: a shield/stars DPLC key, `$4000` for Super stars or `$4001` for the 14 Flicky tiles. Points occupy `$553–$55B`. Keep their tile ranges independent from Game Over and debug text. Loading a new owner must also change the active mappings/DPLC state.
 
 ## Ring animation
 

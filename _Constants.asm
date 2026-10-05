@@ -114,6 +114,7 @@ vram_win:		equ $A000				; window namespace
 vram_bg:		equ $E000				; background namespace
 vram_sprites:		equ $F800				; sprite table
 vram_hscroll:		equ $FC00				; horizontal scroll table
+hscroll_table_size:	equ $380				; 224 lines of plane A/B scroll; $FF80-$FFFF stay free
 
 ; Sprite data
 sprites_max:		equ 80					; maximum number of sprites the Mega Drive can handle
@@ -291,7 +292,7 @@ angleleft:		equ $37					; angle of floor on Sonic's left side
 sticktoconvex:		equ $38					; flag set while running on an SBZ gear
 spindash_flag:		equ $29				; bit 0 Spin Dash, bit 1 Peel-Out charging
 spindash_count:		equ $2A				; Spin Dash revs / Peel-Out speed charge (2 bytes)
-;unused:		equ $39					; unused by Sonic
+victorypose:		equ $39					; set after the act ends: stand in the victory pose
 restartime:		equ $3A					; time left before level restarts after dying (2 bytes)
 jumping:		equ $3C					; flag set while Sonic is jumping
 standonobject:		equ $3D					; object index Sonic stands on
@@ -645,6 +646,7 @@ ArtTile_Invincibility:		equ ArtTile_Shield		; never shown with the shield
 ArtTile_SuperSonicStars:	equ ArtTile_Shield		; 14 tiles; shield hidden and stars removed while Super
 ArtTile_SuperTailsFlickies:	equ ArtTile_Shield		; 14 tiles; Super Tails has no stars
 ArtTile_Game_Over:		equ $55E			; $553-$57F no longer hold shield/stars art
+ArtTile_InvStarsS2:		equ ArtTile_Game_Over	; 34 tiles up to the title cards, see 02 Invincibility Stars S2.asm
 ArtTile_Title_Card:		equ $580
 ArtTile_Animal_1:		equ $580
 ArtTile_Animal_2:		equ $592
@@ -656,6 +658,8 @@ ArtTile_HUDScore_E:		equ ArtTile_HUDScore-2
 ArtTile_HUDTimeMins:		equ ArtTile_HUD+$28
 ArtTile_HUDTimeSecs:		equ ArtTile_HUD+$2C
 ArtTile_HUDRings:		equ ArtTile_HUD+$30
+ArtTile_HUDCentiSep:		equ $7BE			; centiseconds colon, 2 free tiles after the ring sparkles
+ArtTile_HUDCentis:		equ (vram_hscroll+hscroll_table_size)/tile_size ; two centisecond digits, 4 tiles
 
 ArtTile_Sonic:			equ $780
 Sonic_Slot_Tiles:		equ 32			; Super frames use up to 31 tiles; ends before spin dust
@@ -669,7 +673,7 @@ ArtTile_Lamppost:		equ $D800/$20			; ten tiles just before the HUD
 ArtTile_SpinDust:		equ $F400/$20
 ArtTile_Ring:			equ $7B2			; current ordinary ring frame, 4 tiles (DMA, #42)
 ArtTile_Ring_Lost:		equ ArtTile_Ring+4		; current lost ring frame, 4 tiles (DMA, #42)
-ArtTile_Ring_Sparkle:		equ ArtTile_Ring+8		; ring sparkles, 4 tiles (PLC_Main); $7BE-$7BF are free
+ArtTile_Ring_Sparkle:		equ ArtTile_Ring+8		; ring sparkles, 4 tiles (PLC_Main); then the centiseconds colon
 ArtTile_Lives_Counter:		equ $7D4
 ArtTile_Lives_Counter_Num:	equ ArtTile_Lives_Counter+9
 
@@ -779,6 +783,12 @@ ArtTile_Ending_STH:		equ $5C5
 	if ArtTile_Debug_Coords+Debug_Coords_Tiles>ArtTile_Title_Card
 		error "Debug coordinates overlap the title cards"
 	endif
+	if ArtTile_InvStarsS2+34>ArtTile_Title_Card
+		error "Sonic 2 stars overlap the title cards"
+	endif
+	if ArtTile_InvStarsS2<ArtTile_Points+Points_Tiles
+		error "Sonic 2 stars overlap the points"
+	endif
 
 ; Try Again Screen
 ArtTile_Try_Again_Emeralds:	equ $3C5
@@ -842,7 +852,7 @@ check_game_art_slot: macro first,tiles
 	if ((first*tile_size)<(vram_sprites+sprites_max*8))&&(((first+tiles)*tile_size)>vram_sprites)
 		fatal "Game art overlaps sprite table"
 	endif
-	if ((first*tile_size)<(vram_hscroll+$400))&&(((first+tiles)*tile_size)>vram_hscroll)
+	if ((first*tile_size)<(vram_hscroll+hscroll_table_size))&&(((first+tiles)*tile_size)>vram_hscroll)
 		fatal "Game art overlaps horizontal scroll table"
 	endif
 	endm
@@ -854,6 +864,8 @@ check_game_art_slot: macro first,tiles
 	check_game_art_slot ArtTile_SpinDust,18
 	check_game_art_slot ArtTile_Shield,Shield_Slot_Tiles
 	check_game_art_slot ArtTile_Debug_Coords,Debug_Coords_Tiles
+	check_game_art_slot ArtTile_HUDCentiSep,2
+	check_game_art_slot ArtTile_HUDCentis,4
 
 ; Character resource descriptors (normal and Super are separate records).
 Character_Sonic: equ 0

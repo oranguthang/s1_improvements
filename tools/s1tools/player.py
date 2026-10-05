@@ -499,6 +499,83 @@ def air_falling(source):
     return frames
 
 
+air_VICTORY = (
+    "Victory Sprites.png",
+    "2f54ad0155c0ba0b3874fb7da702bef586629f030ef25ab53c2c2b820e290d9d",
+)
+# Sonic's two-finger victory pose, drawn in Sonic 1's style by AleDrawer2008
+# for "Add Victory Poses In Sonic 1". The sheet has two 32x40 cells; each
+# frame is aligned on its own left edge, with the feet on the standing
+# frame's baseline. Index 14 is the darkest shoe red.
+air_VICTORY_COLORS = [*air_COLORS, (72, 0, 0)]
+
+
+def air_victory(source):
+    raw = (source / air_VICTORY[0]).read_bytes()
+    assert figure8_digest(raw) == air_VICTORY[1]
+    im = Image.open(io.BytesIO(raw)).convert("RGBA")
+    frames = []
+    for cell in range(2):
+        solid = {}
+        for y in range(40):
+            for x in range(32):
+                colour = im.getpixel((cell * 32 + x, y))
+                if colour[3]:
+                    solid[x, y] = colour[:3]
+        left = min(x for x, _ in solid)
+        pix = {}
+        for (x, y), colour in solid.items():
+            distance, index = min(
+                (sum((a - b) ** 2 for a, b in zip(rgb, colour, strict=True)), i)
+                for i, rgb in enumerate(air_VICTORY_COLORS)
+                if i
+            )
+            assert distance <= 3 * 8**2, colour
+            pix[x - left - 12, y - 20] = index
+        art, pieces = figure8_pack(pix)
+        frames.append((art, pieces, pix))
+    return frames
+
+
+def air_emit(frames, label, title, comment, offset):
+    packed = bytearray()
+    maps = []
+    dplcs = []
+    entries = []
+    de = []
+    for i, (art, pieces, _pix) in enumerate(frames):
+        name = label + str(i)
+        entries.append("\tmappingsTableEntry.w " + name)
+        de.append("\tmappingsTableEntry.w " + name + "_PLC")
+        maps.append(name + ": spriteHeader")
+        for x, y, w, h, t, xf, yf in pieces:
+            maps.append(f"\tspritePiece {x}, {y}, {w}, {h}, {t}, {int(xf)}, {int(yf)}, 0, 0")
+        maps.extend([name + "_End", ""])
+        dplcs.append(name + "_PLC: dplcHeader")
+        count = len(art) // 32
+        tile = offset + len(packed) // 32
+        assert count <= 32 and len(pieces) <= 8 and (tile + count <= 4096)
+        while count:
+            n = min(count, 16)
+            dplcs.append(f"\tdplcEntry {n}, ${tile:X}")
+            tile += n
+            count -= n
+        dplcs.extend([name + "_PLC_End", ""])
+        packed.extend(art)
+    art_name = f"artunc/Sonic {title}.unc"
+    outputs = {figure8_ROOT / art_name: shared_remap_art(art_name, bytes(packed))}
+    for kind, lines in [
+        ("Map", maps),
+        ("DPLC", dplcs),
+        ("Map Entries", entries),
+        ("DPLC Entries", de),
+    ]:
+        outputs[figure8_ROOT / "_maps" / f"Sonic - {title} {kind}.asm"] = (
+            comment + "\n" + "\n".join(lines) + "\n\teven\n"
+        ).encode("ascii")
+    return outputs
+
+
 def air_assets(source):
     for n, sha in figure8_CD_HASHES.items():
         assert figure8_digest((source / ("CD-" + n)).read_bytes()) == sha, n
@@ -510,44 +587,19 @@ def air_assets(source):
         )
         // 32
     )
-    packed = bytearray()
-    maps = []
-    dplcs = []
-    entries = []
-    de = []
-    for i, (art, pieces, _pix) in enumerate(frames):
-        label = "SonicAirPose" + str(i)
-        entries.append("\tmappingsTableEntry.w " + label)
-        de.append("\tmappingsTableEntry.w " + label + "_PLC")
-        maps.append(label + ": spriteHeader")
-        for x, y, w, h, t, xf, yf in pieces:
-            maps.append(f"\tspritePiece {x}, {y}, {w}, {h}, {t}, {int(xf)}, {int(yf)}, 0, 0")
-        maps.extend([label + "_End", ""])
-        dplcs.append(label + "_PLC: dplcHeader")
-        count = len(art) // 32
-        tile = offset + len(packed) // 32
-        assert count <= 32 and len(pieces) <= 8 and (tile + count <= 4096)
-        while count:
-            n = min(count, 16)
-            dplcs.append(f"\tdplcEntry {n}, ${tile:X}")
-            tile += n
-            count -= n
-        dplcs.extend([label + "_PLC_End", ""])
-        packed.extend(art)
-    outputs = {
-        figure8_ROOT / "artunc/Sonic Air Poses.unc": shared_remap_art(
-            "artunc/Sonic Air Poses.unc", bytes(packed)
+    outputs = air_emit(
+        frames, "SonicAirPose", "Air Poses", "; Shared spring and falling player poses", offset
+    )
+    offset += len(outputs[figure8_ROOT / "artunc/Sonic Air Poses.unc"]) // 32
+    outputs.update(
+        air_emit(
+            air_victory(source),
+            "SonicVictory",
+            "Victory",
+            "; Sonic's victory pose (FeatureVictoryPoses)",
+            offset,
         )
-    }
-    for name, lines in [
-        ("Map", maps),
-        ("DPLC", dplcs),
-        ("Map Entries", entries),
-        ("DPLC Entries", de),
-    ]:
-        outputs[figure8_ROOT / "_maps" / ("Sonic - Air Poses " + name + ".asm")] = (
-            "; Shared spring and falling player poses\n" + "\n".join(lines) + "\n\teven\n"
-        ).encode("ascii")
+    )
     return (outputs, frames)
 
 

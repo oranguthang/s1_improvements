@@ -40,6 +40,7 @@ Ani_SuperSonic:
 		dc.w SupSonAni_Transform-Ani_SuperSonic	; 20
 		dc.w SupSonAni_Figure8-Ani_SuperSonic	; 21
 		dc.w SupSonAni_Fall-Ani_SuperSonic	; 22
+		dc.w SupSonAni_Stand-Ani_SuperSonic	; 23 (the act results revert Super forms first)
 
 ; Walk, run, roll and push are handled by Sonic_Animate's speed-sensitive path.
 SupSonAni_Walk:	dc.b $FF,$77,$78,$79,$7A,$7B,$7C,$75,$76,$FF

@@ -9,6 +9,7 @@ knux_climb_frame: equ $7E
 knux_ledge_frame: equ $84
 knux_transform_frame: equ $97		; S3K Super transformation frames $EB-$ED
 knux_walk_frame: equ $9A		; S3K walk: eight frames for each of four orientations
+knux_victory_frame: equ knux_walk_frame+4*8	; S3K victory frames $B1-$B4
 
 Knuckles_GlideControl:
         cmpi.b #Character_Knuckles,(v_character_p1).w

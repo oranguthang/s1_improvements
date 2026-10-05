@@ -15,7 +15,11 @@ __LABEL__:	label	((*-Obj_Index)/4)+1
 
 ; ID label			Object label		  ID value
 id_SonicPlayer:		objptr	SonicPlayer		; 01
+	if FeatureS2Stars
+id_InvStarsS2:		objptr	InvStarsS2		; 02
+	else
 id_Obj02:		objptr	NullObject		; 02
+	endif
 id_Obj03:		objptr	NullObject		; 03
 id_Obj04:		objptr	NullObject		; 04
 id_SpinDust:		objptr	SpinDust			; 05

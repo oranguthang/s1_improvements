@@ -43,9 +43,19 @@ if include_symbols and not convsym then
     if not tools then os.exit(1) end
     convsym = tools.convsym
 end
+-- With FeatureMegaPCM the ROM has no Z80 DAC driver segment to compress.
+local mega_pcm = false
+for line in io.lines("sonic.asm") do
+    local value = line:match("^FeatureMegaPCM = (%d)")
+    if value then
+        mega_pcm = value == "1"
+        break
+    end
+end
 -- Build the ROM.
 local compression = improved_dac_driver_compression and "kosinski-optimised" or "kosinski"
-common.build_rom_and_handle_failure("sonic", output, "-D MDDebugger=1", "-p=FF -z=0," .. compression .. ",Size_of_DAC_driver_guess,after", false, "https://github.com/sonicretro/s1disasm")
+local p2bin_options = mega_pcm and "-p=FF" or ("-p=FF -z=0," .. compression .. ",Size_of_DAC_driver_guess,after")
+common.build_rom_and_handle_failure("sonic", output, "-D MDDebugger=1", p2bin_options, false, "https://github.com/sonicretro/s1disasm")
 
 -- Binary resources are read by words (KosM and Enigma headers) or used as DMA
 -- sources, so each must start at an even address. An odd one is an address

@@ -186,6 +186,10 @@ KnucklesMap_internal: mappingsTable
 	mappingsTableEntry.w KnucklesMap_B7
 	mappingsTableEntry.w KnucklesMap_B8
 	mappingsTableEntry.w KnucklesMap_B9
+	mappingsTableEntry.w KnucklesMap_BA
+	mappingsTableEntry.w KnucklesMap_BB
+	mappingsTableEntry.w KnucklesMap_BC
+	mappingsTableEntry.w KnucklesMap_BD
 
 KnucklesMap_00: spriteHeader
 KnucklesMap_00_End
@@ -1292,5 +1296,27 @@ KnucklesMap_B9: spriteHeader
 	spritePiece -18, -12, 4, 3, 3, 0, 0, 0, 0
 	spritePiece 14, -12, 1, 2, 15, 0, 0, 0, 0
 KnucklesMap_B9_End
+
+KnucklesMap_BA: spriteHeader
+	spritePiece -13, -20, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -13, -12, 4, 4, 3, 0, 0, 0, 0
+KnucklesMap_BA_End
+
+KnucklesMap_BB: spriteHeader
+	spritePiece -5, -20, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -13, -12, 4, 4, 3, 0, 0, 0, 0
+	spritePiece 19, -4, 1, 3, 19, 0, 0, 0, 0
+KnucklesMap_BB_End
+
+KnucklesMap_BC: spriteHeader
+	spritePiece -4, -20, 2, 1, 0, 0, 0, 0, 0
+	spritePiece -12, -12, 4, 4, 2, 0, 0, 0, 0
+KnucklesMap_BC_End
+
+KnucklesMap_BD: spriteHeader
+	spritePiece -4, -20, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -12, -12, 4, 4, 3, 0, 0, 0, 0
+	spritePiece 20, -4, 1, 2, 19, 0, 0, 0, 0
+KnucklesMap_BD_End
 
 	even

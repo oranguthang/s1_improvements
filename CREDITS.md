@@ -18,6 +18,14 @@ Tails and Knuckles signpost portraits also use the original S3K end-sign art and
 
 Their character-specific endings use the official Sonic the Hedgehog mobile remaster artwork, extracted by Parky33 and available in the [Ending sprite sheet](https://www.spriters-resource.com/mobile/sonicthehedgehogmobile/asset/65174/). The importer preserves pixel shapes and pose dimensions, adapts colours to the shared player palette and repacks mapping origins for the existing ending graphics slot. The blue emerald uses the independent sky palette.
 
+## Sound driver
+
+Mega PCM 2 and its Sonic 1 sample table are by [Vladikcomper](https://github.com/vladikcomper/MegaPCM) (MIT license, included at the end of `MegaPCM/MegaPCM.asm`). The SMPS integration follows [Add Mega PCM 2 to Sonic 1](https://info.sonicretro.org/SCHG_How-to:Add_Mega_PCM_2_to_Sonic_1), adapted by Selbi from Vladikcomper's tutorial.
+
+## HUD, stars and victory poses
+
+The centiseconds HUD follows Selbi's [Add Centiseconds HUD](https://info.sonicretro.org/SCHG_How-to:Add_Centiseconds_HUD). The Sonic 2 invincibility stars port Sonic 2's art and obj35 from the [Sonic 2 disassembly](https://github.com/sonicretro/s2disasm), after KoiSAKANA's [Port Sonic 2 invincibility stars to Sonic 1](https://info.sonicretro.org/SCHG_How-to:Port_Sonic_2_invincibility_stars_to_Sonic_1). The victory poses follow AleDrawer2008's [Add Victory Poses In Sonic 1](https://info.sonicretro.org/SCHG_How-to:Add_Victory_Poses_In_Sonic_1), whose Sonic 1-style Sonic sprites (from the SSRG thread) are used as drawn; Tails' and Knuckles' poses come from Sonic 3 & Knuckles.
+
 ## Title cards
 
 The extended title card system and font come from [Extend Title Cards in Sonic 1](https://info.sonicretro.org/SCHG_How-to:Extend_Title_Cards_in_Sonic_1): main system by Selbi, AS port and result screens by RobiWanKenobi, lowercase letters from Yuu Yuu Hakusho: Makyou Toitsusen, missing uppercase JQVWX by SameyTheHedgie, title-case "Act" and lowercase "a" by MDTravis, and the act 4 number by Cinossu. The downloaded archive is kept with the resource inputs; this project adds gray oval copies and the solo character names.

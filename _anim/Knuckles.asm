@@ -35,6 +35,7 @@ Ani_Knuckles:
         dc.w KnucklesAni_Transform-Ani_Knuckles ; $20
         dc.w KnucklesAni_Figure8-Ani_Knuckles
         dc.w KnucklesAni_Fall-Ani_Knuckles
+        dc.w KnucklesAni_Victory-Ani_Knuckles
 
 ; The descriptor selects eight walking frames: Sonic_Animate adds 8 per
 ; floor orientation. The order follows S3K's walk script (7, 8, 1-6).
@@ -208,6 +209,10 @@ KnucklesAni_Figure8: dc.b $FF,fr_Run11,fr_Run12,fr_Run13,fr_Run14,afEnd,afEnd,af
 
 ; A relaxed walking cycle on spring descent.
 KnucklesAni_Fall: dc.b 3,fr_Walk11,fr_Walk12,fr_Walk13,fr_Walk14,fr_Walk15,fr_Walk16,afEnd
+
+; S3K's victory: stand, punch, then hold the raised fist.
+KnucklesAni_Victory: dc.b 5,knux_victory_frame,knux_victory_frame+1,knux_victory_frame+1,knux_victory_frame+1
+	dc.b knux_victory_frame+2,knux_victory_frame+3,afBack,1
 
 ; S3K Super transformation: curl, pose and flash (frames $EB-$ED).
 KnucklesAni_Transform: dc.b 2,knux_transform_frame,knux_transform_frame,knux_transform_frame+1,knux_transform_frame+2,knux_transform_frame+1,knux_transform_frame+2,knux_transform_frame+1,knux_transform_frame+2,knux_transform_frame+1,knux_transform_frame+2,knux_transform_frame+1,knux_transform_frame+2,afChange,id_Walk

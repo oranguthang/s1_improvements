@@ -47,6 +47,9 @@ def test_knuckles_frame_constants_match_the_importer() -> None:
     plan = knuckles.frame_plan()
     # Eight S3K walk frames per orientation, in S1 orientation order.
     assert [plan[knuckles.WALK8 + i][0] for i in range(32)] == list(range(1, 33))
+    # The victory frames follow the walk block (knux_walk_frame+4*8).
+    assert knuckles.VICTORY == knuckles.WALK8 + 32
+    assert [plan[knuckles.VICTORY + i][0] for i in range(4)] == [0xB1, 0xB2, 0xB3, 0xB4]
     assert knuckles.FRAME_COUNT <= 0x100
 
 
@@ -57,6 +60,7 @@ def test_tails_tail_object_matches_the_importer() -> None:
 
     header = (ROOT / "_maps/Tails.asm").read_text(encoding="utf-8")
     assert re.search(r"^fr_TailsWalk equ \$(\w+)", header, re.M)[1] == f"{tails.WALK8:X}"
+    assert re.search(r"^fr_TailsVictory equ \$(\w+)", header, re.M)[1] == f"{tails.VICTORY:X}"
     assert tails.FRAME_COUNT <= 0x100
     constants = (ROOT / "_Constants.asm").read_text(encoding="utf-8")
     slot = int(re.search(r"^Tails_Tail_Tiles:\s+equ (\d+)", constants, re.M)[1])
@@ -271,7 +275,7 @@ def test_palette_preview_is_portable(tmp_path: Path) -> None:
 def test_shared_palette_preserves_unselected_tiles() -> None:
     from s1tools.common import get_source, load_data
 
-    sources = {group: get_source(group) for group in ("shared", "s1")}
+    sources = {group: get_source(group) for group in ("shared", "s1", "s2")}
     for name, asset in load_data("shared_player_palette.json")["assets"].items():
         suffix = Path(name).suffix
         decode = (

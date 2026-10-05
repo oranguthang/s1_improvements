@@ -137,7 +137,16 @@ Sign_SonicRun:	; Routine 6
 		tst.w	(v_debuguse).w				; is debug mode in use?
 		bne.w	Sign_Return				; if yes, don't load end cards until debug mode was exited
 
-	if FixBugs
+	if FeatureVictoryPoses
+		; After "Add Victory Poses In Sonic 1" by AleDrawer2008: the player
+		; stays on screen and poses once landed, and the results start then.
+		tst.b	(v_player+obID).w			; has Sonic's object been deleted (because he entered the giant ring)?
+		beq.s	Sign_LoadEndCards			; if yes, skip all other checks
+		btst	#1,(v_player+obStatus).w		; is Sonic airborne?
+		bne.w	Sign_Return				; if yes, wait until he has landed
+		jsr	(Sonic_StartVictory).l
+		bra.s	Sign_LoadEndCards
+	elseif FixBugs
 		; This function's checks are a mess, creating an edge case where it's
 		; possible for the player to avoid having their controls locked by
 		; jumping at the right side of the screen just as the score tally

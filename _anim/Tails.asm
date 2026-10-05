@@ -35,6 +35,7 @@ Ani_Tails:
         dc.w TailsAni_Transform-Ani_Tails ; $20
         dc.w TailsAni_Figure8-Ani_Tails
         dc.w TailsAni_Fall-Ani_Tails
+        dc.w TailsAni_Victory-Ani_Tails
 
 ; Eight S3K walk frames per floor orientation (descriptor walk count 8), in
 ; S3K's order (7, 8, 1-6).
@@ -210,6 +211,9 @@ TailsAni_Figure8: dc.b $FF,fr_Run11,fr_Run12,fr_Run13,fr_Run14,afEnd,afEnd,afEnd
 
 ; A relaxed walking cycle on spring descent; the S3K CB/CC poses are death.
 TailsAni_Fall: dc.b 3,fr_Walk11,fr_Walk12,fr_Walk13,fr_Walk14,fr_Walk15,fr_Walk16,afEnd
+
+; S3K extra-sheet pose: facing the camera with both arms raised.
+TailsAni_Victory: dc.b 7,fr_TailsVictory,afEnd
 
 ; S3K Super transformation: curl, pose and flash (frames $EB-$ED).
 TailsAni_Transform: dc.b 2,fr_TailsTransform,fr_TailsTransform,fr_TailsTransform+1,fr_TailsTransform+2,fr_TailsTransform+1,fr_TailsTransform+2,fr_TailsTransform+1,fr_TailsTransform+2,fr_TailsTransform+1,fr_TailsTransform+2,fr_TailsTransform+1,fr_TailsTransform+2,afChange,id_Walk

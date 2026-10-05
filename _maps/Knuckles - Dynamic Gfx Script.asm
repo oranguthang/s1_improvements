@@ -185,6 +185,10 @@ KnucklesDPLC_internal: mappingsTable
 	mappingsTableEntry.w KnucklesPLC_B7
 	mappingsTableEntry.w KnucklesPLC_B8
 	mappingsTableEntry.w KnucklesPLC_B9
+	mappingsTableEntry.w KnucklesPLC_BA
+	mappingsTableEntry.w KnucklesPLC_BB
+	mappingsTableEntry.w KnucklesPLC_BC
+	mappingsTableEntry.w KnucklesPLC_BD
 
 KnucklesPLC_00: dplcHeader
 KnucklesPLC_00_End
@@ -1050,5 +1054,25 @@ KnucklesPLC_B9: dplcHeader
 	dplcEntry 16, $20A
 	dplcEntry 1, $21A
 KnucklesPLC_B9_End
+
+KnucklesPLC_BA: dplcHeader
+	dplcEntry 16, $47B
+	dplcEntry 3, $48B
+KnucklesPLC_BA_End
+
+KnucklesPLC_BB: dplcHeader
+	dplcEntry 16, $48E
+	dplcEntry 6, $49E
+KnucklesPLC_BB_End
+
+KnucklesPLC_BC: dplcHeader
+	dplcEntry 16, $851
+	dplcEntry 2, $861
+KnucklesPLC_BC_End
+
+KnucklesPLC_BD: dplcHeader
+	dplcEntry 16, $863
+	dplcEntry 5, $873
+KnucklesPLC_BD_End
 
 	even

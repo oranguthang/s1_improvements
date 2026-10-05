@@ -33,11 +33,11 @@ HUD_Update:
 
 .chktime:
 		tst.b	(f_timecount).w				; does the time need updating?
-		beq.s	.chklives				; if not, branch
+		beq.w	.chklives				; if not, branch
 		tst.w	(f_pause).w				; is the game paused?
-		bne.s	.chklives				; if yes, branch
+		bne.w	.chklives				; if yes, branch
 		tst.w	(v_debuguse).w				; item placement pauses the act clock
-		bne.s	.chklives
+		bne.w	.chklives
 
 		; Each byte in v_time is treated individually in the format "00 0M SS FF", and it's updated right-to-left:
 		;   FF (v_timecent) = frame counter for one second (increments seconds after crossing 60 and resets to 00, used internally only)
@@ -49,15 +49,23 @@ HUD_Update:
 		cmpi.l	#(9*$10000)+(59*$100)+59,(a1)+		; is the time 9:59:59? (and advance pointer by 4)
 		bne.s	.advancetime				; if not, branch
 		tst.w	(f_debugmode).w				; debug retains its exemption from time over
-		bne.s	.chklives
+		bne.w	.chklives
 		tst.b	(v_dev_god).w				; is God Mode on?
-		bne.s	.chklives				; if yes, hold the clock at 9:59 without a time over
+		bne.w	.chklives				; if yes, hold the clock at 9:59 without a time over
 		bra.w	TimeOver				; kill Sonic from a time over
 
 	.advancetime:
+	if FeatureCentiseconds
+		tst.b	(v_gamemode).w				; is the level still fading in?
+		bmi.s	.chklives				; if yes, start the clock once it is playable
+	endif
 		addq.b	#1,-(a1)				; increment 1/60s counter (v_timecent)
 		cmpi.b	#60,(a1)				; check if passed 60
+	if FeatureCentiseconds
+		blo.s	.updatecentis				; if not, only the hundredths change
+	else
 		blo.s	.chklives				; if not, branch (and skip updating time in VRAM entirely)
+	endif
 		move.b	#0,(a1)					; reset 1/60s counter to 0
 
 		addq.b	#1,-(a1)				; increment seconds counter (v_timesec)
@@ -80,6 +88,14 @@ HUD_Update:
 		moveq	#0,d1					; clear d1
 		move.b	(v_timesec).w,d1			; load seconds
 		bsr.w	Hud_Secs				; write seconds digits to VRAM
+	if FeatureCentiseconds
+	.updatecentis:
+		locVRAM	(ArtTile_HUDCentis)*tile_size,d0	; set VRAM address
+		moveq	#0,d1					; clear d1
+		move.b	(v_timecent).w,d1			; load the 1/60s counter
+		move.b	Hud_FramesToCentis(pc,d1.w),d1		; show it as hundredths of a second
+		bsr.w	Hud_Secs				; write the two digits to VRAM
+	endif
 
 .chklives:
 		tst.b	(f_lifecount).w				; does the lives counter need updating?
@@ -108,6 +124,15 @@ HUD_Update:
 ; ---------------------------------------------------------------------------
 ; Kill Sonic when a time over has occurred (9:59:59)
 ; ---------------------------------------------------------------------------
+
+	if FeatureCentiseconds
+; Selbi's Add Centiseconds HUD (https://info.sonicretro.org/SCHG_How-to:Add_Centiseconds_HUD):
+; frame 0-59 of the current second as hundredths, 00-99.
+Hud_FramesToCentis:
+	rept 60
+		dc.b (*-Hud_FramesToCentis)*99/59
+	endr
+	endif
 
 TimeOver:
 		clr.b	(f_timecount).w				; stop time counter
@@ -158,6 +183,15 @@ Hud_Base:
 		locVRAM	(ArtTile_HUDScore_E)*tile_size		; set VRAM address to the "E" in score
 		lea	Hud_Base_Score(pc),a2			; load HUD digits initialization data
 		move.w	#(Hud_Base_End-Hud_Base_Score)-1,d2	; write all digits for score, time, rings
+	if FeatureCentiseconds
+		bsr.s	Hud_Init_8x16Digits
+		locVRAM	(ArtTile_HUDCentiSep)*tile_size		; set VRAM address to the second colon
+		lea	Hud_Base_Centis(pc),a2
+		moveq	#1-1,d2					; write the colon
+		bsr.s	Hud_Init_8x16Digits
+		locVRAM	(ArtTile_HUDCentis)*tile_size		; set VRAM address to the hundredths
+		moveq	#2-1,d2					; write "00"
+	endif
 		; fall-through to Hud_Init_8x16Digits...
 
 ; ---------------------------------------------------------------------------
@@ -204,7 +238,11 @@ Hud_Init_8x16Digits:
 Hud_Base_Score:	dc.b $16,  -1,  -1,  -1,  -1,  -1,  -1,	  0	; score (E______0)
 Hud_Base_Time:	dc.b   0, $14,   0,   0				; time  (0:00)
 Hud_Base_Rings:	dc.b  -1,  -1,   0				; rings (__0)
-Hud_Base_End:	even
+Hud_Base_End:
+	if FeatureCentiseconds
+Hud_Base_Centis: dc.b $14, 0, 0				; second colon, then hundredths (:00)
+	endif
+		even
 ; ===========================================================================
 
 ; ===========================================================================
@@ -302,6 +340,10 @@ HudDb_ChkHidden:
 		beq.s	.hide
 		tst.b	(v_endcard).w				; results card with bonus counters?
 		bne.s	.hide
+	if FeatureS2Stars
+		tst.b	(v_invinc).w				; Sonic 2 stars use these tiles while invincible
+		bne.s	.hide
+	endif
 		tst.w	(v_debuguse).w				; debug placement entered while dying?
 		bne.s	.show					; (Game Over art is only queued after that)
 		cmpi.b	#6,(v_player+obRoutine).w		; is Sonic dying? (Game Over art may load)
