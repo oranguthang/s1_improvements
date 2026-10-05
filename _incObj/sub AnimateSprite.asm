@@ -28,21 +28,46 @@ Anim_LoadNextFrame:
 		moveq	#0,d1					; clear d1
 		move.b	obAniFrame(a0),d1			; load current frame index number
 		move.b	1(a1,d1.w),d0				; read next frame ID from script
-		bmi.s	Anim_End_FF				; if ID is negative, this is a special flag, branch
+		cmpi.b	#af2ndRoutine,d0			; $FA-$FF are special flags; $00-$F9 are frames
+		bhs.s	Anim_End_FF				; if this is a special flag, branch
 ; ---------------------------------------------------------------------------
 
+; Frames $00-$F9 are allowed for every object, after "Extend the Sonic 1 sprite
+; mappings and art limit" (https://info.sonicretro.org/SCHG_How-to:Extend_the_Sonic_1_sprite_mappings_and_art_limit).
+; The six original objects below still use aniXFlip ($20) and aniYFlip ($40)
+; in their scripts, which limits them to frames $00-$1F. New objects should
+; mirror sprites with separate mappings instead.
 Anim_SetFrameAndFlipFlags:
-		move.b	d0,d1					; copy new frame ID
-		andi.b	#$1F,d0					; limit possible frame IDs to $20 (other bits are occupied by flags)
-		move.b	d0,obFrame(a0)				; write new frame ID to object
+		cmpi.b	#$20,d0					; frames $00-$1F never carry flip flags
+		blo.s	.modern
+		move.b	obID(a0),d1
+		cmpi.b	#id_Crabmeat,d1				; Crabmeat and its fireballs
+		beq.s	.legacy
+		cmpi.b	#id_LavaBall,d1				; MZ and SLZ fireballs
+		beq.s	.legacy
+		cmpi.b	#id_BossFire,d1				; MZ boss fire
+		beq.s	.legacy
+		cmpi.b	#id_GrassFire,d1			; MZ burning grass
+		beq.s	.legacy
+		cmpi.b	#id_SpinPlatform,d1			; SBZ trapdoors and spinning platforms
+		beq.s	.legacy
+		cmpi.b	#id_SpinConvey,d1			; SBZ conveyor spinning platforms
+		bne.s	.modern
 
-		; Handle aniXFlip and aniYFlip flags if specified in animation scripts.
-		; This part is the main reason why non-Sonic objects are limited to only $20 frames,
-		; and in later games this limitation was removed (flipping was instead exclusively
-		; handled through separate, flipped sprite mappings sets, rather than animation flags).
+	.legacy:
+		move.b	d0,d1					; copy new frame ID
+		andi.b	#$1F,d0					; frame IDs $00-$1F, the other bits are flip flags
+		move.b	d0,obFrame(a0)				; write new frame ID to object
 		move.b	obStatus(a0),d0				; get object's current status flags
 		rol.b	#3,d1					; shift aniXFlip and aniYFlip into low bits to match obStatus format
 		eor.b	d0,d1					; xor with existing flip state of object
+		bra.s	.setFlip
+
+	.modern:
+		move.b	d0,obFrame(a0)				; write new frame ID to object
+		move.b	obStatus(a0),d1				; the object's own flip state
+
+	.setFlip:
 		andi.b	#sprite_xflip|sprite_yflip,d1		; limit result to only X and Y flip state
 		andi.b	#~(sprite_xflip|sprite_yflip),obRender(a0) ; clear previous X and Y flip states of objects
 		or.b	d1,obRender(a0)				; set new X and Y flip states for object
@@ -108,5 +133,5 @@ Anim_End_FA:
 ; ---------------------------------------------------------------------------
 
 Anim_End:
-		rts						; special flag handling done (or ID between $80-$F9 was used)
+		rts						; special flag handling done
 ; End of function AnimateSprite

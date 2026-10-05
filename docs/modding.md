@@ -101,6 +101,14 @@ Ordinary and lost rings stream their animation from `artunc/Ring Frames.unc`; sp
 
 Coordinate digits use `$570–$57F`; the SPR label/count uses `$55C–$560`. Hide this overlay when another screen owns those tiles, and upload all digits before displaying it again.
 
+## Debug placement lists
+
+`_incObj/DebugMode.asm` keeps one item list per zone. The `dbugcommon` macro at the top of each list places the objects whose art every zone loads: a ring, the rings, shield, speed shoes, invincibility, extra-life and Eggman monitors, and a lamppost. Add a zone-specific object to that zone's list only when its art is loaded there.
+
+## Animation frame limits
+
+`AnimateSprite` accepts frames $00–$F9 for every object; $FA–$FF remain the script commands. `BuildSprites` reads mapping frames up to $FF. Six original objects still put `aniXFlip`/`aniYFlip` in their scripts and therefore keep frames $00–$1F: Crabmeat, the MZ/SLZ fireballs, the MZ boss fire, the MZ burning grass and both SBZ spinning platforms. `Anim_SetFrameAndFlipFlags` lists their IDs. New objects should mirror sprites with separate mappings instead of these flags.
+
 ## Smashable rocks
 
 The GHZ purple rock has an optional Smashable subtype in both SonLVL definitions. Ordinary placements retain their solid behaviour. Destruction checks rolling and speed, emits debris/points, and retains respawn bookkeeping.
