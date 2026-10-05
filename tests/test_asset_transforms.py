@@ -81,6 +81,18 @@ def test_super_flickies_fit_their_vram_slot() -> None:
     assert any(art)
 
 
+def test_special_stage_results_keep_original_colours() -> None:
+    """The results screen has its own palette for the recoloured shared art."""
+    line = [
+        (ROOT / "palette/Special Stage Results.bin").read_bytes()[i : i + 32]
+        for i in range(0, 128, 32)
+    ]
+    # HUD text moved from colour 15 to 12: both must be the original green.
+    assert line[0][24:26] == line[0][30:32] == bytes.fromhex("04c0")
+    # Ovals use the gray slots 7-9; on this screen line 3 shows them yellow.
+    assert line[2][14:20] == bytes.fromhex("00ee00ee0eaa") == line[0][6:8] * 2 + line[0][2:4]
+
+
 def test_every_feature_option_is_documented() -> None:
     import re
 

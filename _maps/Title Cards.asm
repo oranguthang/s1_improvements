@@ -317,16 +317,16 @@ M_SSR_Score:	spriteHeader	; Score tally
 	spritePiece	-$30, -8, 1, 2, $162, 0, 0, 0, 0; "E"
 	spritePiece	$18, -8, 3, 2, $164, 0, 0, 0, 0	; Tally (first four digits)
 	spritePiece	$30, -8, 4, 2, $16A, 0, 0, 0, 0	; Tally (second four digits)
-	spritePiece	-$33, -9, 2, 1, $6E, 0, 0, 1, 0	; Small oval (upper half)
-	spritePiece	-$33, -1, 2, 1, $6E, 1, 1, 1, 0	; Small oval (lower half)
+	spritePiece	-$33, -9, 2, 1, $6E, 0, 0, 2, 0	; Small oval (upper half)
+	spritePiece	-$33, -1, 2, 1, $6E, 1, 1, 2, 0	; Small oval (lower half)
 M_SSR_Score_End
 
 M_SSR_Ring:	spriteHeader	; Ring Bonus tally
 	spritePiece	-$50, -8, 4, 2, $152, 0, 0, 0, 0; "RING"
 	spritePiece	-$27, -8, 4, 2, $66, 0, 0, 0, 0	; "BONU"
 	spritePiece	-7, -8, 1, 2, $14A, 0, 0, 0, 0	; "S"
-	spritePiece	-$A, -9, 2, 1, $6E, 0, 0, 1, 0	; Small oval (upper half)
-	spritePiece	-$A, -1, 2, 1, $6E, 1, 1, 1, 0	; Small oval (lower half)
+	spritePiece	-$A, -9, 2, 1, $6E, 0, 0, 2, 0	; Small oval (upper half)
+	spritePiece	-$A, -1, 2, 1, $6E, 1, 1, 2, 0	; Small oval (lower half)
 	spritePiece	$28, -8, 4, 2, -8, 0, 0, 0, 0	; Tally (first four digits)
 	spritePiece	$48, -8, 1, 2, $170, 0, 0, 0, 0	; Tally (second four digits)
 M_SSR_Ring_End
