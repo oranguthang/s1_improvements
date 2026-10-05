@@ -4,6 +4,9 @@
 ; animation themselves, so only the spring and its following fall are handled.
 ; ---------------------------------------------------------------------------
 Sonic_UpdateAirPose:
+	if FeatureSpringPoses=0
+		rts						; spring and fall poses disabled
+	endif
         tst.b (v_lightdash).w
         bne.s .return
         cmpi.b #2,obRoutine(a0)

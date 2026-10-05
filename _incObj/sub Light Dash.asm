@@ -15,6 +15,9 @@ LightDash_StallFrames: equ 3
 ; Called in the airborne modes before their normal A action. A failed search
 ; leaves the press intact. Success skips the rest of the calling mode.
 Sonic_LightDashStart:
+	if FeatureLightDash=0
+		rts						; Light Dash disabled
+	endif
         tst.b (v_lightdash).w
         bne.w .return
         btst #bitA,(v_jpadpress2).w

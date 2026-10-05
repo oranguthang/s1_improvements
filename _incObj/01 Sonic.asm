@@ -707,9 +707,11 @@ Sonic_MoveLeft:
 		neg.w	d1					; negate it for left-side check
 		cmp.w	d1,d0					; is new speed above max speed?
 		bgt.s	.nocap					; if not, branch
+	if FeatureMomentum
 		add.w	d5,d0					; recover speed before this frame's acceleration
 		cmp.w	d1,d0					; was Sonic already faster than the normal limit?
 		ble.s	.nocap					; keep momentum gained from outside forces
+	endif
 		move.w	d1,d0					; cap Sonic's ground speed
 
 ; loc_130A6:
@@ -774,9 +776,11 @@ Sonic_MoveRight:
 		add.w	d5,d0					; add acceleration to current ground speed
 		cmp.w	d6,d0					; is new speed above max speed?
 		blt.s	.nocap					; if not, branch
+	if FeatureMomentum
 		sub.w	d5,d0					; recover speed before this frame's acceleration
 		cmp.w	d6,d0					; was Sonic already faster than the normal limit?
 		bge.s	.nocap					; keep momentum gained from outside forces
+	endif
 		move.w	d6,d0					; cap Sonic's ground speed
 
 ; loc_1310C:
@@ -1007,6 +1011,11 @@ Sonic_JumpDirection:
 		move.w	(v_sonspeedacc).w,d5			; get Sonic's current acceleration...
 		asl.w	#1,d5					; ...doubled
 
+	if FeatureRollJumpSteering=0
+		btst	#4,obStatus(a0)				; is Roll-Jump flag set?
+		bne.s	Sonic_RollJumpLock			; if yes, prevent midair direction change
+	endif
+
 		move.w	obVelX(a0),d0				; get Sonic's current X-velocity
 		btst	#bitL,(v_jpadhold2).w			; is left being held?
 		beq.s	.notleft				; if not, branch
@@ -1016,9 +1025,11 @@ Sonic_JumpDirection:
 		neg.w	d1					; negate it for leftward movement check
 		cmp.w	d1,d0					; is new speed exceeding maximum?
 		bgt.s	.notleft				; if not, branch
+	if FeatureMomentum
 		add.w	d5,d0					; recover speed before this frame's acceleration
 		cmp.w	d1,d0					; was Sonic already faster than the normal limit?
 		ble.s	.notleft				; keep momentum gained from outside forces
+	endif
 		move.w	d1,d0					; cap leftward X-speed to maximum
 
 ; loc_13278:
@@ -1029,9 +1040,11 @@ Sonic_JumpDirection:
 		add.w	d5,d0					; increase rightward movement speed
 		cmp.w	d6,d0					; is new speed exceeding maximum?
 		blt.s	Sonic_JumpMove				; if not, branch
+	if FeatureMomentum
 		sub.w	d5,d0					; recover speed before this frame's acceleration
 		cmp.w	d6,d0					; was Sonic already faster than the normal limit?
 		bge.s	Sonic_JumpMove				; keep momentum gained from outside forces
+	endif
 		move.w	d6,d0					; cap rightward X-speed to maximum
 
 ; Obj01_JumpMove:
@@ -1341,7 +1354,11 @@ Sonic_Jump:
 	endif
 
 		btst	#2,obStatus(a0)				; is Sonic already in a ball state?
+	if FeatureRollJumpSteering
 		bne.s	.return				; keep ball state while jumping from a roll
+	else
+		bne.s	.rolljump				; if so, branch
+	endif
 		move.b	#sonic_roll_height,obHeight(a0)		; set height to rolling size
 		move.b	#sonic_roll_width,obWidth(a0)		; set width to rolling size
 		move.b	#id_Roll,obAnim(a0)			; use "jumping" animation
@@ -1354,6 +1371,11 @@ Sonic_Jump:
 ; ===========================================================================
 
 ; loc_13490:
+	if FeatureRollJumpSteering=0
+.rolljump:
+		bset	#4,obStatus(a0)				; set Roll-Jump flag
+		rts						; return
+	endif
 ; End of function Sonic_Jump
 
 
@@ -1957,6 +1979,9 @@ Sonic_FloorRight:
 Sonic_ResetOnFloor:
 		bclr	#5,obStatus(a0)				; clear push flag
 		bclr	#1,obStatus(a0)				; clear in-air flag
+	if FeatureRollJumpSteering=0
+		bclr	#4,obStatus(a0)				; clear roll-jump flag
+	endif
 		bclr	#7,obStatus(a0)				; allow another homing attack after landing
 		clr.b	objoff_3D(a0)				; reset Super toggle window
 		clr.b	objoff_3F(a0)
@@ -2716,6 +2741,9 @@ Sonic_ChkDebugToggle:
 		beq.s	.return
 		tst.b	(f_lockctrl).w
 		bne.s	.enterdebug
+	if FeatureSuper=0
+		bra.s	.enterdebug				; no Super combo can take B
+	endif
 		btst	#0,(f_playerctrl).w
 		bne.s	.enterdebug
 		move.b	obStatus(a0),d0
@@ -2742,6 +2770,9 @@ Sonic_ChkDebugToggle:
 ; ---------------------------------------------------------------------------
 
 Sonic_ToggleSuper:
+	if FeatureSuper=0
+		rts						; Super forms disabled
+	endif
 		btst	#7,objoff_3F(a0)	; is Super toggle locked until button release?
 		beq.s	.checktimer		; if not, branch
 		move.b	(v_jpadhold2).w,d0
@@ -3151,6 +3182,9 @@ Sonic_RefreshMusic:
 
 ; Curl into a ball in midair when a jump button is pressed again.
 Sonic_AirRoll:
+	if FeatureAirRoll=0
+		rts						; Air Roll disabled
+	endif
 		moveq	#btnABC,d0
 		and.b	(v_jpadpress2).w,d0
 		beq.s	.return
@@ -3166,6 +3200,9 @@ Sonic_AirRoll:
 
 ; Dash toward the closest valid target, or in the direction Sonic faces.
 Sonic_HomingAttack:
+	if FeatureHomingAttack=0
+		rts						; Jump Dash and Homing Attack disabled
+	endif
 		cmpi.b #Character_Sonic,(v_character_p1).w
 		bne.s .return
 		btst	#7,obStatus(a0)				; only one attack per jump until a target is hit
@@ -3274,6 +3311,9 @@ Sonic_HomingTargetY:
 
 ; Pan the camera ahead when Sonic moves quickly, then ease back to center.
 Sonic_PanCamera:
+	if FeatureExtendedCamera=0
+		rts						; keep the original camera focus
+	endif
 		move.w	(v_camera_pan).w,d1
 		move.b spindash_flag(a0),d0
 		andi.b #3,d0			; pan toward either charging direction

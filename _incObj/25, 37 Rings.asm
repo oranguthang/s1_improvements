@@ -205,6 +205,10 @@ AddRings:
 	.chkThreshold:
 		moveq	#$7F,d1
 		and.b	(v_lifecount).w,d1			; get 100-ring lives already awarded
+	if FeatureExtraLives=0
+		cmpi.b	#2,d1					; the original game pays out at 100 and 200 only
+		bhs.s	.done
+	endif
 		addq.w	#1,d1					; next multiple to reach
 		mulu.w	#100,d1					; convert to rings
 		cmp.w	d1,d0					; has it been reached?

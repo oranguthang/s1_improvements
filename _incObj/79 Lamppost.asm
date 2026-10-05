@@ -106,6 +106,10 @@ Lamp_Blue:	; Routine 2
 		move.b	#1,obFrame(a0)				; use touched lamppost to "post only" frame
 
 		bsr.w	Lamp_StoreInfo				; store all current relevant gameplay data
+	if FeatureLamppostRings=0
+		clr.w	(v_lamp_rings).w			; the original game restarts without rings
+		clr.b	(v_lamp_lives).w			; and can award the 100-ring lives again
+	endif
 
 		respawn_entry.s	.donothing
 		bset	#0,(a2)

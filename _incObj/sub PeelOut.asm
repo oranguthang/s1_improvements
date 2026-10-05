@@ -8,6 +8,9 @@ PeelOut_MinCharge: equ $600
 PeelOut_MaxCharge: equ $1000
 
 Sonic_PeelOut:
+	if FeaturePeelOut=0
+		rts						; Super Peel-Out disabled
+	endif
         btst    #1,spindash_flag(a0)
         bne.w   .charge
         btst    #0,spindash_flag(a0)

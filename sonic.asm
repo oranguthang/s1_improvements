@@ -65,6 +65,44 @@ WaterSurfaceGradual = 1
 		error "Enable exactly one of WaterSurfaceSprites, WaterSurfaceLine and WaterSurfaceGradual"
 	endif
 
+; Gameplay features added by this project. Each is 1 by default; 0 restores
+; the original Sonic 1 behaviour. Disabled code stays assembled but is never
+; entered, so data layouts and other features do not change.
+FeatureSpinDash = 1
+;	| Hold Down and press A/B/C to charge a Spin Dash
+FeaturePeelOut = 1
+;	| Hold Up and press A/B/C to charge a Super Peel-Out
+FeatureAirRoll = 1
+;	| Press A/B/C in the air to curl into a ball
+FeatureHomingAttack = 1
+;	| Press A/B/C during a jump for Sonic's Jump Dash and Homing Attack
+FeatureLightDash = 1
+;	| Press A in the air to dash along a chain of rings
+FeatureSpringPoses = 1
+;	| Twirl after a spring launch and use falling poses (Sonic); 0 = original spring pose
+FeatureExtendedCamera = 1
+;	| Let the camera look ahead of the player at speed
+FeatureMomentum = 1
+;	| Keep speed above the running cap that came from slopes, springs or dashes
+FeatureRollJumpSteering = 1
+;	| Allow steering after jumping from a roll
+FeatureInstantTally = 1
+;	| A/B/C finishes the act and Special Stage bonus count at once
+FeatureExtraLives = 1
+;	| An extra life for every 100 rings; 0 = only at 100 and 200 rings
+FeatureLamppostRings = 1
+;	| Lampposts keep the ring count; 0 = restart from a lamppost with no rings
+FeatureSuper = 1
+;	| Super transformation for every character and the Super run in the good ending
+FeatureTails = 1
+;	| Tails can be selected in OPTIONS
+FeatureKnuckles = 1
+;	| Knuckles can be selected in OPTIONS
+
+	if (FeatureSpinDash|FeaturePeelOut|FeatureAirRoll|FeatureHomingAttack|FeatureLightDash|FeatureSpringPoses|FeatureExtendedCamera|FeatureMomentum|FeatureRollJumpSteering|FeatureInstantTally|FeatureExtraLives|FeatureLamppostRings|FeatureSuper|FeatureTails|FeatureKnuckles)&~1
+		error "Feature options must be 0 or 1"
+	endif
+
 ZoneCount = 6
 ;	| Used for the "zonewarning" macro. Do not change, unless more zones get added.
 ;	| Discrete zones are: GHZ, LZ, MZ, SLZ, SYZ, and SBZ
@@ -3765,6 +3803,9 @@ End_SlowFade:
 ; Good-ending Super presentation uses the normal cutscene movement constants.
 ; Do not call Sonic_ActivateSuper: it changes physics, music and star objects.
 End_InitSuper:
+	if FeatureSuper=0
+		rts						; the good ending keeps the normal form
+	endif
 		jsr	(HasAllEmeralds).l
 		bne.s	.return
 		move.b	#1,(v_supersonic).w

@@ -4,6 +4,9 @@
 ; ---------------------------------------------------------------------------
 
 Sonic_SpinDash:
+	if FeatureSpinDash=0
+		rts						; Spin Dash disabled
+	endif
 		btst	#0,spindash_flag(a0)		; is Spin Dash flag already set?
 		bne.s	Sonic_UpdateSpindash		; if yes, branch to alternate routine
 		btst #bitDn,(v_jpadhold2).w

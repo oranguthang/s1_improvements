@@ -81,6 +81,21 @@ def test_super_flickies_fit_their_vram_slot() -> None:
     assert any(art)
 
 
+def test_every_feature_option_is_documented() -> None:
+    import re
+
+    source = (ROOT / "sonic.asm").read_text(encoding="utf-8")
+    options = re.findall(r"^(Feature\w+) = 1\s*$", source, re.MULTILINE)
+    assert len(options) >= 15
+    # The range check rejects anything other than 0 or 1.
+    check = re.search(r"if \((Feature\w+(?:\|Feature\w+)*)\)&~1", source)
+    assert check and sorted(check.group(1).split("|")) == sorted(options)
+    docs = (ROOT / "docs/modding.md").read_text(encoding="utf-8")
+    table = docs.split("## Feature options", 1)[1].split("\n## ", 1)[0]
+    for option in options:
+        assert f"`{option}`" in table, option
+
+
 def run(*command: str) -> str:
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT / "tools")

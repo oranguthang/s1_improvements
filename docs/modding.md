@@ -1,5 +1,26 @@
 # Modding reference
 
+## Feature options
+
+The `Feature*` switches in `sonic.asm` turn this project's gameplay additions on (1, the default) or off (0). Off restores the original Sonic 1 behaviour for that feature only. The code stays assembled but is never entered, so a feature can be switched off without moving data or touching other features. The default build is unchanged by these switches.
+
+| Option | When 0 |
+|---|---|
+| `FeatureSpinDash` | Down+A/B/C while ducking jumps as in the original game. |
+| `FeaturePeelOut` | Up+A/B/C jumps. |
+| `FeatureAirRoll` | Pressing A/B/C again in the air does nothing. |
+| `FeatureHomingAttack` | No Jump Dash or Homing Attack. |
+| `FeatureLightDash` | No Light Dash. |
+| `FeatureSpringPoses` | Normal Sonic uses the original single spring pose, and no character switches to a falling pose. |
+| `FeatureExtendedCamera` | The camera keeps the original fixed focus. |
+| `FeatureMomentum` | Input caps ground and air speed at the running limit, as in the original game. |
+| `FeatureRollJumpSteering` | A jump from a roll locks midair steering again. |
+| `FeatureInstantTally` | Act and Special Stage bonuses always count down. |
+| `FeatureExtraLives` | Rings award lives only at 100 and 200. |
+| `FeatureLamppostRings` | Restarting from a lamppost starts with no rings. Returning from a giant ring still keeps them. |
+| `FeatureSuper` | No character can transform, and the good ending keeps the normal form. The CHEATS ring settings stay but have no effect. |
+| `FeatureTails`, `FeatureKnuckles` | OPTIONS skips that character, and a saved selection of it falls back to Sonic. Its art, ending and code stay in the ROM. |
+
 ## Shared palettes
 
 The selected solo character owns the protected colours at indices 2–5 of palette line 0: blue for Sonic or orange for Tails. Knuckles uses 2/4/5 for red/pink fur and 3 for green shoe panels. Each has dry, Labyrinth and Scrap Brain Act 3 palettes. Gameplay objects and badniks keep stable colours outside these slots, allowing future Super forms to cycle fur independently of them. Each Super cycle writes indices 2–5 as well. Super Tails' first entry repeats his normal index 2, and Super Knuckles' second entry repeats his normal index 3, so his green shoe panels never cycle. Simultaneous players with independent fur ramps would require a separate palette allocation and further resource changes.

@@ -131,6 +131,7 @@ SSR_RingBonus:	; Routine 6
 
 		tst.w	(v_ringbonus).w				; is any ring bonus left?
 		beq.w	.finished				; if not, branch
+	if FeatureInstantTally
 		moveq	#btnABC,d0				; match the act card's A/B/C tally shortcut
 		and.b	(v_jpadhold1).w,d0
 		beq.s	.countNormally
@@ -139,6 +140,7 @@ SSR_RingBonus:	; Routine 6
 		clr.w	(v_ringbonus).w
 		jsr	(AddPoints).l
 		bra.w	.finished
+	endif
 	.countNormally:
 		subi.w	#10,(v_ringbonus).w			; subtract 100 points from remaining ring bonus
 		moveq	#10,d0					; set to add 100 points to score

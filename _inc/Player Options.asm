@@ -24,6 +24,7 @@ Options_ReadInput:
         beq.s .unchanged
         moveq #0,d0
         move.b (v_character_selected).w,d0
+    if FeatureTails&FeatureKnuckles
         btst #bitL,d1
         beq.s .next
         subq.w #1,d0
@@ -35,6 +36,24 @@ Options_ReadInput:
         cmpi.w #Character_Count,d0
         blo.s .store
         moveq #0,d0
+    else
+        moveq #1,d2
+        btst #bitL,d1
+        beq.s .step
+        moveq #-1,d2
+.step:                                  ; skip characters left out of this build
+        add.w d2,d0
+        bpl.s .notBelow
+        moveq #Character_Count-1,d0
+.notBelow:
+        cmpi.w #Character_Count,d0
+        blo.s .inRange
+        moveq #0,d0
+.inRange:
+        lea (CharacterEnabled).l,a1
+        tst.b (a1,d0.w)
+        beq.s .step
+    endif
 .store:
         move.b d0,(v_character_selected).w
         jsr (Settings_Save).l

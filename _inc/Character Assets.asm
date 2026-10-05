@@ -21,6 +21,14 @@ UpdateSceneCharacter:
         move.b (v_character_selected).w,d0
         cmpi.b #Character_Count,d0
         bhs.s .return
+    if (FeatureTails&FeatureKnuckles)=0
+        move.l a1,-(sp)
+        ext.w d0
+        lea (CharacterEnabled).l,a1
+        tst.b (a1,d0.w)                 ; left out of this build: stay Sonic
+        movea.l (sp)+,a1                ; keeps the flags
+        beq.s .return
+    endif
         move.b d0,(v_character_p1).w
 .return:
         rts
@@ -183,6 +191,17 @@ ApplyPlayerFadeColours:
         movem.l (sp)+,a1/a3
 .return:
         rts
+
+; Nonzero for each character that this build lets the player select.
+    if (FeatureTails&FeatureKnuckles)=0
+CharacterEnabled:
+        dc.b 1,FeatureTails,FeatureKnuckles
+CharacterEnabled_End:
+        if (CharacterEnabled_End-CharacterEnabled)<>Character_Count
+        fatal "Add an enable flag for each character."
+        endif
+        even
+    endif
 
 CharacterAssets:
         dc.l CharacterAssets_Sonic,CharacterAssets_SuperSonic

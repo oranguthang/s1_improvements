@@ -59,7 +59,17 @@ Settings_Normalize:
 		clr.b	(v_dev_superdrain).w
 	.done:
 		cmpi.b #Character_Count,(v_character_selected).w
+	if FeatureTails&FeatureKnuckles
 		blo.s .characterValid
+	else
+		bhs.s .characterInvalid
+		moveq	#0,d0
+		move.b	(v_character_selected).w,d0
+		lea	(CharacterEnabled).l,a0
+		tst.b	(a0,d0.w)			; a saved character may be left out of this build
+		bne.s	.characterValid
+.characterInvalid:
+	endif
 		clr.b (v_character_selected).w
 .characterValid:
 		move.b #Character_Off,(v_character_p2).w ; legacy SRAM field stays $FF

@@ -136,6 +136,7 @@ Got_Bonus:	; Routine 6
 		bsr.w	DisplaySprite				; keep displaying card sprites
 		move.b	#1,(f_endactbonus).w			; set time/ring bonus HUD update flag
 		moveq	#0,d0					; set ticked-down bonus points to 0 by default
+	if FeatureInstantTally
 		moveq	#btnABC,d0				; is A, B or C held?
 		and.b	(v_jpadhold1).w,d0
 		beq.s	.timeBonus				; if not, count down normally
@@ -147,6 +148,7 @@ Got_Bonus:	; Routine 6
 		jsr	(AddPoints).l
 		moveq	#0,d0
 		bra.s	.checkFinished
+	endif
 
 	.timeBonus:
 		tst.w	(v_timebonus).w				; is any time bonus left?

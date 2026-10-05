@@ -276,9 +276,16 @@ SonAni_Float2:	dc.b 7
 		dc.b afEnd
 		even
 
+	if FeatureSpringPoses
 SonAni_Spring: dc.b 3
         dc.b fr_SpringTwirl1,fr_SpringTwirl2,fr_SpringTwirl3,fr_SpringTwirl4,fr_SpringTwirl5,afEnd
         even
+	else
+SonAni_Spring:	dc.b 47
+		dc.b fr_Spring
+		dc.b afChange, id_Walk
+		even
+	endif
 
 SonAni_Hang:	dc.b 4
 		dc.b fr_Hang1, fr_Hang2
