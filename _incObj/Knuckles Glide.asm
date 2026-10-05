@@ -1,5 +1,6 @@
 ; Solo Knuckles abilities, adapted to S1 terrain collision from S3K.
-; B/C starts a glide in the air; A remains the Light Dash button.
+; A/B/C starts a glide in the air. A takes Light Dash first when a ring chain
+; is in reach, as Sonic_LightDashStart runs before the glide checks.
 ; a0 = player. d0 = 1 if movement was handled, otherwise 0.
 knux_glide_frame: equ $75
 knux_fall_frame: equ $7A
@@ -44,7 +45,7 @@ Knuckles_GlideControl:
         tst.b d0
         bne.w .glide
         move.b (v_jpadpress2).w,d0
-        andi.b #btnB|btnC,d0
+        andi.b #btnABC,d0
         beq.w .inactive
         move.b #1,(v_knux_state).w
         move.w #$400,(v_knux_speed).w
@@ -65,7 +66,7 @@ Knuckles_GlideControl:
         clr.w obVelY(a0)
 .glide:
         move.b (v_jpadhold2).w,d0
-        andi.b #btnB|btnC,d0
+        andi.b #btnABC,d0
         beq.w Knuckles_ReleaseGlide
         move.w (v_knux_speed).w,d0
         cmpi.w #$400,d0
@@ -224,7 +225,7 @@ Knuckles_Climb:
         clr.w obVelY(a0)
         clr.w obInertia(a0)
         move.b (v_jpadpress2).w,d0
-        andi.b #btnB|btnC,d0
+        andi.b #btnABC,d0
         bne.w Knuckles_WallJump
         btst #bitL,(v_jpadhold2).w
         beq.w .awayRight
@@ -411,7 +412,7 @@ Knuckles_Slide:
         btst #1,obStatus(a0)
         bne.w Knuckles_Detach
         move.b (v_jpadhold2).w,d0
-        andi.b #btnB|btnC,d0
+        andi.b #btnABC,d0
         beq.w .stop
         tst.w obVelX(a0)
         bmi.w .left

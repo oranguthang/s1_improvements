@@ -54,7 +54,7 @@ Labyrinth uses a subdued blue-grey cycle. Scrap Brain Act 3 uses a related pink-
 
 ## Super Tails and Super Knuckles
 
-Solo Tails and Knuckles use the same emerald, ring and drain rules. Press two jump buttons together (A+B, A+C or B+C, within six frames) while airborne and rolling; unlike Sonic, holding one button and pressing another does not count, because B/C held after a jump already starts flight or gliding. The combo is checked before flight and gliding, so it never also starts them.
+Solo Tails and Knuckles use the same emerald, ring and drain rules. Press two jump buttons together (A+B, A+C or B+C, within six frames) while airborne and rolling; unlike Sonic, holding one button and pressing another does not count, because a button held after a jump already keeps flight or gliding going. The combo is checked before flight and gliding, so it never also starts them.
 
 As in Sonic 3 & Knuckles, both keep their normal sprites and change only fur colours: Tails cycles through a yellow ramp, Knuckles through a pink ramp, each with its S3K timing. Each plays the S3K transformation pose. Labyrinth and Scrap Brain Act 3 use underwater versions of both cycles. Super movement uses the S3K values for these characters: top speed $800, acceleration $18 and deceleration $C0, halved underwater. Super Knuckles glides and climbs faster.
 
@@ -90,7 +90,7 @@ Spring launches can use twirling and falling poses. The falling pose is limited 
 
 ## Light Dash
 
-Press A in the air facing a chain of at least three ordinary placed rings. Both forms follow curved chains and can continue across ground contact. Grounded A still jumps. Initial range is 64 pixels, maximum inter-ring gap 72 pixels. Speed is 12 pixels/frame, or 6 underwater. Exit momentum follows the final two distinct rings at dash speed. Sonic attacks badniks during the dash; ordinary Sonic is vulnerable after it ends unless curled again. An unreachable target cancels the dash after three stationary frames.
+Press A in the air facing a chain of at least three ordinary placed rings. Without such a chain, A does the character's normal air move instead: Sonic's Homing Attack or Jump Dash, Tails' flight or swimming, Knuckles' glide. Both forms follow curved chains and can continue across ground contact. Grounded A still jumps. Initial range is 64 pixels, maximum inter-ring gap 72 pixels. Speed is 12 pixels/frame, or 6 underwater. Exit momentum follows the final two distinct rings at dash speed. Sonic attacks badniks during the dash; ordinary Sonic is vulnerable after it ends unless curled again. An unreachable target cancels the dash after three stationary frames.
 
 ## Good ending
 

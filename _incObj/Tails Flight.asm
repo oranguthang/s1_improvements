@@ -1,5 +1,6 @@
 ; Solo Tails flight/swimming, using the S3K ascent pulses and eight-second
-; endurance. B/C supplies a second jump; A keeps the existing Light Dash.
+; endurance. A/B/C supplies a second jump; A takes Light Dash first when a
+; ring chain is in reach, as Sonic_LightDashStart runs before this check.
 ; a0 = player. d0 = 1 when this routine has advanced movement, otherwise 0.
 Tails_FlightControl:
         cmpi.b #Character_Tails,(v_character_p1).w
@@ -20,7 +21,7 @@ Tails_FlightControl:
         tst.b (v_tails_flying).w
         bne.s .flying
         move.b (v_jpadpress2).w,d0
-        andi.b #btnB+btnC,d0
+        andi.b #btnABC,d0
         beq.w .inactive
         move.b #1,(v_tails_flying).w
         move.w #8*60,(v_tails_flytime).w
@@ -41,7 +42,7 @@ Tails_FlightControl:
         beq.s .gravity
         subq.w #1,(v_tails_flytime).w
         move.b (v_jpadpress2).w,d0
-        andi.b #btnB+btnC,d0
+        andi.b #btnABC,d0
         beq.s .pulse
         cmpi.w #-$100,obVelY(a0)
         blt.s .pulse
