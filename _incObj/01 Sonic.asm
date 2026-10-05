@@ -193,8 +193,10 @@ Sonic_Display:
 		subq.w	#1,invtime(a0)				; subtract 1 from time
 		bne.s	.chkshoes				; if time remains, branch
         clr.b (v_invinc).w
+    if FeatureCDDrowning=0
         cmpi.w #12,(v_air).w
         bls.s .removeinvincible      ; countdown keeps playing
+    endif
         tst.b (f_bossmusic).w
         bne.s .removeinvincible      ; combat already owns the track
         jsr (Sonic_RefreshMusic).l
@@ -2158,8 +2160,12 @@ Sonic_HandleDeath:
 		addq.b	#2,obRoutine(a0)			; go to Sonic_ResetLevel
 		clr.b	(f_timecount).w				; stop time counter
 		addq.b	#1,(f_lifecount).w			; update lives counter
+	if FeatureInfiniteLives
+		bra.s	.extraLivesRemaining			; lives never run out, so there is no Game Over
+	else
 		subq.b	#1,(v_lives).w				; subtract 1 from number of lives
 		bne.s	.extraLivesRemaining			; did you run out of extra lives? if not, branch
+	endif
 
 		; GAME OVER
 		move.w	#0,restartime(a0)			; set to not restart the level
@@ -3021,10 +3027,12 @@ Sonic_SaveDebugDeathMusic:
 		bne.s	.restoretrack
 		tst.b	(v_invinc).w
 		bne.s	.restoretrack
+	if FeatureCDDrowning=0
 		cmpi.w	#12,(v_air).w
 		bhi.s	.chkshoes
 		btst	#6,obStatus(a0)
 		bne.s	.restoretrack			; rescuing a death during drowning music restores the act
+	endif
 .chkshoes:
 		tst.b	(v_shoes).w
 		beq.s	.return
@@ -3172,8 +3180,10 @@ Sonic_RefreshPalettes:
 ; ---------------------------------------------------------------------------
 
 Sonic_RefreshMusic:
+    if FeatureCDDrowning=0
         cmpi.w #12,(v_air).w
         bls.s .return               ; toggles never requeue/retempo drowning music
+    endif
         jsr (GetSonicMusic).l
         jsr (QueueMusicIfChanged).l
 .return:

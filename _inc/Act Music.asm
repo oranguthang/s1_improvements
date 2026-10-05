@@ -35,8 +35,10 @@ GetSonicMusic:
 ; A defeated boss returns to the act even while Sonic is still Super. Keep an
 ; active drowning song until air is replenished, using the same restore rule.
 PlayActMusic:
+    if FeatureCDDrowning=0
         cmpi.w #12,(v_air).w
         bls.s .return
+    endif
         bsr.w GetActMusic
         jmp (QueueSound1).l
 .return:

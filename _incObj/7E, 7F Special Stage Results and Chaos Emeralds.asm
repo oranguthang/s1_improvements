@@ -37,9 +37,11 @@ SSR_Main:
 
 		lea	(SSR_ItemData).l,a2			; load card item data
 		moveq	#4-1,d1					; load header text text, Score tally, Ring Bonus tally, and Blue oval
+	if FeatureInfiniteLives=0
 		cmpi.w	#ss_continue_rings,(v_rings).w		; do you have 50 or more rings?
 		blo.s	SSR_Loop				; if no, branch
 		addq.w	#1,d1					; if yes, also load Continue tally
+	endif
 
 SSR_Loop:
 		_move.b	#id_SSResult,obID(a1)			; load next end-of-level title card element
@@ -161,6 +163,9 @@ SSR_RingBonus:	; Routine 6
 		addq.b	#2,obRoutine(a0)			; set to SSR_Wait (8, before SSR_Exit A)
 		move.w	#3*60,obTimeFrame(a0)			; set post summing-up time delay to 3 seconds
 
+	if FeatureInfiniteLives
+		bra.s	.return					; continues need lives
+	endif
 		cmpi.w	#ss_continue_rings,(v_rings).w		; do you have at least 50 rings?
 		blo.s	.return					; if not, branch
 		move.w	#1*60,obTimeFrame(a0)			; set time delay before continue animation to 1 second

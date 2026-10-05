@@ -202,6 +202,9 @@ AddRings:
 		ori.b	#1,(f_ringcount).w			; update the rings counter
 
 		moveq	#0,d2					; no threshold reached yet
+	if FeatureInfiniteLives
+		bra.s	.done					; there are no lives to award
+	endif
 	.chkThreshold:
 		moveq	#$7F,d1
 		and.b	(v_lifecount).w,d1			; get 100-ring lives already awarded

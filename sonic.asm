@@ -99,7 +99,15 @@ FeatureTails = 1
 FeatureKnuckles = 1
 ;	| Knuckles can be selected in OPTIONS
 
-	if (FeatureSpinDash|FeaturePeelOut|FeatureAirRoll|FeatureHomingAttack|FeatureLightDash|FeatureSpringPoses|FeatureExtendedCamera|FeatureMomentum|FeatureRollJumpSteering|FeatureInstantTally|FeatureExtraLives|FeatureLamppostRings|FeatureSuper|FeatureTails|FeatureKnuckles)&~1
+; Optional alternatives, off by default.
+FeatureInfiniteLives = 0
+;	| If 1, hide the lives counter: no Game Over, extra lives or continues; 1-up monitors give 10 rings
+FeatureTextCredits = 0
+;	| If 1, the credits pages are plain text in _inc/Credits Text.asm, drawn with a 16x16 font
+FeatureCDDrowning = 0
+;	| If 1, low air beeps every second as in Sonic CD instead of playing the countdown music
+
+	if (FeatureSpinDash|FeaturePeelOut|FeatureAirRoll|FeatureHomingAttack|FeatureLightDash|FeatureSpringPoses|FeatureExtendedCamera|FeatureMomentum|FeatureRollJumpSteering|FeatureInstantTally|FeatureExtraLives|FeatureLamppostRings|FeatureSuper|FeatureTails|FeatureKnuckles|FeatureCDDrowning|FeatureInfiniteLives|FeatureTextCredits)&~1
 		error "Feature options must be 0 or 1"
 	endif
 

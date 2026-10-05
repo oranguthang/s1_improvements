@@ -649,6 +649,9 @@ SonicSS_ChkRing:
 ; Obj09_GetCont:
 SonicSS_GetContinue:
 		jsr	(CollectRing).l				; add a ring
+	if FeatureInfiniteLives
+		bra.s	SonicSS_NoContinue			; continues need lives
+	endif
 		cmpi.w	#ss_continue_rings,(v_rings).w		; check if you now have 50 rings
 		blo.s	SonicSS_NoContinue			; if not, branch
 		bset	#7,(v_lifecount).w			; remember that a continue has already been awarded (bits 0-6 count 100-ring lives)
@@ -675,6 +678,9 @@ SonicSS_Chk1Up:
 
 ; Obj09_Get1Up:
 SonicSS_Get1Up:
+	if FeatureInfiniteLives
+		bra.s	.noLife					; there are no lives to award
+	endif
 		cmpi.b	#99,(v_lives).w			; keep the two-digit HUD counter in range
 		bhs.s	.noLife
 		addq.b	#1,(v_lives).w				; add 1 to number of lives

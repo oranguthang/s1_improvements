@@ -21,6 +21,14 @@ The `Feature*` switches in `sonic.asm` turn this project's gameplay additions on
 | `FeatureSuper` | No character can transform, and the good ending keeps the normal form. The CHEATS ring settings stay but have no effect. |
 | `FeatureTails`, `FeatureKnuckles` | OPTIONS skips that character, and a saved selection of it falls back to Sonic. Its art, ending and code stay in the ROM. |
 
+Three optional alternatives are off by default; 1 enables them:
+
+| Option | When 1 |
+|---|---|
+| `FeatureCDDrowning` | As in Sonic CD's Tidal Tempest, the music keeps playing below 12 seconds of air and an unused Sonic 1 sound ($AB) beeps every second; the countdown numbers still appear. Music changes are no longer held back while air is low. |
+| `FeatureTextCredits` | The credits pages are plain text in `_inc/Credits Text.asm`, drawn on plane A with a 16x16 font (see Credits text below). |
+| `FeatureInfiniteLives` | The lives counter is hidden and dying never ends the game. Rings, score and Special Stage items no longer award lives or continues, and 1-up monitors give 10 rings. Time Over still restarts the act. |
+
 ## Shared palettes
 
 The selected solo character owns the protected colours at indices 2–5 of palette line 0: blue for Sonic or orange for Tails. Knuckles uses 2/4/5 for red/pink fur and 3 for green shoe panels. Each has dry, Labyrinth and Scrap Brain Act 3 palettes. Gameplay objects and badniks keep stable colours outside these slots, allowing future Super forms to cycle fur independently of them. Each Super cycle writes indices 2–5 as well. Super Tails' first entry repeats his normal index 2, and Super Knuckles' second entry repeats his normal index 3, so his green shoe panels never cycle. Simultaneous players with independent fur ramps would require a separate palette allocation and further resource changes.

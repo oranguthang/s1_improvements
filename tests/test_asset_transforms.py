@@ -97,7 +97,7 @@ def test_every_feature_option_is_documented() -> None:
     import re
 
     source = (ROOT / "sonic.asm").read_text(encoding="utf-8")
-    options = re.findall(r"^(Feature\w+) = 1\s*$", source, re.MULTILINE)
+    options = re.findall(r"^(Feature\w+) = [01]\s*$", source, re.MULTILINE)
     assert len(options) >= 15
     # The range check rejects anything other than 0 or 1.
     check = re.search(r"if \((Feature\w+(?:\|Feature\w+)*)\)&~1", source)

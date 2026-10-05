@@ -231,9 +231,15 @@ Drown_Countdown:; Routine $A
 		beq.s	.warningSound				; if yes, play sound
 		cmpi.w	#12,d0					; 12 seconds left?
 		bhi.s	.reduceAir				; if air is above 12, branch
+	if FeatureCDDrowning
+		; Sonic CD's Tidal Tempest keeps the level music and beeps every second.
+		move.w	#sfx_AB,d0				; set low-air warning sound
+		jsr	(QueueSound2).l				; play it
+	else
 		bne.s	.countdown				; is air EXACTLY 12 seconds? if not, branch
 		move.w	#bgm_Drowning,d0			; set countdown music
 		jsr	(QueueSound1).l				; play it
+	endif
 
 	.countdown:
 		subq.b	#1,drown_displaytime(a0)		; decrement timer until next number bubble

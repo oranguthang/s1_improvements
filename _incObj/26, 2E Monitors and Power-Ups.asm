@@ -275,6 +275,12 @@ Pow_ChkSonic:
 		bne.s	Pow_ChkShoes				; if not, branch
 
 ExtraLife:
+	if FeatureInfiniteLives
+		moveq	#10,d0					; without lives, a 1-up monitor gives ten rings
+		jsr	(AddRings).l
+		move.w	#sfx_Ring,d0
+		jmp	(QueueSound1).l
+	endif
 		cmpi.b	#99,(v_lives).w			; two-digit HUD limit
 		bhs.s	.noLife				; consume the 1-up without wrapping the counter
 		addq.b	#1,(v_lives).w				; add 1 to the number of lives you have
@@ -351,7 +357,7 @@ Pow_ChkInvinc:
 
 		tst.b	(f_bossmusic).w			; is boss music active?
 		bne.s	Pow_NoMusic				; if yes, don't change music
-	if Revision<>0
+	if (Revision<>0)&(FeatureCDDrowning=0)
 		cmpi.w	#12,(v_air).w				; is Sonic close to drowning? (countdown music playing)
 		bls.s	Pow_NoMusic				; if yes, don't change music
 	endif

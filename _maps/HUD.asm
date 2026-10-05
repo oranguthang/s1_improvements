@@ -19,8 +19,10 @@ Map_HUD_internal:	mappingsTable
 	spritePiece	$20, -$60, 1, 2, 0, 0, 0, 1, 1		; "S"
 	spritePiece	$30, -$60, 3, 2, $30, 0, 0, 1, 1	; rings counter
 
+	if FeatureInfiniteLives=0
 	spritePiece	0, $40, 2, 2, $10A, 0, 0, 0, 1		; lives counter (Sonic icon)
 	spritePiece	$10, $40, 4, 2, $10E, 0, 0, 1, 1	; lives counter ("SONIC x N" text)
+	endif
 .allyellow_End
 	even
 
@@ -36,8 +38,10 @@ Map_HUD_internal:	mappingsTable
 	spritePiece	$20, -$60, 1, 2, 0, 0, 0, 0, 1		; (red) "S"
 	spritePiece	$30, -$60, 3, 2, $30, 0, 0, 1, 1	; rings counter
 
+	if FeatureInfiniteLives=0
 	spritePiece	0, $40, 2, 2, $10A, 0, 0, 0, 1		; lives counter (Sonic icon)
 	spritePiece	$10, $40, 4, 2, $10E, 0, 0, 1, 1	; lives counter ("SONIC x N" text)
+	endif
 .ringred_End
 	even
 
@@ -53,8 +57,10 @@ Map_HUD_internal:	mappingsTable
 	spritePiece	$20, -$60, 1, 2, 0, 0, 0, 1, 1		; "S"
 	spritePiece	$30, -$60, 3, 2, $30, 0, 0, 1, 1	; rings counter
 
+	if FeatureInfiniteLives=0
 	spritePiece	0, $40, 2, 2, $10A, 0, 0, 0, 1		; lives counter (Sonic icon)
 	spritePiece	$10, $40, 4, 2, $10E, 0, 0, 1, 1	; lives counter ("SONIC x N" text)
+	endif
 .timered_End
 	even
 
@@ -70,7 +76,9 @@ Map_HUD_internal:	mappingsTable
 	spritePiece	$20, -$60, 1, 2, 0, 0, 0, 0, 1		; (red) "S"
 	spritePiece	$30, -$60, 3, 2, $30, 0, 0, 1, 1	; rings counter
 
+	if FeatureInfiniteLives=0
 	spritePiece	0, $40, 2, 2, $10A, 0, 0, 0, 1		; lives counter (Sonic icon)
 	spritePiece	$10, $40, 4, 2, $10E, 0, 0, 1, 1	; lives counter ("SONIC x N" text)
+	endif
 .allred_End
 	even
