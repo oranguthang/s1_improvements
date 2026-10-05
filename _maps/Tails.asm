@@ -191,6 +191,7 @@ TailsMap_internal: mappingsTable
 	mappingsTableEntry.w TailsMap_B8
 	mappingsTableEntry.w TailsMap_B9
 	mappingsTableEntry.w TailsMap_BA
+	mappingsTableEntry.w TailsMap_BB
 
 TailsMap_00: spriteHeader
 TailsMap_00_End
@@ -1269,9 +1270,14 @@ TailsMap_B9: spriteHeader
 TailsMap_B9_End
 
 TailsMap_BA: spriteHeader
-	spritePiece -11, -16, 3, 3, 0, 0, 0, 0, 0
-	spritePiece -3, 8, 1, 1, 9, 0, 0, 0, 0
-	spritePiece -3, 16, 2, 1, 10, 0, 0, 0, 0
+	spritePiece -12, -12, 3, 4, 0, 0, 0, 0, 0
 TailsMap_BA_End
+
+TailsMap_BB: spriteHeader
+	spritePiece -2, -20, 1, 1, 0, 0, 0, 0, 0
+	spritePiece -18, -12, 4, 2, 1, 0, 0, 0, 0
+	spritePiece -26, 4, 4, 2, 9, 0, 0, 0, 0
+	spritePiece 6, 12, 1, 1, 17, 0, 0, 0, 0
+TailsMap_BB_End
 
 	even

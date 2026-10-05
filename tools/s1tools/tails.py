@@ -22,10 +22,11 @@ PLAYER_COLOURS = (*COLOURS[:11], 3, *COLOURS[12:])
 TRANSFORM_FRAME_FIRST = 151
 # All eight S3K walk frames for each of the four floor orientations.
 WALK8 = TRANSFORM_FRAME_FIRST + 3
-# S3K's extra sheet pose $E7: Tails faces the camera with both arms raised.
-# The tails object shows nothing for this pose.
+# S3K's victory animation (AniTails13): $A5, then $A6 is held. Both draw their
+# own tails, so the tails object shows nothing for this pose.
 VICTORY = WALK8 + 4 * 8
-FRAME_COUNT = VICTORY + 1
+VICTORY_SOURCES = (0xA5, 0xA6)
+FRAME_COUNT = VICTORY + len(VICTORY_SOURCES)
 # S3K reads body frames from $D1 onward from a separate extra sheet.
 EXTRA_BODY_FIRST = 0xD1
 # The tails are a separate object, as in S3K (Obj_Tails_Tail), drawn from the
@@ -198,7 +199,8 @@ def frame_plan() -> list[tuple[int, int, int, int]]:
         assign(0x8F + step, 0x9A + (step // 2) % 2, 0x29 + step % 4)
     for step in range(3):
         assign(TRANSFORM_FRAME_FIRST + step, 0xEB + step)
-    assign(VICTORY, 0xE7)
+    for step, body in enumerate(VICTORY_SOURCES):
+        assign(VICTORY + step, body)
     for group, (dx, dy) in enumerate(offsets):
         for step in range(8):
             assign(WALK8 + group * 8 + step, 1 + group * 8 + step, dx=dx, dy=dy)
@@ -258,8 +260,17 @@ SS_LINE = 1
 SS_TAIL_FRAMES = range(5, 0x15)
 
 
+def victory_script(path: Path) -> tuple[int, ...]:
+    """Frames of S3K's victory animation, AniTails13, before its loop command."""
+    line = re.search(r"^AniTails13:\s*dc\.b\s*(.+)$", path.read_text(encoding="utf-8"), re.M)[1]
+    values = [number(value) for value in line.split(",")]
+    return tuple(values[1 : values.index(0xFE)])
+
+
 def expected_outputs(source: Path) -> dict[Path, bytes]:
     root = get_root()
+    if victory_script(source / (BASE + "Anim - Tails.asm")) != VICTORY_SOURCES:
+        raise ValueError("VICTORY_SOURCES no longer matches S3K's AniTails13")
     body = (source / (BASE + "Art/Tails.bin")).read_bytes()
     extra = (source / (BASE + "Art/Tails Extra.bin")).read_bytes()
     tail = (source / (BASE + "Art/Tails tails.bin")).read_bytes()
