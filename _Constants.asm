@@ -816,6 +816,7 @@ ArtTile_SS_Results_Emeralds:	equ $541
 ; Font
 ArtTile_Sonic_Team_Font:	equ $0A6
 ArtTile_Credits_Font:		equ $5A0
+ArtTile_Credits_Text_Font:	equ $590			; 28 glyphs of 4 tiles, up to the plane A table
 
 ; Error Handler
 ArtTile_Error_Handler_Font:	equ $7C0

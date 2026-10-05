@@ -185,8 +185,8 @@ GotThroughAct:
 		clr.b	(f_timecount).w				; stop time counter
 		move.b	#id_GotThroughCard,(v_endcard).w	; load end card object (and prevent this routine from running again)
 		jsr	(GRing_EndAct).l				; hand the shared ring tiles over to the results card
-		moveq	#plcid_TitleCard,d0			; get title cards PLC entry
-		jsr	(NewPLC).l				; queue title cards patterns for PLC
+		jsr	(ClearPLC).l				; drop pending art that would overwrite the card
+		jsr	(Got_LoadArt).l				; load the end-of-act card letters
 		move.b	#1,(f_endactbonus).w			; update bonus HUD for pre-tally display
 
 	; Time Bonus

@@ -25,6 +25,42 @@ def title_card(raw: bytes) -> bytes:
     return bytes(result)
 
 
+# Extended title card font by Selbi, RobiWanKenobi and others (see CREDITS.md):
+# A-Z, the act numbers, a-z, "Act", the oval, then "BONU" and the small oval.
+EXTENDED_CARDS = "sonicretro/S1-ExtendedTitleCards/Title Cards Extended.unc"
+EXTENDED_OVAL = (ord("z") - ord("A") + 1) * 4 + 2 * 3
+EXTENDED_SMALL_OVAL = EXTENDED_OVAL + 16 + 8
+
+
+def extended_title_cards(raw: bytes) -> bytes:
+    """Append gray copies of both ovals for level cards; results keep the originals."""
+    if len(raw) != (EXTENDED_SMALL_OVAL + 2) * 32:
+        raise ValueError("Unexpected extended title card layout")
+    gray = title_card_tiles(raw[EXTENDED_OVAL * 32 : (EXTENDED_OVAL + 16) * 32])
+    small = title_card_tiles(raw[EXTENDED_SMALL_OVAL * 32 :])
+    return raw + gray + small
+
+
+# 16x16 credits font from "Use Plane Mappings for Credits in Sonic 1": a blank
+# glyph, then A-Z, all drawn in colour 6. The original credits font supplies
+# the "2" of "YU 2" (tiles $36-$39): its digit is colour 1 inside a shaded
+# frame, so only those pixels are kept, in the font's colour.
+CREDITS_FONT = "sonicretro/Credits-16x16.nem"
+CREDITS_TWO = 0x36
+
+
+def credits_text_font(font: bytes, original: bytes) -> bytes:
+    if len(font) != 27 * 4 * 32:
+        raise ValueError("Expected a blank glyph and A-Z in the credits font")
+    two = original[CREDITS_TWO * 32 : (CREDITS_TWO + 4) * 32]
+    flat = bytes((6 if b >> 4 == 1 else 0) << 4 | (6 if b & 15 == 1 else 0) for b in two)
+    return font + flat
+
+
+def title_card_tiles(raw: bytes) -> bytes:
+    return bytes(GRAY.get(b >> 4, b >> 4) << 4 | GRAY.get(b & 15, b & 15) for b in raw)
+
+
 def sign_portrait(source: Path, frame: int, colours: tuple[int, ...]) -> bytes:
     """S3K end-sign DPLC stores tile counts in the low nibble, unlike players."""
     art = (source / (SIGN_BASE + "End Signs.bin")).read_bytes()
@@ -62,6 +98,10 @@ def monitor_portrait(source: Path, name: str, colours: tuple[int, ...]) -> bytes
 
 def expected_outputs() -> dict[Path, bytes]:
     root, source, sk = get_root(), get_source("s1"), get_source("sk")
+    extras = get_source("sonicretro")
+    extended = (extras / EXTENDED_CARDS.split("/", 1)[1]).read_bytes()
+    credits_font = decode((extras / CREDITS_FONT.split("/", 1)[1]).read_bytes())
+    credits_original = decode((source / "artnem/Ending - Credits.nem").read_bytes())
     template = (source / "artnem/Title Cards.nem").read_bytes()
     raw = title_card(decode(template))
     if decode_moduled((source / "artkosm/Title Cards.kosm").read_bytes()) != decode(template):
@@ -75,6 +115,10 @@ def expected_outputs() -> dict[Path, bytes]:
         ),
         root / "artnem/Title Cards.nem": encode_with_table(template, raw),
         root / "artkosm/Title Cards.kosm": encode_moduled(raw),
+        root / "artunc/Title Cards Extended.unc": extended_title_cards(extended),
+        root / "artkosm/Credits - Text Font.kosm": encode_moduled(
+            credits_text_font(credits_font, credits_original)
+        ),
         root / "artkosm/Signpost - Tails Portrait.kosm": encode_moduled(
             sign_portrait(sk, 1, tails.COLOURS)
         ),

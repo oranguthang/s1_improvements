@@ -89,8 +89,23 @@ def test_special_stage_results_keep_original_colours() -> None:
     ]
     # HUD text moved from colour 15 to 12: both must be the original green.
     assert line[0][24:26] == line[0][30:32] == bytes.fromhex("04c0")
-    # Ovals use the gray slots 7-9; on this screen line 3 shows them yellow.
-    assert line[2][14:20] == bytes.fromhex("00ee00ee0eaa") == line[0][6:8] * 2 + line[0][2:4]
+
+
+def test_extended_title_cards_append_gray_ovals() -> None:
+    from s1tools.character_ui import EXTENDED_OVAL, EXTENDED_SMALL_OVAL, GRAY
+
+    art = (ROOT / "artunc/Title Cards Extended.unc").read_bytes()
+    tiles = [art[i : i + 32] for i in range(0, len(art), 32)]
+    assert len(tiles) == EXTENDED_SMALL_OVAL + 2 + 16 + 2
+    original = tiles[EXTENDED_OVAL : EXTENDED_OVAL + 16] + tiles[EXTENDED_SMALL_OVAL:][:2]
+    gray = tiles[EXTENDED_SMALL_OVAL + 2 :]
+    for source, copy in zip(original, gray, strict=True):
+        for a, b in zip(source, copy, strict=True):
+            for shift in (4, 0):
+                nibble = a >> shift & 15
+                assert b >> shift & 15 == GRAY.get(nibble, nibble)
+    # The player's fur colours 2-5 never reach the level card ovals.
+    assert not any(n in (2, 3, 4, 5) for tile in gray for b in tile for n in (b >> 4, b & 15))
 
 
 def test_every_feature_option_is_documented() -> None:

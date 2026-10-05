@@ -25,23 +25,16 @@ card_finalX:	equ	objoff_32	; target X-position for card while moving out
 Card_LoadForZone:	; Routine 0
 		movea.l	a0,a1					; set this root object to become the level name card
 
+		; Every act has its own name frame and movement data (see
+		; _inc/Title Cards Extended.asm); SBZ3 (LZ4) and FZ (SBZ3) included.
 		moveq	#0,d0					; clear d0 (zone is a byte, we need words)
-		move.b	(v_zone).w,d0				; get current zone ID and use it as index for mappings and config data
-		cmpi.w	#id_LZ_act4,(v_zone_act).w		; check if level is SBZ3 (LZ4)
-		bne.s	.notLZ4					; if not, branch
-		moveq	#5,d0					; use title card number 5 instead (SBZ)
-	; Card_CheckFZ:
-	.notLZ4:
-		move.w	d0,d2					; d2 = frame ID to use
-		cmpi.w	#id_FZ,(v_zone_act).w			; check if level is FZ
-		bne.s	.notFZ					; if it isn't, branch
-		moveq	#6,d0					; use FZ entry in Card_ConData (entry 6)
-		moveq	#$B,d2					; use "FINAL" sprite mappings (frame ID $B)
-	; Card_LoadConfig:
-	.notFZ:
-		lea	(Card_ConData).l,a3			; load card configuration data
-		lsl.w	#4,d0					; multiply by $10 (number of bytes per zone entry)
-		adda.w	d0,a3					; set pointer to configuration data for current zone
+		move.b	(v_zone).w,d0				; get current zone ID
+		lsl.b	#2,d0					; four acts per zone
+		add.b	(v_act).w,d0				; add act number
+		move.b	d0,d2					; d2 = frame ID of the name
+		lsl.w	#3,d0					; 8 bytes per act in TTL_ConData
+		lea	(TTL_ConData).l,a3			; load extended card configuration data
+		movea.l	(a3,d0.w),a3				; movement data for this act
 		lea	(Card_ItemData).l,a2			; load card item data
 		moveq	#4-1,d1					; set to affect all four title card objects
 
@@ -53,16 +46,8 @@ Card_Loop:
 		move.w	(a2)+,obScreenY(a1)			; load fixed y-position
 		move.b	(a2)+,obRoutine(a1)			; set initial routine number
 		move.b	(a2)+,d0				; get frame ID
-		bne.s	.frameIdSet				; if frame ID is non-zero, branch (i.e. not the level name)
+		bne.s	.setupCardObject			; if frame ID is non-zero, branch (i.e. not the level name)
 		move.b	d2,d0					; for level name, use frame ID as set in d2 above
-	; Card_ActNumber:
-	.frameIdSet:
-		cmpi.b	#7,d0					; is this the act number object?
-		bne.s	.setupCardObject			; if not, branch
-		add.b	(v_act).w,d0				; use appropriate act number frame ID for current act
-		cmpi.b	#act4,(v_act).w				; check if on act 4 (for SBZ3/LZ4)
-		bne.s	.setupCardObject			; if not, branch
-		subq.b	#1,d0					; keep using "3" art for act number
 	; Card_MakeSprite:
 	.setupCardObject:
 		move.b	d0,obFrame(a1)				; display frame number set in d0
@@ -165,6 +150,7 @@ Card_ChangeArt:
 ; - Y-position
 ; - base routine number
 ; - frame ID
+; The movement data comes from TTL_ConData in _inc/Title Cards Extended.asm.
 ; ---------------------------------------------------------------------------
 Card_ItemData:
 		; Level Name
@@ -175,32 +161,15 @@ Card_ItemData:
 		; ZONE
 		dc.w $E4
 		dc.b 2
-		dc.b 6
+		dc.b ZoneCount*4
 
 		; ACT
 		dc.w $EA
 		dc.b 2
-		dc.b 7
+		dc.b ZoneCount*4+1
 
 		; Oval
 		dc.w $E0
 		dc.b 2
-		dc.b $A
-
-; ---------------------------------------------------------------------------
-; Title card start and target X-positioning data. Format:
-; - 2 words per item (start X-position, target X-position)
-; - 4 items per level (GREEN HILL, ZONE, ACT X, oval)
-; For FZ, the start and target position is identical, so it doesn't move.
-; ---------------------------------------------------------------------------
-Card_ConData:	;    Name       ZONE        ACT        Oval
-		dc.w $000,$120, -$104,$13C, $414,$154, $214,$154 ; GHZ
-		dc.w $000,$120, -$10C,$134, $40C,$14C, $20C,$14C ; LZ
-		dc.w $000,$120, -$120,$120, $3F8,$138, $1F8,$138 ; MZ
-		dc.w $000,$120, -$104,$13C, $414,$154, $214,$154 ; SLZ
-		dc.w $000,$120, -$0FC,$144, $41C,$15C, $21C,$15C ; SYZ
-		dc.w $000,$120, -$0FC,$144, $41C,$15C, $21C,$15C ; SBZ
-		zonewarning Card_ConData,$10
-		dc.w $000,$120, -$11C,$124, $3EC,$3EC, $1EC,$12C ; FZ
+		dc.b ZoneCount*4+2
 ; ===========================================================================
-

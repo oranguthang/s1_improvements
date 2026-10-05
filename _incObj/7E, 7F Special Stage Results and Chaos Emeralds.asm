@@ -52,10 +52,6 @@ SSR_Loop:
 		move.b	(a2)+,obFrame(a1)			; load frame ID
 		move.l	#Map_SSR,obMap(a1)			; set mappings
 		move.w	#ArtTile_Title_Card|Tile_Prio,obGfx(a1)	; set art tile and sprite priority flag
-		cmpi.b	#3,obFrame(a1)			; the shared oval is gray in levels: use this
-		bne.s	.setRender				; screen's original yellow from line 3 instead
-		ori.w	#make_art_tile(0,2,0),obGfx(a1)
-.setRender:
 		move.b	#sprite_cam_screen,obRender(a1)		; set to screen-positioned sprite mode
 		lea	object_size(a1),a1			; advance to next card object (all elements are back-to-back in RAM)
 		dbf	d1,SSR_Loop				; repeat sequence 3 or 4 times
@@ -69,9 +65,7 @@ SSR_Loop:
 		moveq	#0,d0					; use "CHAOS EMERALDS" text
 		cmpi.b	#ss_emeralds_num,d1			; do you have all chaos emeralds?
 		bne.s	.setFrame				; if not, branch
-		moveq	#8,d0					; use "SONIC GOT THEM ALL" text
-		move.w	#$18,obX(a0)				; set alternate start position
-		move.w	#$118,ssr_mainX(a0)			; use alternate target position
+		moveq	#8,d0					; use "SONIC GOT THEM ALL" text (the card centres itself)
 	; loc_C842:
 	.setFrame:
 		move.b	d0,obFrame(a0)				; set specified frame ID for text object

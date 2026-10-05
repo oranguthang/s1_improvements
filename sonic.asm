@@ -2591,10 +2591,7 @@ Level_NoMusicFade:
 		tst.w	(f_demo).w				; is an ending sequence demo running?
 		bmi.s	Level_ClrRam				; if yes, don't load title screen or main level patterns
 
-		disable_ints					; disable interrupts
-		moveq	#plcid_TitleCard,d0			; load title card patterns
-		bsr.w	QuickPLC				; decompress PLC list now and return once done
-		enable_ints					; enable interrupts again
+		jsr	(TitleCards_LoadArt).l			; load only the letters this act's card uses
 
         jsr (GetLevelHeader).l
         movea.l LevelHeader_MainPLC(a2),a1
@@ -3411,8 +3408,7 @@ SS_FinLoop_NoBrighten:
 		move.w	#vreg_planesize|%000001,(a6)		; 64-cell hscroll size
 		bsr.w	ClearScreen				; wipe screen
 
-		moveq	#plcid_TitleCard,d0			; load title card patterns
-		bsr.w	QuickPLC				; decompress PLC list now and return once done
+		jsr	(SpecStagResults_LoadArt).l		; load the results card letters
 
 		jsr	(Hud_Base).l				; load basic HUD graphics
 		enable_ints					; enable interrupts
@@ -3919,16 +3915,24 @@ GM_Credits:
 
 		clearRAM v_objspace				; clear object RAM
 
+	if FeatureTextCredits
+		moveq	#plcid_CreditsText,d0			; load the 16x16 credits font
+	else
 		moveq	#plcid_Credits,d0			; load credits font
+	endif
 		bsr.w	QuickPLC				; decompress PLC list now and return once done
 
 		clearRAM v_palette_fading			; set palette fade-in buffer to all-black
 		jsr (GetPlayerPaletteID).l				; load Sonic's palette...
 		bsr.w	PalLoad_Fade				; ...into fade-in buffer
 
+	if FeatureTextCredits
+		jsr	(Credits_LoadPageMappings).l		; write the page text to plane A
+	else
 		move.b	#id_CreditsText,(v_credits).w		; load credits text object
 		jsr	(ExecuteObjects).l			; execute objects to load credits text object
 		jsr	(BuildSprites).l			; build sprites for the credits text object
+	endif
 
 		bsr.w	EndingDemoLoad				; prepare loading the next ending demo
 
@@ -4229,7 +4233,7 @@ Map_SStom:	include	"_maps/Sideways Stomper.asm"
 		include	"_incObj/39 Game Over.asm"
 		include	"_incObj/3A Got Through Card.asm"
 		include	"_incObj/7E, 7F Special Stage Results and Chaos Emeralds.asm"
-		include	"_maps/Title Cards.asm" ; includes "Map_Card", "Map_Over", "Map_Got", and "Map_SSR"
+Map_Over:	include	"_maps/Game Over.asm"
 Map_SSRC:	include	"_maps/SS Result Chaos Emeralds.asm"
 
 
@@ -5538,6 +5542,12 @@ Art_Knuckles: binclude "artunc/Knuckles.unc"
 Art_Knuckles_size: equ *-Art_Knuckles
 	if (Art_Knuckles_size>$20000)&(MOMPASS=1)
 		error "Knuckles art exceeds a 128 KiB DMA bank. Split or repack the resource."
+	endif
+
+		; Kept after the aligned player art so it cannot move those banks.
+		include	"_inc/Title Cards Extended.asm"	; Map_Card, Map_Got and Map_SSR, with their art
+	if FeatureTextCredits
+		include	"_inc/Credits Text.asm"		; credits pages written as text
 	endif
 
 EndOfRom:

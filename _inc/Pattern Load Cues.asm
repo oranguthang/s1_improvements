@@ -85,6 +85,9 @@ plcid_KnucklesMonitors: plcptr PLC_KnucklesMonitors
 plcid_SonicEnding: plcptr PLC_SonicEnding
 plcid_TailsEnding: plcptr PLC_TailsEnding
 plcid_KnucklesEnding: plcptr PLC_KnucklesEnding
+	if FeatureTextCredits
+plcid_CreditsText:	plcptr	PLC_CreditsText
+	endif
 
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - standard block 1
@@ -468,6 +471,12 @@ PLC_KnucklesEnding: plcheader
         plcm KosM_EndKnuckles,ArtTile_Ending_Sonic
         plcm KosM_EndSharedLogo,ArtTile_Ending_STH
 PLC_KnucklesEnding_end:
+
+	if FeatureTextCredits
+PLC_CreditsText:	plcheader
+		plcm	KosM_CreditsTextFont,	ArtTile_Credits_Text_Font	; 16x16 credits font
+PLC_CreditsText_end:
+	endif
 
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - "TRY AGAIN" and "END" screens

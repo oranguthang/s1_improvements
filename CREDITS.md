@@ -18,6 +18,14 @@ Tails and Knuckles signpost portraits also use the original S3K end-sign art and
 
 Their character-specific endings use the official Sonic the Hedgehog mobile remaster artwork, extracted by Parky33 and available in the [Ending sprite sheet](https://www.spriters-resource.com/mobile/sonicthehedgehogmobile/asset/65174/). The importer preserves pixel shapes and pose dimensions, adapts colours to the shared player palette and repacks mapping origins for the existing ending graphics slot. The blue emerald uses the independent sky palette.
 
+## Title cards
+
+The extended title card system and font come from [Extend Title Cards in Sonic 1](https://info.sonicretro.org/SCHG_How-to:Extend_Title_Cards_in_Sonic_1): main system by Selbi, AS port and result screens by RobiWanKenobi, lowercase letters from Yuu Yuu Hakusho: Makyou Toitsusen, missing uppercase JQVWX by SameyTheHedgie, title-case "Act" and lowercase "a" by MDTravis, and the act 4 number by Cinossu. The downloaded archive is kept with the resource inputs; this project adds gray oval copies and the solo character names.
+
+## Credits text
+
+The optional text credits follow [Use Plane Mappings for Credits in Sonic 1](https://info.sonicretro.org/SCHG_How-to:Enigma_Credits_in_Sonic_1) by Fukuller, updated and expanded by Selbi, including its sample 16x16 font. The "2" comes from the original Sonic 1 credits font.
+
 ## Title resources
 
 The independent title resources follow [Make an Alternative Title Screen](https://info.sonicretro.org/SCHG_How-to:Make_an_Alternative_Title_Screen). The source archive is retained with the resource inputs for repeatable extraction.
