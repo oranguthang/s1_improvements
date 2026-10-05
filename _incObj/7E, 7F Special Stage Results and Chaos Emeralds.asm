@@ -256,12 +256,23 @@ SSRC_Index:	dc.w SSRC_Main-SSRC_Index
 ; --- X-positions for Chaos Emeralds in order of collection ---
 ; These values are pseudo-interlaced instead of going left-to-right,
 ; keeping consecutively collected emeralds overall centered (roughly).
+	if Feature7thEmerald
+		; Shifted left by 8 pixels to centre seven (Speems' guide).
+SSRC_PosData:	dc.w $108 ; 1st
+		dc.w $120 ; 2nd
+		dc.w  $F0 ; 3rd
+		dc.w $138 ; 4th
+		dc.w  $D8 ; 5th
+		dc.w $150 ; 6th
+		dc.w $168 ; 7th
+	else
 SSRC_PosData:	dc.w $110 ; 1st
 		dc.w $128 ; 2nd
 		dc.w  $F8 ; 3rd
 		dc.w $140 ; 4th
 		dc.w  $E0 ; 5th
 		dc.w $158 ; 6th
+	endif
 
 	if ((*-SSRC_PosData)/2<>ss_emeralds_num)&(MOMPASS=1)
 		warning "SSRC_PosData does not match expected emerald count!"

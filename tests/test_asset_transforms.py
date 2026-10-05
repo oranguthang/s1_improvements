@@ -445,3 +445,34 @@ def test_water_transition_covers_changed_colours() -> None:
             below = words_of(f"{player} - {zone} Underwater.bin") + words_of(wet)[16:]
             changed |= {i for i in range(64) if i % 16 and above[i] != below[i]}
     assert changed <= covered, sorted(hex(i * 2) for i in changed - covered)
+
+
+def test_enigma_encoder_round_trips_every_layout() -> None:
+    from s1tools.codecs import enigma
+
+    for path in sorted((ROOT / "sslayout").glob("*.eni")):
+        words = enigma.decode(path.read_bytes())
+        assert enigma.decode(enigma.encode(words)) == words, path.name
+
+
+def test_seventh_emerald_resources() -> None:
+    from s1tools.codecs import enigma
+
+    # Stage 7 is stage 6 with the grey emerald ($40) turned into block $28.
+    six = bytearray(enigma.decode_bytes((ROOT / "sslayout/6 (REV01).eni").read_bytes()))
+    six[six.index(0x40)] = 0x28
+    assert enigma.decode_bytes((ROOT / "sslayout/7.eni").read_bytes()) == bytes(six)
+    starts = ROOT / "startpos/Special Stages"
+    assert (starts / "ss7.bin").read_bytes() == (starts / "ss6.bin").read_bytes()
+    # Each palette variant only adds the cyan ramp in otherwise free slots.
+    cyan = (0x0EE6, 0x0CC2, 0x0880)
+    for name, line, slots in (
+        ("Special Stage", 1, (7, 8, 9)),
+        ("Special Stage Results", 3, (7, 8, 9)),
+        ("Ending", 1, (10, 11, 15)),
+    ):
+        expected = bytearray((ROOT / f"palette/{name}.bin").read_bytes())
+        for slot, colour in zip(slots, cyan, strict=True):
+            offset = line * 32 + slot * 2
+            expected[offset : offset + 2] = colour.to_bytes(2, "big")
+        assert (ROOT / f"palette/{name} - Seventh Emerald.bin").read_bytes() == bytes(expected)

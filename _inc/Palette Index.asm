@@ -72,14 +72,26 @@ Pal_SLZ:		bincludeEndMarker	"palette/Star Light Zone.bin"
 Pal_SYZ:		bincludeEndMarker	"palette/Spring Yard Zone.bin"
 Pal_SBZ1:		bincludeEndMarker	"palette/SBZ Act 1.bin"
 Pal_SBZ2:		bincludeEndMarker	"palette/SBZ Act 2.bin"
+	if Feature7thEmerald
+Pal_Special:		bincludeEndMarker	"palette/Special Stage - Seventh Emerald.bin" ; cyan in line 1, slots 7-9
+	else
 Pal_Special:		bincludeEndMarker	"palette/Special Stage.bin"
+	endif
 Pal_SBZ3:		bincludeEndMarker	"palette/SBZ Act 3.bin"
 Pal_SBZ3Water:		bincludeEndMarker	"palette/SBZ Act 3 Underwater.bin"
 Pal_LZSonWater:		bincludeEndMarker	"palette/Sonic - LZ Underwater.bin"
 Pal_SBZ3SonWat:		bincludeEndMarker	"palette/Sonic - SBZ3 Underwater.bin"
+	if Feature7thEmerald
+Pal_SSResult:		bincludeEndMarker	"palette/Special Stage Results - Seventh Emerald.bin" ; cyan in line 3, slots 7-9
+	else
 Pal_SSResult:		bincludeEndMarker	"palette/Special Stage Results.bin"
+	endif
 Pal_Continue:		bincludeEndMarker	"palette/Special Stage Continue Bonus.bin"
+	if Feature7thEmerald
+Pal_Ending:		bincludeEndMarker	"palette/Ending - Seventh Emerald.bin" ; cyan in line 1, slots A, B and F
+	else
 Pal_Ending:		bincludeEndMarker	"palette/Ending.bin"
+	endif
 Pal_Tails:          bincludeEndMarker "palette/Tails.bin"
 Pal_TailsWater:     bincludeEndMarker "palette/Tails - LZ Underwater.bin"
 Pal_TailsSBZ3Water: bincludeEndMarker "palette/Tails - SBZ3 Underwater.bin"

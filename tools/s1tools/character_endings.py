@@ -188,6 +188,15 @@ def expected_outputs() -> dict[Path, bytes]:
         b = gems[i]
         gems[i] = blue.get(b >> 4, b >> 4) << 4 | blue.get(b & 15, b & 15)
     outputs[root / "artkosm/Ending - Shared Emeralds.kosm"] = encode_moduled(bytes(gems))
+    # Feature7thEmerald: the grey gem's tiles with its greys moved to line 1's
+    # free slots A, B and F, which the seventh-emerald ending palette makes cyan.
+    cyan = {7: 10, 8: 11, 9: 15}
+    outputs[root / "artkosm/Ending - Seventh Emerald.kosm"] = encode_moduled(
+        bytes(
+            cyan.get(b >> 4, b >> 4) << 4 | cyan.get(b & 15, b & 15)
+            for b in gems[12 * 32 : 16 * 32]
+        )
+    )
     return outputs
 
 

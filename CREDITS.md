@@ -22,6 +22,10 @@ Their character-specific endings use the official Sonic the Hedgehog mobile rema
 
 Mega PCM 2 and its Sonic 1 sample table are by [Vladikcomper](https://github.com/vladikcomper/MegaPCM) (MIT license, included at the end of `MegaPCM/MegaPCM.asm`). The SMPS integration follows [Add Mega PCM 2 to Sonic 1](https://info.sonicretro.org/SCHG_How-to:Add_Mega_PCM_2_to_Sonic_1), adapted by Selbi from Vladikcomper's tutorial.
 
+## Seventh Chaos Emerald
+
+The optional seventh emerald follows Speems' [Add 7th Chaos Emerald and Special Stage in Sonic 1](https://info.sonicretro.org/SCHG_How-to:Add_7th_Chaos_Emerald_and_Special_Stage_in_Sonic_1), with additional credit to Professor Neo, DeltaWooloo and nineko.
+
 ## HUD, stars and victory poses
 
 The centiseconds HUD follows Selbi's [Add Centiseconds HUD](https://info.sonicretro.org/SCHG_How-to:Add_Centiseconds_HUD). The Sonic 2 invincibility stars port Sonic 2's art and obj35 from the [Sonic 2 disassembly](https://github.com/sonicretro/s2disasm), after KoiSAKANA's [Port Sonic 2 invincibility stars to Sonic 1](https://info.sonicretro.org/SCHG_How-to:Port_Sonic_2_invincibility_stars_to_Sonic_1). The victory poses follow AleDrawer2008's [Add Victory Poses In Sonic 1](https://info.sonicretro.org/SCHG_How-to:Add_Victory_Poses_In_Sonic_1), whose Sonic 1-style Sonic sprites (from the SSRG thread) are used as drawn; Tails' and Knuckles' poses come from Sonic 3 & Knuckles.

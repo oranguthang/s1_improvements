@@ -9,6 +9,9 @@ Map_ECha_internal:	mappingsTable
 	mappingsTableEntry.w	.eCha_4_green
 	mappingsTableEntry.w	.eCha_5_red
 	mappingsTableEntry.w	.eCha_6_gray
+	if Feature7thEmerald
+	mappingsTableEntry.w	.eCha_7_cyan
+	endif
 
 .eCha_flashing:	spriteHeader
 	spritePiece	-8, -8, 2, 2, 0, 0, 0, 0, 0
@@ -37,5 +40,13 @@ Map_ECha_internal:	mappingsTable
 .eCha_6_gray:	spriteHeader
 	spritePiece	-8, -8, 2, 2, $C, 0, 0, 0, 0
 .eCha_6_gray_End
+
+	if Feature7thEmerald
+; Four separate tiles at ArtTile_Ending_Seventh_Emerald (Ending and Try Again
+; share the emerald base tile), drawn with the free cyan slots of line 1.
+.eCha_7_cyan:	spriteHeader
+	spritePiece	-8, -8, 2, 2, (ArtTile_Ending_Seventh_Emerald-ArtTile_Ending_Emeralds), 0, 0, 1, 0
+.eCha_7_cyan_End
+	endif
 
 	even

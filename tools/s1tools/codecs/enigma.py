@@ -128,3 +128,56 @@ def entry_histogram(blob: bytes) -> dict[str, int]:
         elif kind == 7:
             bits.read((extra + inline_bits) * count)
     return counts
+
+
+def encode(words: list[int]) -> bytes:
+    """Encode words as Enigma without flag bits (16-bit inline values).
+
+    Runs of zero use the literal value, other runs repeat one inline value,
+    and everything else is written as lists of up to 15 inline values. The
+    output is valid for EniDec but not as small as the original tools make.
+    """
+    # 16 inline bits, no flag bits, incremental and literal values both 0.
+    out = bytearray([16, 0, 0, 0, 0, 0])
+    stream: list[str] = []
+
+    def put(value: int, width: int) -> None:
+        stream.append(format(value, f"0{width}b"))
+
+    index = 0
+    pending: list[int] = []
+
+    def flush() -> None:
+        while pending:
+            chunk = pending[:15]
+            del pending[:15]
+            put(0b111, 3)
+            put(len(chunk) - 1, 4)
+            for value in chunk:
+                put(value, 16)
+
+    while index < len(words):
+        value = words[index]
+        run = 1
+        while index + run < len(words) and words[index + run] == value and run < 16:
+            run += 1
+        if value == 0:
+            flush()
+            put(0b01, 2)
+            put(run - 1, 4)
+            index += run
+        elif run >= 2:
+            flush()
+            put(0b100, 3)
+            put(run - 1, 4)
+            put(value, 16)
+            index += run
+        else:
+            pending.append(value)
+            index += 1
+    flush()
+    put(0b1111111, 7)  # inline list of 16 entries ends the stream
+    bits = "".join(stream)
+    bits += "0" * (-len(bits) % 16)
+    out.extend(int(bits[i : i + 8], 2) for i in range(0, len(bits), 8))
+    return bytes(out)

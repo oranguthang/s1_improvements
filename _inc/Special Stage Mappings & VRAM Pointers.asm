@@ -59,7 +59,14 @@ id_SS_WallGreen_8:	specialStageData	0, Map_SSWalls,   Tile_Pal4, ArtTile_SS_Wall
 id_SS_Bumper:		specialStageData	0, Map_Bump,      Tile_Pal1, ArtTile_SS_Bumper		; $25 - bumper (idle)
 id_SS_W:		specialStageData	0, Map_SS_Shared, Tile_Pal1, ArtTile_SS_W_Block		; $26 - W block (unused)
 id_SS_GOAL:		specialStageData	0, Map_SS_Shared, Tile_Pal1, ArtTile_SS_Goal		; $27 - GOAL block
+	if Feature7thEmerald
+; The unused 1-Up block becomes the cyan emerald: the grey emerald tiles in
+; palette line 1, whose grey slots 7-9 hold cyan in this build.
+id_SS_1Up:		specialStageData	0, Map_SS_Chaos2, Tile_Pal2, ArtTile_SS_Emerald	; $28 - emerald (cyan)
+id_SS_Emerald7_Cyan:	equ id_SS_1Up
+	else
 id_SS_1Up:		specialStageData	0, Map_SS_Shared, Tile_Pal1, ArtTile_SS_Extra_Life	; $28 - 1-Up block (hardcoded to be non-solid)
+	endif
 id_SS_UP:		specialStageData	0, Map_SS_Up,     Tile_Pal1, ArtTile_SS_Up_Down		; $29 - UP block
 id_SS_DOWN:		specialStageData	0, Map_SS_Down,   Tile_Pal1, ArtTile_SS_Up_Down		; $2A - DOWN block
 id_SS_R:		specialStageData	0, Map_SS_Shared, Tile_Pal2, ArtTile_SS_R_Block		; $2B - R block (idle)

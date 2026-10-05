@@ -1,5 +1,5 @@
 ; ---------------------------------------------------------------------------
-; Explicit Special Stage 1..6 selection. Earned progress is not used as a
+; Explicit Special Stage 1..ss_emeralds_num selection. Earned progress is not used as a
 ; selector and is never reset here. v_ss_override is consumed by SS_Load.
 ; ---------------------------------------------------------------------------
 LevSel_SSControls:

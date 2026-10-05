@@ -683,6 +683,17 @@ SonicSS_NoContinue:
 
 ; Obj09_Chk1Up:
 SonicSS_Chk1Up:
+	if Feature7thEmerald
+		cmpi.b	#id_SS_Emerald7_Cyan,d4			; is the item the seventh emerald?
+		bne.s	SonicSS_ChkEmerald			; if not, branch
+		bsr.w	SS_FindFreeAnimationSlot		; find a free animation slot
+		bne.s	.noSparkle				; if none are free, branch
+		_move.b	#5,ss_ani_id(a2)			; set to SS_AniEmeraldSparks
+		move.l	a1,ss_ani_block(a2)			; store address of this block for animation
+	.noSparkle:
+		moveq	#id_SS_Emerald1_Blue+6,d4		; collect it as emerald 6 (0-based)
+		bra.s	SonicSS_GetEmerald
+	endif
 		cmpi.b	#id_SS_1Up,d4				; is the item an extra life?
 		bne.s	SonicSS_ChkEmerald			; if not, branch
 

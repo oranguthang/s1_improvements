@@ -25,12 +25,13 @@ The `Feature*` switches in `sonic.asm` turn this project's gameplay additions on
 | `FeatureVictoryPoses` | After the signpost the player runs off to the right, and after a capsule walks right, as in the original game. |
 | `FeatureMegaPCM` | Sonic 1's own Z80 DAC driver plays the drums, timpani and the SEGA chant again. |
 
-Three optional alternatives are off by default; 1 enables them:
+Four optional alternatives are off by default; 1 enables them:
 
 | Option | When 1 |
 |---|---|
 | `FeatureCDDrowning` | As in Sonic CD's Tidal Tempest, the music keeps playing below 12 seconds of air and an unused Sonic 1 sound ($AB) beeps every second; the countdown numbers still appear. Music changes are no longer held back while air is low. |
 | `FeatureTextCredits` | The credits pages are plain text in `_inc/Credits Text.asm`, drawn on plane A with a 16x16 font (see Credits text below). |
+| `Feature7thEmerald` | A seventh, cyan Chaos Emerald and Special Stage 7 (see Seventh Chaos Emerald below). Super forms and the good ending then need all seven. |
 | `FeatureInfiniteLives` | The lives counter is hidden and dying never ends the game. Rings, score and Special Stage items no longer award lives or continues, and 1-up monitors give 10 rings. Time Over still restarts the act. |
 
 ## Shared palettes
@@ -108,6 +109,10 @@ Collidable objects are queued during object execution. Keep the existing count b
 Rotated wall graphics are streamed from `artunc/Special Walls.unc`. The source sheet and the DMA slot must match the wall mapping frame dimensions.
 
 The Special Stage keeps its own colours in palette line 0 for every character: blue walls, blue glass, GOAL, the touched R block, UP/DOWN and the blue emerald use indices 2–5, which in levels hold the character's fur. So the stage does not apply the character's fur colours, and the other characters roll as recoloured balls: `SSBall_Art` points the rolling frames ($2E–$32) at `artunc/Tails SS Ball.unc` or `artunc/Knuckles SS Ball.unc`, and `SSBall_Palette` selects the line. Tails' ball uses line 1, whose yellow-wall ramp is the closest to his fur; Knuckles' ball stays on line 0 with his fur in its red shades. `player tails` and `player knuckles` generate both from the rolling frames. A new character needs entries in both tables.
+
+## Seventh Chaos Emerald
+
+`Feature7thEmerald` follows Speems' [Add 7th Chaos Emerald and Special Stage](https://info.sonicretro.org/SCHG_How-to:Add_7th_Chaos_Emerald_and_Special_Stage_in_Sonic_1). `ss_emeralds_num` becomes 7, so the stage rotation, the collected list, Super forms, the results screen, "GOT THEM ALL", the ending and the Try Again screen all count seven. `v_emldlist` always has room for seven entries (the RAM layout no longer depends on the option). Special Stage 7 (`sslayout/7.eni`, start position `ss7.bin`) is stage 6 with its grey emerald replaced by block $28, the otherwise unused 1-Up block, which this option turns into the cyan emerald (`id_SS_Emerald7_Cyan`). The layout was made with `s1tools.codecs.enigma.encode`; S1SSEdit lists it as stage 7 but still draws block $28 as a 1-Up. The cyan comes from the grey emerald's tiles in free palette slots, each screen with its own palette file: the Special Stage uses line 1 slots 7–9, the results screen line 3 slots 7–9, and the ending and Try Again screen line 1 slots A, B and F. The ending art has no grey slots there, so `player endings` writes `artkosm/Ending - Seventh Emerald.kosm`, four recoloured tiles loaded at `$524`, where Revision 0's unused Eggman art would go.
 
 ## HUD centiseconds
 

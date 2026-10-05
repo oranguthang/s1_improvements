@@ -447,6 +447,9 @@ PLC_Ending:	plcheader
 	if Revision=0
 		plcm	KosM_EndEggman,	ArtTile_Ending_Eggman		; Eggman's death (unused)
 	endif
+	if Feature7thEmerald
+		plcm	KosM_EndSeventhEm,	ArtTile_Ending_Seventh_Emerald	; cyan emerald (after the unused Eggman art)
+	endif
 		plcm	KosM_Rabbit,	ArtTile_Ending_Rabbit		; rabbit
 		plcm	KosM_Chicken,	ArtTile_Ending_Chicken		; chicken
 		plcm	KosM_Penguin,	ArtTile_Ending_Penguin		; penguin
@@ -483,6 +486,9 @@ PLC_CreditsText_end:
 ; ---------------------------------------------------------------------------
 PLC_TryAgain:	plcheader
 		plcm	KosM_EndEm,	ArtTile_Try_Again_Emeralds	; emeralds
+	if Feature7thEmerald
+		plcm	KosM_EndSeventhEm,	ArtTile_Ending_Seventh_Emerald	; cyan emerald
+	endif
 		plcm	KosM_TryAgain,	ArtTile_Try_Again_Eggman	; Eggman
 		plcm	KosM_CreditText,	ArtTile_Credits_Font		; credits alphabet
 PLC_TryAgain_end:

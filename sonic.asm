@@ -114,8 +114,10 @@ FeatureTextCredits = 0
 ;	| If 1, the credits pages are plain text in _inc/Credits Text.asm, drawn with a 16x16 font
 FeatureCDDrowning = 0
 ;	| If 1, low air beeps every second as in Sonic CD instead of playing the countdown music
+Feature7thEmerald = 0
+;	| If 1, a cyan seventh Chaos Emerald waits in Special Stage 7, a copy of stage 6
 
-	if (FeatureSpinDash|FeaturePeelOut|FeatureAirRoll|FeatureHomingAttack|FeatureLightDash|FeatureSpringPoses|FeatureExtendedCamera|FeatureMomentum|FeatureRollJumpSteering|FeatureInstantTally|FeatureExtraLives|FeatureLamppostRings|FeatureSuper|FeatureTails|FeatureKnuckles|FeatureCentiseconds|FeatureS2Stars|FeatureVictoryPoses|FeatureMegaPCM|FeatureCDDrowning|FeatureInfiniteLives|FeatureTextCredits)&~1
+	if (FeatureSpinDash|FeaturePeelOut|FeatureAirRoll|FeatureHomingAttack|FeatureLightDash|FeatureSpringPoses|FeatureExtendedCamera|FeatureMomentum|FeatureRollJumpSteering|FeatureInstantTally|FeatureExtraLives|FeatureLamppostRings|FeatureSuper|FeatureTails|FeatureKnuckles|FeatureCentiseconds|FeatureS2Stars|FeatureVictoryPoses|FeatureMegaPCM|FeatureCDDrowning|FeatureInfiniteLives|FeatureTextCredits|Feature7thEmerald)&~1
 		error "Feature options must be 0 or 1"
 	endif
 
@@ -2166,7 +2168,8 @@ PlayLevel:
 		clr.b	(v_endring_bonus).w
 		move.b	d0,(v_emeralds).w			; clear emeralds
 		move.l	d0,(v_emldlist).w			; clear emeralds
-		move.l	d0,(v_emldlist+4).w			; clear emeralds
+		move.w	d0,(v_emldlist+4).w			; clear emeralds
+		move.b	d0,(v_emldlist+6).w			; clear emeralds
 		move.b	d0,(v_continues).w			; clear continues
 	if Revision<>0
 		move.l	#5000,(v_scorelife).w			; extra life is awarded at 50000 points
@@ -4989,6 +4992,10 @@ KosM_EndTails: binclude "artkosm/Ending - Tails.kosm"
 KosM_EndKnuckles: binclude "artkosm/Ending - Knuckles.kosm"
         even
 KosM_EndSharedEm: binclude "artkosm/Ending - Shared Emeralds.kosm"
+	if Feature7thEmerald
+		even
+KosM_EndSeventhEm: binclude "artkosm/Ending - Seventh Emerald.kosm"
+	endif
         even
 KosM_EndSharedLogo: binclude "artkosm/Ending - Shared Logo.kosm"
 		even
@@ -5065,6 +5072,11 @@ SS_6:		binclude	"sslayout/6 (REV00).eni"
 SS_5:		binclude	"sslayout/5 (REV01).eni"
 		even
 SS_6:		binclude	"sslayout/6 (REV01).eni"
+		even
+	endif
+	if Feature7thEmerald
+		; Stage 6 with the cyan emerald (block $28) instead of the grey one.
+SS_7:		binclude	"sslayout/7.eni"
 		even
 	endif
 

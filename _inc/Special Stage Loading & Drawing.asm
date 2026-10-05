@@ -222,6 +222,9 @@ SS_AnimateBlocks:
 		move.b	d0,8*id_SS_Emerald4_Green(a1)		; animate emerald 4 (green)
 		move.b	d0,8*id_SS_Emerald5_Red(a1)		; animate emerald 5 (red)
 		move.b	d0,8*id_SS_Emerald6_Grey(a1)		; animate emerald 6 (grey)
+	if Feature7thEmerald
+		move.b	d0,8*id_SS_Emerald7_Cyan(a1)		; animate emerald 7 (cyan)
+	endif
 
 	; --- Animate glass blocks (8 frames) ---
 		subq.b	#1,(v_ani3_time).w			; decrement delay until glass frames needs to update
@@ -533,6 +536,9 @@ SS_LayoutIndex:
 		dc.l SS_4
 		dc.l SS_5
 		dc.l SS_6
+	if Feature7thEmerald
+		dc.l SS_7
+	endif
 
 	if ((*-SS_LayoutIndex)/4<>ss_emeralds_num)&(MOMPASS=1)
 		warning "SS_LayoutIndex does not match expected emerald count!"
@@ -552,6 +558,9 @@ SS_StartLoc:
 		binclude	"startpos/Special Stages/ss4.bin"
 		binclude	"startpos/Special Stages/ss5.bin"
 		binclude	"startpos/Special Stages/ss6.bin"
+	if Feature7thEmerald
+		binclude	"startpos/Special Stages/ss7.bin"
+	endif
 
 	if ((*-SS_StartLoc)/4<>ss_emeralds_num)&(MOMPASS=1)
 		warning "SS_StartLoc does not match expected emerald count!"

@@ -491,9 +491,9 @@ v_lamp_wtrpos:		ds.w	1				; water position at lamppost
 v_lamp_wtrrout:		ds.b	1				; water routine at lamppost
 v_lamp_wtrstat:		ds.b	1				; water state at lamppost
 v_lamp_lives:		ds.b	1				; v_lifecount at lamppost (100-ring extra lives already awarded)
-			ds.b	2				; unused
+			ds.b	1				; unused
+v_emldlist:		ds.b	7				; special stage where each emerald was obtained (room for seven)
 v_emeralds:		ds.b	1				; number of chaos emeralds
-v_emldlist:		ds.b	6				; special stage where each emerald was obtained
 v_oscillate:		ds.w	1				; oscillation bitfield
 v_timingandscreenvariables:
 v_timingvariables:

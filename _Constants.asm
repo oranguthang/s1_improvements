@@ -180,7 +180,7 @@ id_EndZ_bad:		equ (id_EndZ<<8)+act2			; $0601 (bad ending, not all emeralds)
 id_Title_Layout:	equ (id_EndZ<<8)+act4			; $0603 (Level_Index row for the title screen FG/BG layouts only)
 
 ; Special Stage
-ss_emeralds_num:	equ 6					; total number of Chaos Emeralds and Special Stages
+ss_emeralds_num:	equ 6+Feature7thEmerald		; total number of Chaos Emeralds and Special Stages
 ss_giantring_rings:	equ 50					; number of rings required for giant rings to spawn
 ss_continue_rings:	equ 50					; number of rings required to earn an extra continue
 ss_rotatespeed:		equ $40					; base special stage rotation speed
@@ -751,6 +751,7 @@ ArtTile_Ending_Flowers:		equ $3A0
 ArtTile_Ending_Emeralds:	equ $3C5
 ArtTile_Ending_Sonic:		equ $3E1
 ArtTile_Ending_Eggman:		equ $524
+ArtTile_Ending_Seventh_Emerald:	equ $524			; 4 tiles; Eggman's death art there is unused
 ArtTile_Ending_Rabbit:		equ $553
 ArtTile_Ending_Chicken:		equ $565
 ArtTile_Ending_Penguin:		equ $573
