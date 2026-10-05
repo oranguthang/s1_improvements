@@ -9,7 +9,7 @@ from s1tools.codecs.kosinski import encode_moduled
 from s1tools.codecs.nemesis import decode as nemesis_decode
 from s1tools.common import get_root, get_source, write_outputs
 from s1tools.shared_palette import life_icon, player_palettes
-from s1tools.tails import emit_frames, frame, raw_table
+from s1tools.tails import emit_frames, frame, raw_table, ss_ball_art
 
 BASE = "General/Sprites/Knuckles/"
 # Fur uses protected 2/4/5; green shoe panels use the remaining protected 3.
@@ -28,6 +28,10 @@ WALK8 = TRANSFORM + 3
 # S3K's victory animation: stand, punch, then hold the raised fist.
 VICTORY = WALK8 + 4 * 8
 FRAME_COUNT = VICTORY + 4
+
+# In the Special Stage, line 0 keeps its blue for the stage blocks, so the
+# rolling frames use the line's red shoe shades for the fur (peach highlight).
+SS_BALL_COLOURS = {2: 13, 3: 13, 4: 12, 5: 10}
 
 
 def frame_plan() -> list[tuple[int, int, int]]:
@@ -119,11 +123,14 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
         data, pieces = frame(art, maps, cues, source_id, COLOURS)
         frames.append((data, [(x + dx, y + dy, *rest) for x, y, *rest in pieces]))
     packed, mappings, dplc = emit_frames("Knuckles", frames)
+    ball_art, ball_first = ss_ball_art(packed, frames, SS_BALL_COLOURS)
+    mappings = f"KnucklesSSBall_FirstTile equ ${ball_first:X}\n\n".encode("ascii") + mappings
     icon = nemesis_decode((source / "General/Sprites/HUD Icon/Knuckles Life Icon.bin").read_bytes())
     outputs = {
         root / "artunc/Knuckles.unc": packed,
         root / "_maps/Knuckles.asm": mappings,
         root / "_maps/Knuckles - Dynamic Gfx Script.asm": dplc,
+        root / "artunc/Knuckles SS Ball.unc": ball_art,
         root / "artkosm/HUD - Knuckles Life Counter Icon.kosm": encode_moduled(
             life_icon(icon, COLOURS)
         ),

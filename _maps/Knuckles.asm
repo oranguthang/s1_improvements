@@ -1,3 +1,5 @@
+KnucklesSSBall_FirstTile equ $34F
+
 ; S3K Knuckles, repacked for the S1 player frame IDs.
 KnucklesMap_internal: mappingsTable
 	mappingsTableEntry.w KnucklesMap_00

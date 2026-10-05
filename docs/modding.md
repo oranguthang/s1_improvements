@@ -107,6 +107,8 @@ Collidable objects are queued during object execution. Keep the existing count b
 
 Rotated wall graphics are streamed from `artunc/Special Walls.unc`. The source sheet and the DMA slot must match the wall mapping frame dimensions.
 
+The Special Stage keeps its own colours in palette line 0 for every character: blue walls, blue glass, GOAL, the touched R block, UP/DOWN and the blue emerald use indices 2–5, which in levels hold the character's fur. So the stage does not apply the character's fur colours, and the other characters roll as recoloured balls: `SSBall_Art` points the rolling frames ($2E–$32) at `artunc/Tails SS Ball.unc` or `artunc/Knuckles SS Ball.unc`, and `SSBall_Palette` selects the line. Tails' ball uses line 1, whose yellow-wall ramp is the closest to his fur; Knuckles' ball stays on line 0 with his fur in its red shades. `player tails` and `player knuckles` generate both from the rolling frames. A new character needs entries in both tables.
+
 ## HUD centiseconds
 
 With `FeatureCentiseconds` the clock reads `0:00:00`, after Selbi's [Add Centiseconds HUD](https://info.sonicretro.org/SCHG_How-to:Add_Centiseconds_HUD). `Hud_FramesToCentis` turns the frame counter of the current second into hundredths. The second colon uses the two free tiles `$7BE–$7BF` after the ring sparkles; the digits use `$7FC–$7FF`, after the 224-line horizontal scroll table (`hscroll_table_size`). The clock starts once the level has faded in. Time Over still happens at 9:59.

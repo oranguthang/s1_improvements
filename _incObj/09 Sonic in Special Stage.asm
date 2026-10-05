@@ -45,8 +45,23 @@ SonicSS_Main:	; Routine 0
 		move.b	#sonic_roll_width,obWidth(a0)		; set rolling width
 		character_asset CharacterAsset_Map,obMap(a0)		,GetPlayer1Assets_Normal ; set mappings
 		move.w	#ArtTile_Sonic,obGfx(a0)		; set VRAM location
+		moveq	#0,d0
+		move.b	(v_character_p1).w,d0
+		add.w	d0,d0
+		move.w	SSBall_Palette(pc,d0.w),d0
+		or.w	d0,obGfx(a0)				; palette line of this character's ball
 		move.b	#sprite_cam_field,obRender(a0)		; set to playfield-positioned mode
 		move.b	#0,obPriority(a0)			; set sprite priority to top
+		bra.s	SonicSS_SetAnim
+
+; Palette line for each character's Special Stage ball (see SSBall_Art).
+SSBall_Palette:	dc.w 0, Tile_Pal2, 0
+SSBall_Palette_End:
+	if (SSBall_Palette_End-SSBall_Palette)<>Character_Count*2
+		fatal "Add a Special Stage ball palette line for each character."
+	endif
+
+SonicSS_SetAnim:
 
 		move.b	#id_Roll,obAnim(a0)			; set to rolling animation
 		bset	#2,obStatus(a0)				; set rolling flag

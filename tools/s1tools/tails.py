@@ -250,6 +250,37 @@ def emit_frames(
     return bytes(packed), "\n".join(maps).encode("ascii"), "\n".join(cues).encode("ascii")
 
 
+# The Special Stage keeps its own blue in palette line 0 (walls, glass, GOAL,
+# the blue emerald), so the rolling frames there use separately coloured
+# tiles. Tails' ball is drawn on line 1, whose yellow-wall ramp matches his
+# fur as closely as the stage allows (a golden orange); the peach muzzle takes
+# the palest shade there.
+SS_BALL_FRAMES = range(0x2E, 0x33)
+SS_BALL_COLOURS = {10: 5}
+
+
+def ss_ball_art(
+    packed: bytes, frames: list[tuple[bytes, list[tuple[int, ...]]]], remap: dict[int, int]
+) -> tuple[bytes, int]:
+    """Recoloured copy of the tiles of the rolling frames and their first tile."""
+    spans = []
+    for index in SS_BALL_FRAMES:
+        data = frames[index][0]
+        start = next(
+            tile
+            for tile in range(len(packed) // 32)
+            if packed[tile * 32 : tile * 32 + len(data)] == data
+        )
+        spans.append((start, start + len(data) // 32))
+    first = min(start for start, _ in spans)
+    last = max(end for _, end in spans)
+    art = bytes(
+        remap.get(b >> 4, b >> 4) << 4 | remap.get(b & 15, b & 15)
+        for b in packed[first * 32 : last * 32]
+    )
+    return art, first
+
+
 def expected_outputs(source: Path) -> dict[Path, bytes]:
     root = get_root()
     body = (source / (BASE + "Art/Tails.bin")).read_bytes()
@@ -274,9 +305,11 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
         shift = tail_shift(index)
         tail_frames.append((data, [(x, y + shift, *rest) for x, y, *rest in pieces]))
     art, mappings, cues = emit_frames("Tails", frames)
+    ball_art, ball_first = ss_ball_art(art, frames, SS_BALL_COLOURS)
     mappings = (
         f"fr_TailsTransform equ ${TRANSFORM_FRAME_FIRST:X}\nfr_TailsWalk equ ${WALK8:X}\n"
-        f"fr_TailsVictory equ ${VICTORY:X}\n\n"
+        f"fr_TailsVictory equ ${VICTORY:X}\n"
+        f"TailsSSBall_FirstTile equ ${ball_first:X}\n\n"
     ).encode("ascii") + mappings
     tail_art, tail_mappings, tail_cues = emit_frames("TailsTail", tail_frames)
     outputs = {
@@ -284,6 +317,7 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
         root / "_maps/Tails.asm": mappings,
         root / "_maps/Tails - Dynamic Gfx Script.asm": cues,
         root / "artunc/Tails Tail.unc": tail_art,
+        root / "artunc/Tails SS Ball.unc": ball_art,
         root / "_maps/Tails Tail.asm": tail_mappings,
         root / "_maps/Tails Tail - Dynamic Gfx Script.asm": tail_cues,
     }

@@ -2702,7 +2702,7 @@ Sonic_LoadGfx:
 		moveq	#0,d0
 		move.b	obFrame(a0),d0				; load frame number
 		cmp.b	(v_sonframenum).w,d0			; has frame changed?
-		beq.s	.nochange				; if not, branch (nothing to do)
+		beq.w	.nochange				; if not, branch (nothing to do)
 
 		move.b	d0,(v_sonframenum).w			; remember new frame ID
         move.l a3,-(sp)
@@ -2715,6 +2715,21 @@ Sonic_LoadGfx:
         bhs.s .selectedart
         move.l CharacterAsset_SharedArt(a3),d6
 .selectedart:
+        cmpi.b #id_Special,(v_gamemode).w       ; Special Stage balls are recoloured
+        bne.s .notSpecial
+        cmpi.b #fr_Roll1,d0
+        blo.s .notSpecial
+        cmpi.b #fr_Roll5,d0
+        bhi.s .notSpecial
+        moveq #0,d1
+        move.b (v_character_p1).w,d1
+        add.w d1,d1
+        add.w d1,d1
+        lea (SSBall_Art).l,a3
+        move.l (a3,d1.w),d1                     ; 0 = keep the character's own art
+        beq.s .notSpecial
+        move.l d1,d6
+.notSpecial:
         movea.l (sp)+,a3
 	.gotart:
 		add.w	d0,d0					; double current frame for word-based indexing

@@ -3303,7 +3303,8 @@ GM_Special:		; white fade-out from previous game mode
 		moveq	#palid_Special,d0			; load special stage palette...
 		bsr.w	PalLoad_Fade				; ...into the palette fade-in buffer
 		jsr	(SS_Load).l				; load SS layout data (based on last stage entered and collected emeralds)
-		jsr (ApplyPlayerFadeColours).l
+		; Line 0 keeps the stage's blue (walls, glass, GOAL, blue emerald); the
+		; other characters' balls use SSBall_Art and SSBall_Palette instead.
 
 	if FixBugs
 		; Set custom level boundaries so that the fixed
@@ -5589,6 +5590,11 @@ Art_TailsTail_End:
 	if (MOMPASS>1)&&((Art_Tails>>17)<>((Art_TailsTail_End-1)>>17))
 		error "Tails' tails art must share the body's 128 KiB DMA bank"
 	endif
+Art_TailsSSBall: binclude "artunc/Tails SS Ball.unc"	; Special Stage rolling frames (line 1)
+Art_TailsSSBall_End:
+	if (MOMPASS>1)&&((Art_TailsSSBall>>17)<>((Art_TailsSSBall_End-1)>>17))
+		error "Tails' Special Stage ball art must not cross a 128 KiB DMA bank"
+	endif
 	if (Art_Tails_size>$20000)&(MOMPASS=1)
 		error "Tails art exceeds a 128 KiB DMA bank. Split or repack the resource."
 	endif
@@ -5596,6 +5602,11 @@ Art_TailsTail_End:
 		align $20000
 Art_Knuckles: binclude "artunc/Knuckles.unc"
 Art_Knuckles_size: equ *-Art_Knuckles
+Art_KnucklesSSBall: binclude "artunc/Knuckles SS Ball.unc"	; Special Stage rolling frames
+Art_KnucklesSSBall_End:
+	if (MOMPASS>1)&&((Art_KnucklesSSBall>>17)<>((Art_KnucklesSSBall_End-1)>>17))
+		error "Knuckles' Special Stage ball art must not cross a 128 KiB DMA bank"
+	endif
 	if (Art_Knuckles_size>$20000)&(MOMPASS=1)
 		error "Knuckles art exceeds a 128 KiB DMA bank. Split or repack the resource."
 	endif
