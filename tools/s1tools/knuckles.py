@@ -10,7 +10,7 @@ from s1tools.codecs.nemesis import decode as nemesis_decode
 from s1tools.common import get_root, get_source, write_outputs
 from s1tools.shared_palette import life_icon, player_palettes
 from s1tools.special_stage import ROLL_FRAMES, layered_assets
-from s1tools.tails import emit_frames, frame, raw_table
+from s1tools.tails import anim_script, emit_frames, frame, raw_table, translate_script
 
 BASE = "General/Sprites/Knuckles/"
 # Fur uses protected 2/4/5; green shoe panels use the remaining protected 3.
@@ -28,7 +28,11 @@ TRANSFORM = WATER_TURN_EXTRA + 4  # S3K Super transformation frames $EB-$ED
 WALK8 = TRANSFORM + 3
 # S3K's victory animation: stand, punch, then hold the raised fist.
 VICTORY = WALK8 + 4 * 8
-FRAME_COUNT = VICTORY + 4
+# Waiting poses of S3K's AniKnuckles05 (sitting down and dozing) that no other
+# script uses; the whole wait script is translated from S3K (see wait_script).
+IDLE = VICTORY + 4
+IDLE_SOURCES = (0xD4, 0xD7, 0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE)
+FRAME_COUNT = IDLE + len(IDLE_SOURCES)
 
 # In the Special Stage, Knuckles' fur is drawn from palette line 2, the red
 # blocks' line (see s1tools.special_stage). Its darkest slot takes the green
@@ -89,6 +93,8 @@ def frame_plan() -> list[tuple[int, int, int]]:
     for step in range(4):
         assign(0x45 + step, 0xCE + step)
         assign(VICTORY + step, 0xB1 + step)
+    for step, body in enumerate(IDLE_SOURCES):
+        assign(IDLE + step, body)
     for step in range(5):
         assign(0x4E + step, 0x86 + step)
     for step in range(6):
@@ -116,6 +122,15 @@ def frame_plan() -> list[tuple[int, int, int]]:
     return plan
 
 
+def wait_script(path: Path) -> bytes:
+    """S3K's waiting animation (AniKnuckles05) for KnucklesAni_Wait."""
+    frames = {0x56: 1, 0xD2: 2, 0xD3: 3}
+    frames.update((body, IDLE + step) for step, body in enumerate(IDLE_SOURCES))
+    plan = frame_plan()
+    assert all(plan[index][0] == body for body, index in frames.items())
+    return translate_script("KnucklesAni_Wait", anim_script(path, "AniKnuckles05"), frames)
+
+
 def expected_outputs(source: Path) -> dict[Path, bytes]:
     root = get_root()
     art = (source / (BASE + "Art/Knuckles.bin")).read_bytes()
@@ -134,6 +149,7 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
         root / "artunc/Knuckles.unc": packed,
         root / "_maps/Knuckles.asm": mappings,
         root / "_maps/Knuckles - Dynamic Gfx Script.asm": dplc,
+        root / "_anim/Knuckles - Wait.asm": wait_script(source / (BASE + "Anim - Knuckles.asm")),
         root / "artunc/Knuckles SS.unc": ss_art,
         root / "_maps/Knuckles SS.asm": ss_mappings,
         root / "_maps/Knuckles SS - Dynamic Gfx Script.asm": ss_cues,

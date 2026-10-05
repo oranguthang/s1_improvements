@@ -74,8 +74,7 @@ KnucklesAni_Push:	dc.b $FD
 ; 	dc.b afBack, 5		; go back specified number of frames
 ; 	dc.b afChange, id_Surf	; switch to a different animation
 
-KnucklesAni_Wait: dc.b 23,fr_Stand,$02,$03,afEnd
-        even
+	include "_anim/Knuckles - Wait.asm"	; S3K's foot tapping and dozing off (player knuckles)
 ; S3K's balance sequence, translated to the appended S1 frame IDs.
 KnucklesAni_Balance: dc.b 3,$87,$87,$88,$88,$89,$89,$8A,$8A,$8B,$8B,$8C,$8C
         dc.b $8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D

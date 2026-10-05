@@ -26,7 +26,11 @@ WALK8 = TRANSFORM_FRAME_FIRST + 3
 # own tails, so the tails object shows nothing for this pose.
 VICTORY = WALK8 + 4 * 8
 VICTORY_SOURCES = (0xA5, 0xA6)
-FRAME_COUNT = VICTORY + len(VICTORY_SOURCES)
+# Waiting poses of S3K's AniTails05 (yawn and stretch) that no other script
+# uses; the whole wait script is translated from S3K (see wait_script).
+IDLE = VICTORY + len(VICTORY_SOURCES)
+IDLE_SOURCES = (0xB2, 0xB3, 0xB4)
+FRAME_COUNT = IDLE + len(IDLE_SOURCES)
 # S3K reads body frames from $D1 onward from a separate extra sheet.
 EXTRA_BODY_FIRST = 0xD1
 # The tails are a separate object, as in S3K (Obj_Tails_Tail), drawn from the
@@ -201,6 +205,8 @@ def frame_plan() -> list[tuple[int, int, int, int]]:
         assign(TRANSFORM_FRAME_FIRST + step, 0xEB + step)
     for step, body in enumerate(VICTORY_SOURCES):
         assign(VICTORY + step, body)
+    for step, body in enumerate(IDLE_SOURCES):
+        assign(IDLE + step, body)
     for group, (dx, dy) in enumerate(offsets):
         for step in range(8):
             assign(WALK8 + group * 8 + step, 1 + group * 8 + step, dx=dx, dy=dy)
@@ -260,11 +266,51 @@ SS_LINE = 1
 SS_TAIL_FRAMES = range(5, 0x15)
 
 
+def anim_script(path: Path, label: str) -> list[int]:
+    """Bytes of one S3K animation script, across its dc.b lines."""
+    text = path.read_text(encoding="utf-8-sig")
+    body = re.search(rf"^{label}:(.*?)(?=^\w+:|\Z)", text, re.M | re.S)[1]
+    return [
+        number(value)
+        for line in re.findall(r"dc\.b\s+([^;\n]+)", body)
+        for value in line.split(",")
+    ]
+
+
+def translate_script(name: str, values: list[int], frames: dict[int, int]) -> bytes:
+    """An S3K animation script with its frame IDs replaced by S1 ones."""
+    out = [values[0]]
+    index = 1
+    while index < len(values):
+        value = values[index]
+        if value >= 0xFA:
+            out.append(value)
+            if value in (0xFE, 0xFD):  # afBack and afChange take one argument
+                index += 1
+                out.append(values[index])
+        else:
+            out.append(frames[value])
+        index += 1
+    lines = ["; S3K's script translated to the S1 frame IDs by s1tools.", f"{name}:"]
+    for start in range(0, len(out), 16):
+        lines.append("\tdc.b " + ", ".join(f"${v:02X}" for v in out[start : start + 16]))
+    lines += ["\teven", ""]
+    return "\n".join(lines).encode("ascii")
+
+
 def victory_script(path: Path) -> tuple[int, ...]:
     """Frames of S3K's victory animation, AniTails13, before its loop command."""
-    line = re.search(r"^AniTails13:\s*dc\.b\s*(.+)$", path.read_text(encoding="utf-8"), re.M)[1]
-    values = [number(value) for value in line.split(",")]
+    values = anim_script(path, "AniTails13")
     return tuple(values[1 : values.index(0xFE)])
+
+
+def wait_script(path: Path) -> bytes:
+    """S3K's waiting animation (AniTails05) for TailsAni_Wait."""
+    frames = {0xAD: 1, 0xAF: 2, 0xAE: 3, 0xB1: 4}
+    frames.update((body, IDLE + step) for step, body in enumerate(IDLE_SOURCES))
+    plan = frame_plan()
+    assert all(plan[index][0] == body for body, index in frames.items())
+    return translate_script("TailsAni_Wait", anim_script(path, "AniTails05"), frames)
 
 
 def expected_outputs(source: Path) -> dict[Path, bytes]:
@@ -312,6 +358,7 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
         root / "artunc/Tails.unc": art,
         root / "_maps/Tails.asm": mappings,
         root / "_maps/Tails - Dynamic Gfx Script.asm": cues,
+        root / "_anim/Tails - Wait.asm": wait_script(source / (BASE + "Anim - Tails.asm")),
         root / "artunc/Tails Tail.unc": tail_art,
         root / "_maps/Tails Tail.asm": tail_mappings,
         root / "_maps/Tails Tail - Dynamic Gfx Script.asm": tail_cues,

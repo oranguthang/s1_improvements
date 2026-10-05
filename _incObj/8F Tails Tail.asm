@@ -243,6 +243,7 @@ TTail_BodyFitsHalf:
 		moveq	#0,d2					; tiles
 		bra.s	.next
 	.entry:
+		moveq	#0,d0					; frames from $80 left a high byte here
 		move.b	(a1),d0
 		lsr.b	#4,d0
 		addq.w	#1,d0
