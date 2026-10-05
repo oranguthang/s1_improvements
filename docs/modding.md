@@ -113,6 +113,12 @@ The GHZ purple rock has an optional Smashable subtype in both SonLVL definitions
 
 The final act-header field selects the level song. Restoration considers drowning, boss state, Super and invincibility. Boss completion clears the boss override; speed shoes adjust tempo without restarting an ordinary track.
 
+## Sound IDs
+
+Sound IDs use the whole byte, following [Expand the Sonic 1 sound index](https://info.sonicretro.org/SCHG_How-to:Expand_the_Sonic_1_sound_index): music $01–$7F, sound effects $A0–$CF, the waterfall special sound $D0, added sound effects $D1–$FA (`ExtSoundIndex`) and the commands fade, SEGA, speed up, slow down and stop at $FB–$FF. $00 stops all sound, and $80 stays reserved as the driver's empty slot, which caps music below it. `SoundPriorities` covers every ID, and the build checks the ranges. Always use the `bgm_*`/`sfx_*` constants: the `ptr_mus81`-style labels keep their original Sonic 1 names although music now starts at $01.
+
+To add a song, append its pointer to `MusicIndex` and a `bgm_*` constant before `bgm__Last`; an added sound effect goes into `ExtSoundIndex`. The Level Select sound test plays IDs $00–$FF directly: Left/Right step by one, A skips ahead by $10, B+A goes back by $10, and C or Start plays the selection. With the hidden Japanese credits cheat, $9E and $9F still start the credits and the ending.
+
 ## Character resources
 
 `_inc/Character Assets.asm` adapts Selbi's [Adding Extra Characters](https://info.sonicretro.org/SCHG_How-to:Add_Extra_Characters) guide. Each registered character has two ROM descriptors, normal and Super. They select uncompressed player art, mappings, DPLC, animation scripts, dry/LZ/SBZ3 palettes, Super palette cycles, speed-dependent animation scripts and the lives-icon PLC. Sonic, solo Tails and solo Knuckles are registered. The Super records of Tails and Knuckles reuse their normal art, mappings, DPLC and animations and differ only in palettes and cycles. The last bytes of each record are `CharacterAsset_CycleStep`, `CycleHold` and `CycleLast`: game frames per steady palette entry, frames shown on the last entry before looping, and the byte offset of that last entry. The loop restarts at offset `$30`, after the six transformation entries.

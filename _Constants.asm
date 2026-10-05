@@ -373,8 +373,12 @@ af2ndRoutine:		equ $FA	; increment 2nd routine counter
 aniXFlip:		equ $20 ; horizontally mirrors the current frame
 aniYFlip:		equ $40 ; vertically mirrors the current frame
 
+; Sound IDs use the whole byte, as in Sonic 3 & Knuckles: music $01-$7F,
+; sound effects $A0-$CF, the special waterfall sound $D0, added sound effects
+; $D1-$FA and commands $FB-$FF. $00 stops all sound and $80 marks an empty
+; driver slot. The labels keep the original Sonic 1 numbers (ptr_mus81 is $01).
 ; Background music
-bgm__First:		equ $81
+bgm__First:		equ $01
 bgm_GHZ:		equ ((ptr_mus81-MusicIndex)/4)+bgm__First
 bgm_LZ:			equ ((ptr_mus82-MusicIndex)/4)+bgm__First
 bgm_MZ:			equ ((ptr_mus83-MusicIndex)/4)+bgm__First
@@ -462,13 +466,24 @@ sfx_PeelStop: equ ((ptr_sndD4-ExtSoundIndex)/4)+ext__First
 ext__Last:		equ ((ptr_extend-ExtSoundIndex-4)/4)+ext__First
 
 ; Sound commands
-flg__First:		equ $E0
+flg__First:		equ $FB
 bgm_Fade:		equ ((ptr_flgE0-Sound_ExIndex)/4)+flg__First
 sfx_Sega:		equ ((ptr_flgE1-Sound_ExIndex)/4)+flg__First
 bgm_Speedup:		equ ((ptr_flgE2-Sound_ExIndex)/4)+flg__First
 bgm_Slowdown:		equ ((ptr_flgE3-Sound_ExIndex)/4)+flg__First
 bgm_Stop:		equ ((ptr_flgE4-Sound_ExIndex)/4)+flg__First
 flg__Last:		equ ((ptr_flgend-Sound_ExIndex-4)/4)+flg__First
+	if MOMPASS>1
+	if bgm__Last>=$80
+		error "Music IDs must stay below $80, which marks an empty driver slot"
+	endif
+	if ext__Last>=flg__First
+		error "Added sound effects run into the sound commands at $FB"
+	endif
+	if flg__Last<>$FF
+		error "Sound commands must end at $FF"
+	endif
+	endif
 	
 ; Boss locations
 ; The main values are based on where the camera boundaries mainly lie

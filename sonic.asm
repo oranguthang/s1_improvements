@@ -2065,8 +2065,7 @@ LevSel_SelectionMade:
 		move.w	(v_levselitem).w,d0			; get currently selected line
 		cmpi.w	#levsel_sndtest_row,d0			; have you selected item $14 (sound test)?
 		bne.s	LevSel_Level_SS				; if not, go to Level/SS subroutine
-		move.w	(v_levselsound).w,d0			; get currently selected sound test entry
-		addi.w	#$80,d0					; make it $80-based
+		move.w	(v_levselsound).w,d0			; get currently selected sound ID ($00-$FF)
 
 		; 9E/9F shortcuts with hidden Japanese Credits cheat
 		tst.b	(f_creditscheat).w			; is hidden Japanese Credits cheat on?
@@ -2354,36 +2353,27 @@ LevSel_SndTest:
 		andi.b	#btnR+btnL+btnA,d1			; left/right/A changes sound selection
 		beq.s	LevSel_NoMove				; if not, branch
 
-		move.w	(v_levselsound).w,d0			; get currently selected sound test number
+		move.w	(v_levselsound).w,d0			; get currently selected sound ID
 		btst	#bitL,d1				; is left pressed?
 		beq.s	LevSel_Right				; if not, branch
-		subq.w	#1,d0					; subtract 1 from sound test
-		bhs.s	LevSel_Right				; is result still positive? if yes, branch
-		moveq	#sfx__Last-$80,d0 			; if sound test moves below 0, set to last entry (non-$80 based)
+		subq.b	#1,d0					; previous ID, wrapping from $00 to $FF
 
 LevSel_Right:
 		btst	#bitR,d1				; is right pressed?
 		beq.s	LevSel_Refresh2				; if not, branch
-		addq.w	#1,d0					; add 1 to sound test
-		cmpi.w	#sfx__Last-$80+1,d0			; is result now past the last entry?
-		blo.s	LevSel_Refresh2				; if not, branch
-		moveq	#0,d0					; if sound test moves above last entry, set to 0
+		addq.b	#1,d0					; next ID, wrapping from $FF to $00
 
 LevSel_Refresh2:
 		btst	#bitA,d1
 		beq.s	LevSel_SetSound
 		btst	#bitB,(v_jpadhold1).w
 		bne.s	LevSel_A_WithB
-		addi.w	#$10,d0
-		cmpi.w	#sfx__Last-$80+1,d0
-		blo.s	LevSel_SetSound
-		subi.w	#sfx__Last-$80+1,d0
+		addi.b	#$10,d0					; A skips ahead by $10
 		bra.s	LevSel_SetSound
 LevSel_A_WithB:
-		subi.w	#$10,d0
-		bhs.s	LevSel_SetSound
-		addi.w	#sfx__Last-$80+1,d0
+		subi.b	#$10,d0					; B+A goes back by $10
 LevSel_SetSound:
+		andi.w	#$FF,d0					; every byte is a sound ID
 		move.w	d0,(v_levselsound).w			; set sound test number
 		bsr.w	LevSelTextLoad				; refresh text
 
@@ -2455,8 +2445,7 @@ LevSelTextLoad:
 		move.w	#levsel_yellow,d3			; draw numbers in yellow
 LevSel_DrawSnd:
 		locVRAM	levsel_vram_sndtestnum			; write sound test number position to VRAM
-		move.w	(v_levselsound).w,d0			; get currently selected sound test number
-		addi.w	#$80,d0					; make sound ID to be drawn $80-based
+		move.w	(v_levselsound).w,d0			; get currently selected sound ID
 		move.b	d0,d2					; backup number
 		lsr.b	#4,d0					; move first digit to lower nybble
 		bsr.w	LevSel_ChgSnd				; draw 1st digit

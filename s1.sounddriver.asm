@@ -130,14 +130,24 @@ ptr_musend
 ; will only override special SFX and music will only override music.
 ; ---------------------------------------------------------------------------
 ; SoundTypes:
+; The table covers every ID from $01 to $FF (see the sound ID notes in
+; _Constants.asm).
 SoundPriorities:
-		dc.b     $90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90	; $81
-		dc.b $90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90,$90	; $90
+		rept $9F
+		dc.b $90						; $01-$9F: music
+		endm
 		dc.b $80,$70,$70,$70,$70,$70,$70,$70,$70,$70,$68,$70,$70,$70,$60,$70	; $A0
 		dc.b $70,$60,$70,$60,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70,$7F	; $B0
 		dc.b $60,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70,$70	; $C0
-		dc.b $80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80,$80	; $D0
-		dc.b $90,$90,$90,$90,$90                                            	; $E0
+		rept $FB-$D0
+		dc.b $80						; $D0-$FA: special and added SFX
+		endm
+		dc.b $90,$90,$90,$90,$90				; $FB-$FF: commands
+SoundPriorities_End:
+	if SoundPriorities_End-SoundPriorities<>$FF
+		error "SoundPriorities must cover IDs $01-$FF"
+	endif
+		even
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -658,7 +668,7 @@ CycleSoundQueue:
 		move.b	d0,d1
 		clr.b	(a1)+					; clear entry
 		subi.b	#bgm__First,d0				; make it into 0-based index
-		bcs.s	.nextinput				; if negative (i.e., it was $80 or lower), branch
+		bcs.s	.nextinput				; branch if the entry is empty ($00)
 		cmpi.b	#$80,SMPS_RAM.v_sound_id(a6)		; is v_sound_id a $80 (silence/empty)?
 		beq.s	.havesound				; if yes, branch
 		move.b	d1,SMPS_RAM.v_soundqueue0(a6)		; put sound into v_soundqueue0
@@ -666,7 +676,7 @@ CycleSoundQueue:
 ; ===========================================================================
 ; loc_71F2C:
 .havesound:
-		andi.w	#$7F,d0					; clear high byte and sign bit
+		andi.w	#$FF,d0					; clear high byte
 		move.b	(a0,d0.w),d2				; get sound type
 		cmp.b	d3,d2					; is it a lower priority sound?
 		blo.s	.nextinput				; branch if yes
@@ -690,10 +700,9 @@ PlaySoundID:
 		moveq	#0,d7
 		move.b	SMPS_RAM.v_sound_id(a6),d7
 		beq.w	StopAllSound
-		bpl.s	.locret					; if >= 0, return (not a valid sound, bgm or command)
 		move.b	#$80,SMPS_RAM.v_sound_id(a6)		; reset music flag
 	if FixBugs
-		cmpi.b	#bgm__Last,d7				; is this music ($81-$93)?
+		cmpi.b	#bgm__Last,d7				; is this music ($01-$7F)?
 	else
 		; DANGER! Music ends at $93, yet this checks until $9F; attempting to
 		; play sounds $94-$9F will cause a crash!
@@ -710,9 +719,9 @@ PlaySoundID:
 	if FixBugs
 		cmpi.b	#spec__Last,d7				; is this special sfx ($D0-$D0)?
 		bls.w	Sound_PlaySpecial			; branch if yes
-		cmpi.b	#ext__Last,d7
+		cmpi.b	#ext__Last,d7				; is this an added sfx ($D1-$FA)?
 		bls.w	Sound_PlayMoreSFX
-		cmpi.b	#flg__First,d7				; is this after special sfx but before $E0?
+		cmpi.b	#flg__First,d7				; is this after the added sfx but before $FB?
 		blo.w	.locret					; return if yes
 	else
 		; DANGER! Special SFXes end at $D0, yet this checks until $DF; attempting to
@@ -720,7 +729,7 @@ PlaySoundID:
 		cmpi.b	#spec__Last+$10,d7			; is this special sfx ($D0-$DF)?
 		blo.w	Sound_PlaySpecial			; branch if yes
 	endif
-		cmpi.b	#flg__Last,d7				; is this $E0-$E4?
+		cmpi.b	#flg__Last,d7				; is this a command ($FB-$FF)?
 		bls.s	Sound_E0toE4				; branch if yes
 ; locret_71F8C:
 .locret:
@@ -734,11 +743,11 @@ Sound_E0toE4:
 ; ===========================================================================
 
 Sound_ExIndex:
-ptr_flgE0:	bra.w	FadeOutMusic	; $E0
-ptr_flgE1:	bra.w	PlaySegaSound	; $E1
-ptr_flgE2:	bra.w	SpeedUpMusic	; $E2
-ptr_flgE3:	bra.w	SlowDownMusic	; $E3
-ptr_flgE4:	bra.w	StopAllSound	; $E4
+ptr_flgE0:	bra.w	FadeOutMusic	; $FB (originally $E0)
+ptr_flgE1:	bra.w	PlaySegaSound	; $FC (originally $E1)
+ptr_flgE2:	bra.w	SpeedUpMusic	; $FD (originally $E2)
+ptr_flgE3:	bra.w	SlowDownMusic	; $FE (originally $E3)
+ptr_flgE4:	bra.w	StopAllSound	; $FF (originally $E4)
 ptr_flgend
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
