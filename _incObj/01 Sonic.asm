@@ -100,11 +100,7 @@ Sonic_Control:	; Routine 2
 .normalModeControl:
 		cmpi.b	#Character_Sonic,(v_character_p1).w
 		beq.s	.abilities				; Sonic checks Super combos in Sonic_MdJump2
-		move.b	obStatus(a0),d0
-		andi.b	#6,d0
-		cmpi.b	#6,d0					; airborne and rolling?
-		bne.s	.abilities
-		bsr.w	Sonic_ToggleSuper			; partners: a Super combo takes priority over flight or gliding
+		bsr.w	Sonic_PartnerSuperCombo			; partners: a Super combo takes priority over flight or gliding
 .abilities:
 		jsr (Knuckles_GlideControl).l
 		tst.b d0
@@ -2810,6 +2806,8 @@ Sonic_ChkDebugToggle:
 ; Subroutine to toggle Super Sonic with a buffered A+B, A+C or B+C combination
 ; ---------------------------------------------------------------------------
 
+super_combo_window:	equ 10			; about a sixth of a second, so two fingers need not land together
+
 Sonic_ToggleSuper:
 	if FeatureSuper=0
 		rts						; Super forms disabled
@@ -2843,7 +2841,7 @@ Sonic_ToggleSuper:
 	.pressesOnly:
 		andi.b	#btnABC,d1
 		move.b	d1,objoff_3F(a0)
-		move.b	#6,objoff_3D(a0)	; keep the combo window short
+		move.b	#super_combo_window,objoff_3D(a0)	; frames the second button may follow the first
 		move.b	d1,d2
 		andi.b	#btnA|btnB,d2		; was A+B pressed within the window?
 		cmpi.b	#btnA|btnB,d2
@@ -2872,6 +2870,46 @@ Sonic_ToggleSuper:
 .return:
 		rts
 ; End of function Sonic_ToggleSuper
+
+; ---------------------------------------------------------------------------
+; Super combos for Tails and Knuckles. The first jump button pressed in the
+; jump already starts flight or a glide, so the combo window stays open for
+; those first frames too: if the second button arrives then, the ability is
+; cancelled and the player transforms. Later flight or glide presses never
+; start a combo.
+; ---------------------------------------------------------------------------
+
+Sonic_PartnerSuperCombo:
+		btst	#1,obStatus(a0)				; airborne?
+		bne.s	.air
+		clr.b	(v_super_combo_grace).w
+		rts
+
+	.air:
+		btst	#2,obStatus(a0)				; still in the jump?
+		beq.s	.ability
+		moveq	#btnABC,d0
+		and.b	(v_jpadpress2).w,d0			; a new press may start flight or a glide now
+		beq.s	.jump
+		move.b	#super_combo_window,(v_super_combo_grace).w ; as long as Sonic_ToggleSuper's window
+	.jump:
+		bra.w	Sonic_ToggleSuper
+
+	.ability:
+		tst.b	(v_super_combo_grace).w			; did flight or the glide just start from the jump?
+		beq.s	.return
+		subq.b	#1,(v_super_combo_grace).w
+		move.b	(v_supersonic).w,-(sp)
+		bsr.w	Sonic_ToggleSuper
+		move.b	(sp)+,d0
+		cmp.b	(v_supersonic).w,d0			; did the combo change form?
+		beq.s	.return
+		clr.b	(v_super_combo_grace).w
+		clr.b	(v_tails_flying).w			; cancel flight...
+		clr.b	(v_tails_flap).w
+		jmp	(Knuckles_EndAbility).l			; ...or the glide
+	.return:
+		rts
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to transform into Super Sonic

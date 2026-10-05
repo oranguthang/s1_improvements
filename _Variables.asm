@@ -102,7 +102,8 @@ v_knux_speed: ds.w 1                  ; positive glide speed
 v_knux_wall_x: ds.w 1                 ; wall grab position, detects external pushes
 v_knux_frame: ds.b 1                  ; climbing/ledge pose
 v_knux_timer: ds.b 1                  ; climbing/ledge animation timer
-                    ds.b $200-4-colqueue_entries*2-2-(v_lightdash_end-v_lightdash_start)-12
+v_super_combo_grace: ds.b 1           ; frames a flight or glide started from the jump still takes a Super combo
+                    ds.b $200-4-colqueue_entries*2-2-(v_lightdash_end-v_lightdash_start)-13
 v_tracksonic:		ds.b	$100				; position tracking data for Sonic
 v_hscrolltablebuffer:	ds.b	hscroll_table_size			; scrolling table data
 v_hscrolltablebuffer_end:
