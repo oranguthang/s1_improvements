@@ -1657,7 +1657,17 @@
       }
     },
     "palette/Special Stage.bin": {
-      "source": "palette/Special Stage.bin"
+      "source": "palette/Special Stage.bin",
+      "colours": {
+        "18": "0026",
+        "19": "004A",
+        "20": "008E",
+        "21": "00AE",
+        "34": "0204",
+        "35": "0208",
+        "36": "020C",
+        "37": "064E"
+      }
     },
     "palette/Special Stage Continue Bonus.bin": {
       "source": "palette/Special Stage Continue Bonus.bin"

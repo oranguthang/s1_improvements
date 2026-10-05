@@ -665,6 +665,7 @@ ArtTile_Sonic:			equ $780
 Sonic_Slot_Tiles:		equ 32			; Super frames use up to 31 tiles; ends before spin dust
 Tails_Tail_Tiles:		equ 16			; Tails' tails use the second half of the player slot
 ArtTile_Tails_Tail:		equ ArtTile_Sonic+Sonic_Slot_Tiles-Tails_Tail_Tiles
+ArtTile_Tails_Tail_SS:		equ ArtTile_Sonic+Sonic_Slot_Tiles-TailsTailSS_Tiles ; Special Stage tails (see _maps/Tails Tail SS.asm)
 ArtTile_Points:			equ ArtTile_Shield+Shield_Slot_Tiles ; $553-$55B, after shield/stars
 Points_Tiles:			equ 9
 ArtTile_Debug_Stats:		equ ArtTile_Points+Points_Tiles ; SPR label and decimal sprite count

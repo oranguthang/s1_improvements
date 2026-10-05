@@ -33,6 +33,8 @@ TTail_Init:
 
 TTail_Main:
 		lea	(v_player).w,a2
+		cmpi.b	#id_SonicSpecial,obID(a2)		; rolling through a Special Stage?
+		beq.w	TTail_Special
 		cmpi.b	#id_SonicPlayer,obID(a2)		; replaced by an ending or results object?
 		bne.w	TTail_Delete
 		cmpi.b	#Character_Tails,(v_character_p1).w
@@ -74,6 +76,30 @@ TTail_Main:
 		bcc.w	TTail_Return
 	.visible:
 		bsr.w	TTail_LoadGfx
+		jmp	(DisplaySprite).l
+
+; In the Special Stage the player always rolls: point the tails against his
+; velocity, turned with the stage, and draw them from the two-layer frames
+; (s1tools.special_stage) in the slot's last TailsTailSS_Tiles tiles.
+TTail_Special:
+		cmpi.b	#Character_Tails,(v_character_p1).w
+		bne.w	TTail_Delete
+		tst.w	(v_debuguse).w				; placement mode shows an item instead
+		bne.w	TTail_Return
+		move.l	#Map_TailsTailSS,obMap(a0)
+		move.w	#ArtTile_Tails_Tail_SS,obGfx(a0)
+		move.w	obX(a2),obX(a0)
+		move.w	obY(a2),obY(a0)
+		move.b	obStatus(a2),d0
+		andi.b	#1,d0
+		move.b	d0,obStatus(a0)
+		move.b	#1,obPriority(a0)			; behind the ball
+		move.b	#tailani_Directional,obAnim(a0)
+		bsr.w	TTail_Directional
+		lea	(TailsTailSSDynPLC).l,a2
+		move.l	#Art_TailsTailSS,d6
+		move.w	#ArtTile_Tails_Tail_SS*tile_size,d4
+		bsr.w	TTail_LoadGfxFrom
 		jmp	(DisplaySprite).l
 
 TTail_Hidden:
@@ -168,6 +194,10 @@ TTail_Directional:
 		move.w	obVelX(a2),d1
 		move.w	obVelY(a2),d2
 		jsr	(CalcAngle).l
+		cmpi.b	#id_Special,(v_gamemode).w		; the Special Stage turns around the player
+		bne.s	.notRotated
+		sub.b	(v_ssangle).w,d0
+	.notRotated:
 		btst	#0,obStatus(a2)
 		beq.s	.heading
 		neg.b	d0					; mirror the velocity into the body's local coordinates
@@ -233,19 +263,23 @@ TTail_BodyFitsHalf:
 ; ---------------------------------------------------------------------------
 
 TTail_LoadGfx:
+		lea	(TailsTailDynPLC).l,a2
+		move.l	#Art_TailsTail,d6
+		move.w	#ArtTile_Tails_Tail*tile_size,d4
+
+; Input a2 = DPLC table, d6 = art, d4 = VRAM address.
+TTail_LoadGfxFrom:
 		moveq	#0,d0
 		move.b	obFrame(a0),d0
 		cmp.b	tail_vramframe(a0),d0
 		beq.s	.done
 		move.b	d0,tail_vramframe(a0)
-		lea	(TailsTailDynPLC).l,a2
 		add.w	d0,d0
 		adda.w	(a2,d0.w),a2
 		moveq	#0,d5
 		move.b	(a2)+,d5
 		subq.w	#1,d5
 		bmi.s	.done
-		move.w	#ArtTile_Tails_Tail*tile_size,d4
 	.entry:
 		moveq	#0,d1
 		move.b	(a2)+,d1
@@ -257,7 +291,7 @@ TTail_LoadGfx:
 		addi.w	#$10,d3					; transfer size in words
 		andi.w	#$FFF,d1
 		lsl.l	#5,d1
-		addi.l	#Art_TailsTail,d1			; source in ROM
+		add.l	d6,d1					; source in ROM
 		move.w	d4,d2					; destination in VRAM
 		add.w	d3,d4
 		add.w	d3,d4

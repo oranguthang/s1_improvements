@@ -2344,6 +2344,14 @@ Sonic_Animate:
         tst.b (v_supersonic).w
         bne.s .superanimations
         move.l CharacterAsset_Map(a2),obMap(a0) ; finish deferred form changes before drawing
+        cmpi.b #id_Special,(v_gamemode).w       ; two-layer Special Stage frames?
+        bne.s .normalanimations
+        move.l a1,-(sp)
+        jsr (GetSSPlayerAssets).l
+        beq.s .ownSSFrames
+        move.l (a1),obMap(a0)
+.ownSSFrames:
+        movea.l (sp)+,a1
         bra.s .normalanimations
 .superanimations:
 		move.b spindash_flag(a0),d0
@@ -2715,20 +2723,15 @@ Sonic_LoadGfx:
         bhs.s .selectedart
         move.l CharacterAsset_SharedArt(a3),d6
 .selectedart:
-        cmpi.b #id_Special,(v_gamemode).w       ; Special Stage balls are recoloured
+        cmpi.b #id_Special,(v_gamemode).w       ; two-layer Special Stage frames?
         bne.s .notSpecial
-        cmpi.b #fr_Roll1,d0
-        blo.s .notSpecial
-        cmpi.b #fr_Roll5,d0
-        bhi.s .notSpecial
-        moveq #0,d1
-        move.b (v_character_p1).w,d1
-        add.w d1,d1
-        add.w d1,d1
-        lea (SSBall_Art).l,a3
-        move.l (a3,d1.w),d1                     ; 0 = keep the character's own art
-        beq.s .notSpecial
-        move.l d1,d6
+        move.l a1,-(sp)
+        jsr (GetSSPlayerAssets).l
+        beq.s .ownFrames
+        movea.l 4(a1),a2                        ; Special Stage DPLC
+        move.l 8(a1),d6                         ; and art
+.ownFrames:
+        movea.l (sp)+,a1
 .notSpecial:
         movea.l (sp)+,a3
 	.gotart:

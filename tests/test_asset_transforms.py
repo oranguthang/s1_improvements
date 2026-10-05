@@ -476,3 +476,16 @@ def test_seventh_emerald_resources() -> None:
             offset = line * 32 + slot * 2
             expected[offset : offset + 2] = colour.to_bytes(2, "big")
         assert (ROOT / f"palette/{name} - Seventh Emerald.bin").read_bytes() == bytes(expected)
+
+
+def test_special_stage_block_lines_match_the_character_ramps() -> None:
+    from s1tools.special_stage import KNUCKLES_RAMP, TAILS_RAMP
+
+    for name in ("Special Stage", "Special Stage - Seventh Emerald"):
+        palette = (ROOT / f"palette/{name}.bin").read_bytes()
+        for line, ramp in ((1, TAILS_RAMP), (2, KNUCKLES_RAMP)):
+            words = [
+                int.from_bytes(palette[line * 32 + s * 2 : line * 32 + s * 2 + 2], "big")
+                for s in range(2, 6)
+            ]
+            assert tuple(words) == ramp, (name, line)

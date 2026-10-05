@@ -3307,8 +3307,7 @@ GM_Special:		; white fade-out from previous game mode
 		bsr.w	PalLoad_Fade				; ...into the palette fade-in buffer
 		jsr	(SS_Load).l				; load SS layout data (based on last stage entered and collected emeralds)
 		; Line 0 keeps the stage's blue (walls, glass, GOAL, blue emerald); the
-		; other characters' balls use SSBall_Art and SSBall_Palette instead.
-		jsr	(ApplySpecialStageColours).l		; Tails' line 1 turns orange
+		; other characters roll with SSPlayer_Assets frames instead.
 
 	if FixBugs
 		; Set custom level boundaries so that the fixed
@@ -5581,6 +5580,10 @@ Map_Tails: include "_maps/Tails.asm"
 TailsDynPLC: include "_maps/Tails - Dynamic Gfx Script.asm"
 Map_TailsTail:	include "_maps/Tails Tail.asm"
 TailsTailDynPLC: include "_maps/Tails Tail - Dynamic Gfx Script.asm"
+Map_TailsSS:	include "_maps/Tails SS.asm"
+TailsSSDynPLC:	include "_maps/Tails SS - Dynamic Gfx Script.asm"
+Map_TailsTailSS: include "_maps/Tails Tail SS.asm"
+TailsTailSSDynPLC: include "_maps/Tails Tail SS - Dynamic Gfx Script.asm"
 		include	"_incObj/8F Tails Tail.asm"
 	if FeatureS2Stars
 		include	"_incObj/02 Invincibility Stars S2.asm"
@@ -5594,6 +5597,8 @@ Map_SuperTailsFlickies:	include	"_maps/Super Tails Flickies.asm"
 		even
 Map_Knuckles: include "_maps/Knuckles.asm"
 KnucklesDynPLC: include "_maps/Knuckles - Dynamic Gfx Script.asm"
+Map_KnucklesSS:	include "_maps/Knuckles SS.asm"
+KnucklesSSDynPLC: include "_maps/Knuckles SS - Dynamic Gfx Script.asm"
 		include "_anim/Knuckles.asm"
 		align $20000                   ; all Tails DPLC sources must stay within one DMA bank
 Art_Tails: binclude "artunc/Tails.unc"
@@ -5603,10 +5608,11 @@ Art_TailsTail_End:
 	if (MOMPASS>1)&&((Art_Tails>>17)<>((Art_TailsTail_End-1)>>17))
 		error "Tails' tails art must share the body's 128 KiB DMA bank"
 	endif
-Art_TailsSSBall: binclude "artunc/Tails SS Ball.unc"	; Special Stage rolling frames (line 1)
-Art_TailsSSBall_End:
-	if (MOMPASS>1)&&((Art_TailsSSBall>>17)<>((Art_TailsSSBall_End-1)>>17))
-		error "Tails' Special Stage ball art must not cross a 128 KiB DMA bank"
+Art_TailsSS:	binclude "artunc/Tails SS.unc"		; Special Stage rolling frames, two layers
+Art_TailsTailSS: binclude "artunc/Tails Tail SS.unc"	; Special Stage rolling tails
+Art_TailsTailSS_End:
+	if (MOMPASS>1)&&((Art_TailsSS>>17)<>((Art_TailsTailSS_End-1)>>17))
+		error "Tails' Special Stage art must not cross a 128 KiB DMA bank"
 	endif
 	if (Art_Tails_size>$20000)&(MOMPASS=1)
 		error "Tails art exceeds a 128 KiB DMA bank. Split or repack the resource."
@@ -5615,10 +5621,10 @@ Art_TailsSSBall_End:
 		align $20000
 Art_Knuckles: binclude "artunc/Knuckles.unc"
 Art_Knuckles_size: equ *-Art_Knuckles
-Art_KnucklesSSBall: binclude "artunc/Knuckles SS Ball.unc"	; Special Stage rolling frames
-Art_KnucklesSSBall_End:
-	if (MOMPASS>1)&&((Art_KnucklesSSBall>>17)<>((Art_KnucklesSSBall_End-1)>>17))
-		error "Knuckles' Special Stage ball art must not cross a 128 KiB DMA bank"
+Art_KnucklesSS:	binclude "artunc/Knuckles SS.unc"	; Special Stage rolling frames, two layers
+Art_KnucklesSS_End:
+	if (MOMPASS>1)&&((Art_KnucklesSS>>17)<>((Art_KnucklesSS_End-1)>>17))
+		error "Knuckles' Special Stage art must not cross a 128 KiB DMA bank"
 	endif
 	if (Art_Knuckles_size>$20000)&(MOMPASS=1)
 		error "Knuckles art exceeds a 128 KiB DMA bank. Split or repack the resource."

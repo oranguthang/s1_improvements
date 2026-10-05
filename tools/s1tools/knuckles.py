@@ -9,7 +9,8 @@ from s1tools.codecs.kosinski import encode_moduled
 from s1tools.codecs.nemesis import decode as nemesis_decode
 from s1tools.common import get_root, get_source, write_outputs
 from s1tools.shared_palette import life_icon, player_palettes
-from s1tools.tails import emit_frames, frame, raw_table, ss_ball_art
+from s1tools.special_stage import ROLL_FRAMES, layered_assets
+from s1tools.tails import emit_frames, frame, raw_table
 
 BASE = "General/Sprites/Knuckles/"
 # Fur uses protected 2/4/5; green shoe panels use the remaining protected 3.
@@ -29,9 +30,11 @@ WALK8 = TRANSFORM + 3
 VICTORY = WALK8 + 4 * 8
 FRAME_COUNT = VICTORY + 4
 
-# In the Special Stage, line 0 keeps its blue for the stage blocks, so the
-# rolling frames use the line's red shoe shades for the fur (peach highlight).
-SS_BALL_COLOURS = {2: 13, 3: 13, 4: 12, 5: 10}
+# In the Special Stage, Knuckles' fur is drawn from palette line 2, the red
+# blocks' line (see s1tools.special_stage). Its darkest slot takes the green
+# shoe panel, which has no green to use there.
+SS_FUR = {2: 3, 3: 2, 4: 4, 5: 5}
+SS_LINE = 2
 
 
 def frame_plan() -> list[tuple[int, int, int]]:
@@ -123,14 +126,17 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
         data, pieces = frame(art, maps, cues, source_id, COLOURS)
         frames.append((data, [(x + dx, y + dy, *rest) for x, y, *rest in pieces]))
     packed, mappings, dplc = emit_frames("Knuckles", frames)
-    ball_art, ball_first = ss_ball_art(packed, frames, SS_BALL_COLOURS)
-    mappings = f"KnucklesSSBall_FirstTile equ ${ball_first:X}\n\n".encode("ascii") + mappings
+    ss_art, ss_mappings, ss_cues, _ = layered_assets(
+        "KnucklesSS", frames, ROLL_FRAMES, SS_FUR, SS_LINE
+    )
     icon = nemesis_decode((source / "General/Sprites/HUD Icon/Knuckles Life Icon.bin").read_bytes())
     outputs = {
         root / "artunc/Knuckles.unc": packed,
         root / "_maps/Knuckles.asm": mappings,
         root / "_maps/Knuckles - Dynamic Gfx Script.asm": dplc,
-        root / "artunc/Knuckles SS Ball.unc": ball_art,
+        root / "artunc/Knuckles SS.unc": ss_art,
+        root / "_maps/Knuckles SS.asm": ss_mappings,
+        root / "_maps/Knuckles SS - Dynamic Gfx Script.asm": ss_cues,
         root / "artkosm/HUD - Knuckles Life Counter Icon.kosm": encode_moduled(
             life_icon(icon, COLOURS)
         ),

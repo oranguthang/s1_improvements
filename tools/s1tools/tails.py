@@ -250,35 +250,12 @@ def emit_frames(
     return bytes(packed), "\n".join(maps).encode("ascii"), "\n".join(cues).encode("ascii")
 
 
-# The Special Stage keeps its own blue in palette line 0 (walls, glass, GOAL,
-# the blue emerald), so the rolling frames there use separately coloured
-# tiles. Tails' ball is drawn on line 1, whose yellow-wall ramp the stage
-# replaces with his orange (SSLine1_Tails); the peach muzzle takes the
-# lightest orange there.
-SS_BALL_FRAMES = range(0x2E, 0x33)
-SS_BALL_COLOURS = {10: 5}
-
-
-def ss_ball_art(
-    packed: bytes, frames: list[tuple[bytes, list[tuple[int, ...]]]], remap: dict[int, int]
-) -> tuple[bytes, int]:
-    """Recoloured copy of the tiles of the rolling frames and their first tile."""
-    spans = []
-    for index in SS_BALL_FRAMES:
-        data = frames[index][0]
-        start = next(
-            tile
-            for tile in range(len(packed) // 32)
-            if packed[tile * 32 : tile * 32 + len(data)] == data
-        )
-        spans.append((start, start + len(data) // 32))
-    first = min(start for start, _ in spans)
-    last = max(end for _, end in spans)
-    art = bytes(
-        remap.get(b >> 4, b >> 4) << 4 | remap.get(b & 15, b & 15)
-        for b in packed[first * 32 : last * 32]
-    )
-    return art, first
+# In the Special Stage, Tails' fur (slots 2-5) is drawn from palette line 1,
+# the orange blocks' line (see s1tools.special_stage).
+SS_FUR = {2: 2, 3: 3, 4: 4, 5: 5}
+SS_LINE = 1
+# The rolling tails (frames 5-$14) follow the ball there.
+SS_TAIL_FRAMES = range(5, 0x15)
 
 
 def expected_outputs(source: Path) -> dict[Path, bytes]:
@@ -304,22 +281,35 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
             raise ValueError(f"Tail frame {index:02X} exceeds the tails art slot")
         shift = tail_shift(index)
         tail_frames.append((data, [(x, y + shift, *rest) for x, y, *rest in pieces]))
+    from s1tools.special_stage import ROLL_FRAMES, layered_assets
+
     art, mappings, cues = emit_frames("Tails", frames)
-    ball_art, ball_first = ss_ball_art(art, frames, SS_BALL_COLOURS)
     mappings = (
         f"fr_TailsTransform equ ${TRANSFORM_FRAME_FIRST:X}\nfr_TailsWalk equ ${WALK8:X}\n"
-        f"fr_TailsVictory equ ${VICTORY:X}\n"
-        f"TailsSSBall_FirstTile equ ${ball_first:X}\n\n"
+        f"fr_TailsVictory equ ${VICTORY:X}\n\n"
     ).encode("ascii") + mappings
     tail_art, tail_mappings, tail_cues = emit_frames("TailsTail", tail_frames)
+    ss_art, ss_mappings, ss_cues, ss_tiles = layered_assets(
+        "TailsSS", frames, ROLL_FRAMES, SS_FUR, SS_LINE
+    )
+    ss_tail = list(layered_assets("TailsTailSS", tail_frames, SS_TAIL_FRAMES, SS_FUR, SS_LINE))
+    # The Special Stage tails take the player slot's last tiles, after the ball.
+    if ss_tiles + ss_tail[3] > 32:
+        raise ValueError("Tails' Special Stage ball and tails exceed the player VRAM slot")
+    ss_tail[1] = f"TailsTailSS_Tiles equ {ss_tail[3]}\n\n".encode("ascii") + ss_tail[1]
     outputs = {
         root / "artunc/Tails.unc": art,
         root / "_maps/Tails.asm": mappings,
         root / "_maps/Tails - Dynamic Gfx Script.asm": cues,
         root / "artunc/Tails Tail.unc": tail_art,
-        root / "artunc/Tails SS Ball.unc": ball_art,
         root / "_maps/Tails Tail.asm": tail_mappings,
         root / "_maps/Tails Tail - Dynamic Gfx Script.asm": tail_cues,
+        root / "artunc/Tails SS.unc": ss_art,
+        root / "_maps/Tails SS.asm": ss_mappings,
+        root / "_maps/Tails SS - Dynamic Gfx Script.asm": ss_cues,
+        root / "artunc/Tails Tail SS.unc": ss_tail[0],
+        root / "_maps/Tails Tail SS.asm": ss_tail[1],
+        root / "_maps/Tails Tail SS - Dynamic Gfx Script.asm": ss_tail[2],
     }
     icon = nemesis_decode((source / "General/Sprites/HUD Icon/Tails Life Icon.bin").read_bytes())
     outputs[root / "artkosm/HUD - Tails Life Counter Icon.kosm"] = encode_moduled(

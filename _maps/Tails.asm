@@ -1,7 +1,6 @@
 fr_TailsTransform equ $97
 fr_TailsWalk equ $9A
 fr_TailsVictory equ $BA
-TailsSSBall_FirstTile equ $324
 
 ; S3K Tails, repacked for the S1 player frame IDs.
 TailsMap_internal: mappingsTable
