@@ -20,20 +20,20 @@ The `Feature*` switches in `sonic.asm` turn this project's gameplay additions on
 | `FeatureLamppostRings` | Restarting from a lamppost starts with no rings. Returning from a giant ring still keeps them. |
 | `FeatureSuper` | No character can transform, and the good ending keeps the normal form. The CHEATS ring settings stay but have no effect. |
 | `FeatureTails`, `FeatureKnuckles` | OPTIONS skips that character, and a saved selection of it falls back to Sonic. Its art, ending and code stay in the ROM. |
-| `FeatureCentiseconds` | The HUD clock shows minutes and seconds only. |
 | `FeatureS2Stars` | Invincibility shows Sonic 1's four trailing stars instead of Sonic 2's (both use the shared white and gray). |
 | `FeatureVictoryPoses` | After the signpost the player runs off to the right, and after a capsule walks right, as in the original game. |
 | `FeatureS3KDrums` | With the Sonic 3 & Knuckles driver, Sonic 1 songs play Sonic 1's own kick, snare and timpani samples. |
 
 `FeatureSoundDriver` chooses the sound driver: 2 (the default) is Flamewing's Flamedriver, the Sonic 3 & Knuckles Z80 driver; 1 is Sonic 1's 68000 driver with Mega PCM 2; 0 is Sonic 1's 68000 driver with its original Z80 DAC driver. See Sound driver below.
 
-Four optional alternatives are off by default; 1 enables them:
+Five optional alternatives are off by default; 1 enables them:
 
 | Option | When 1 |
 |---|---|
 | `FeatureCDDrowning` | As in Sonic CD's Tidal Tempest, the music keeps playing below 12 seconds of air and an unused Sonic 1 sound ($AB) beeps every second; the countdown numbers still appear. Music changes are no longer held back while air is low. |
 | `FeatureTextCredits` | The credits pages are plain text in `_inc/Credits Text.asm`, drawn on plane A with a 16x16 font (see Credits text below). |
 | `Feature7thEmerald` | A seventh, cyan Chaos Emerald and Special Stage 7 (see Seventh Chaos Emerald below). Super forms and the good ending then need all seven. |
+| `FeatureCentiseconds` | The HUD clock also shows hundredths of a second, `0:00:00`, as in Sonic CD (see HUD centiseconds below). |
 | `FeatureInfiniteLives` | The lives counter is hidden and dying never ends the game. Rings, score and Special Stage items no longer award lives or continues, and 1-up monitors give 10 rings. Time Over still restarts the act. |
 
 ## Shared palettes

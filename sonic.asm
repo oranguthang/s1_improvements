@@ -98,8 +98,6 @@ FeatureTails = 1
 ;	| Tails can be selected in OPTIONS
 FeatureKnuckles = 1
 ;	| Knuckles can be selected in OPTIONS
-FeatureCentiseconds = 1
-;	| The HUD clock also shows hundredths of a second, as in Sonic CD
 FeatureS2Stars = 1
 ;	| Sonic 2 invincibility stars; 0 keeps Sonic 1's four trailing stars
 FeatureVictoryPoses = 1
@@ -113,6 +111,8 @@ FeatureS3KDrums = 1
 ;	| 0 plays Sonic 1's own drum samples through the same driver
 
 ; Optional alternatives, off by default.
+FeatureCentiseconds = 0
+;	| If 1, the HUD clock also shows hundredths of a second, as in Sonic CD
 FeatureInfiniteLives = 0
 ;	| If 1, hide the lives counter: no Game Over, extra lives or continues; 1-up monitors give 10 rings
 FeatureTextCredits = 0
