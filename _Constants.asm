@@ -5,6 +5,7 @@
 
 Size_of_SegaPCM:	  equ $6978
 Size_of_DAC_driver_guess: equ $1760
+Size_of_Snd_driver_guess: equ $1400		; Flamedriver, compressed (FeatureSoundDriver = 2)
 
 ; Clocks
 Master_Clock:		equ 53693175
@@ -378,6 +379,11 @@ aniYFlip:		equ $40 ; vertically mirrors the current frame
 ; sound effects $A0-$CF, the special waterfall sound $D0, added sound effects
 ; $D1-$FA and commands $FB-$FF. $00 stops all sound and $80 marks an empty
 ; driver slot. The labels keep the original Sonic 1 numbers (ptr_mus81 is $01).
+; With the Sonic 3 & Knuckles driver the same ranges are kept for the game:
+; Flamedriver numbers music and sound effects separately from $01, so the
+; bgm_* IDs come straight from its music table and each sfx_* ID is the
+; driver's ID moved up to $A0 (see UpdateMusic in "sound/S3K Driver.asm").
+	if FeatureSoundDriver<>SoundDriver_S3K
 ; Background music
 bgm__First:		equ $01
 bgm_GHZ:		equ ((ptr_mus81-MusicIndex)/4)+bgm__First
@@ -474,6 +480,28 @@ bgm_Speedup:		equ ((ptr_flgE2-Sound_ExIndex)/4)+flg__First
 bgm_Slowdown:		equ ((ptr_flgE3-Sound_ExIndex)/4)+flg__First
 bgm_Stop:		equ ((ptr_flgE4-Sound_ExIndex)/4)+flg__First
 flg__Last:		equ ((ptr_flgend-Sound_ExIndex-4)/4)+flg__First
+	else
+; bgm__First, bgm__End and every bgm_* ID come from Gen_Music_Table.
+bgm__Last:		equ bgm__End-1
+
+sfx__First:		equ $A0
+GameDeclSnd	macro sfxname
+sfx_sfxname:		equ zsfx_sfxname-zsfx__First+sfx__First
+	endm
+	Gen_Sound_Table GameDeclSnd
+sfx__Last:		equ zsfx__End-1-zsfx__First+sfx__First
+sfx_SpinDash:		equ sfx_Spindash
+ext__Last:		equ sfx__Last
+
+; Sound commands, handled by UpdateMusic before they reach the driver
+flg__First:		equ $FB
+bgm_Fade:		equ $FB
+sfx_Sega:		equ $FC
+bgm_Speedup:		equ $FD
+bgm_Slowdown:		equ $FE
+bgm_Stop:		equ $FF
+flg__Last:		equ $FF
+	endif
 	if MOMPASS>1
 	if bgm__Last>=$80
 		error "Music IDs must stay below $80, which marks an empty driver slot"

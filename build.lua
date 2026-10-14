@@ -43,18 +43,24 @@ if include_symbols and not convsym then
     if not tools then os.exit(1) end
     convsym = tools.convsym
 end
--- With FeatureMegaPCM the ROM has no Z80 DAC driver segment to compress.
-local mega_pcm = false
+-- FeatureSoundDriver picks the Z80 program the build compresses: Sonic 1's DAC
+-- driver (0), none with Mega PCM 2 (1) or Flamedriver (2).
+local sound_driver
 for line in io.lines("sonic.asm") do
-    local value = line:match("^FeatureMegaPCM = (%d)")
+    local value = line:match("^FeatureSoundDriver = (%d)")
     if value then
-        mega_pcm = value == "1"
+        sound_driver = tonumber(value)
         break
     end
 end
+if sound_driver == nil then
+    print("FeatureSoundDriver is missing from sonic.asm.")
+    os.exit(1)
+end
 -- Build the ROM.
 local compression = improved_dac_driver_compression and "kosinski-optimised" or "kosinski"
-local p2bin_options = mega_pcm and "-p=FF" or ("-p=FF -z=0," .. compression .. ",Size_of_DAC_driver_guess,after")
+local z80_size_symbol = ({[0] = "Size_of_DAC_driver_guess", [2] = "Size_of_Snd_driver_guess"})[sound_driver]
+local p2bin_options = z80_size_symbol and ("-p=FF -z=0," .. compression .. "," .. z80_size_symbol .. ",after") or "-p=FF"
 common.build_rom_and_handle_failure("sonic", output, "-D MDDebugger=1", p2bin_options, false, "https://github.com/sonicretro/s1disasm")
 
 -- Binary resources are read by words (KosM and Enigma headers) or used as DMA

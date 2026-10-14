@@ -104,8 +104,13 @@ FeatureS2Stars = 1
 ;	| Sonic 2 invincibility stars; 0 keeps Sonic 1's four trailing stars
 FeatureVictoryPoses = 1
 ;	| After the signpost or the capsule the player stays and poses, as in Sonic 3 & Knuckles
-FeatureMegaPCM = 1
-;	| Vladikcomper's Mega PCM 2 plays the DAC samples; 0 keeps Sonic 1's Z80 DAC driver
+FeatureSoundDriver = 2
+;	| 2: Flamedriver, the Sonic 3 & Knuckles Z80 sound driver, plays music and sound effects;
+;	| 1: Sonic 1's 68000 driver with Vladikcomper's Mega PCM 2 for the DAC samples;
+;	| 0: Sonic 1's 68000 driver with its own Z80 DAC driver
+FeatureS3KDrums = 1
+;	| With FeatureSoundDriver = 2, Sonic 1 songs use the Sonic 3 & Knuckles kick, snare and timpani;
+;	| 0 plays Sonic 1's own drum samples through the same driver
 
 ; Optional alternatives, off by default.
 FeatureInfiniteLives = 0
@@ -117,9 +122,17 @@ FeatureCDDrowning = 0
 Feature7thEmerald = 0
 ;	| If 1, a cyan seventh Chaos Emerald waits in Special Stage 7, a copy of stage 6
 
-	if (FeatureSpinDash|FeaturePeelOut|FeatureAirRoll|FeatureHomingAttack|FeatureLightDash|FeatureSpringPoses|FeatureExtendedCamera|FeatureMomentum|FeatureRollJumpSteering|FeatureInstantTally|FeatureExtraLives|FeatureLamppostRings|FeatureSuper|FeatureTails|FeatureKnuckles|FeatureCentiseconds|FeatureS2Stars|FeatureVictoryPoses|FeatureMegaPCM|FeatureCDDrowning|FeatureInfiniteLives|FeatureTextCredits|Feature7thEmerald)&~1
+	if (FeatureSpinDash|FeaturePeelOut|FeatureAirRoll|FeatureHomingAttack|FeatureLightDash|FeatureSpringPoses|FeatureExtendedCamera|FeatureMomentum|FeatureRollJumpSteering|FeatureInstantTally|FeatureExtraLives|FeatureLamppostRings|FeatureSuper|FeatureTails|FeatureKnuckles|FeatureCentiseconds|FeatureS2Stars|FeatureVictoryPoses|FeatureS3KDrums|FeatureCDDrowning|FeatureInfiniteLives|FeatureTextCredits|Feature7thEmerald)&~1
 		error "Feature options must be 0 or 1"
 	endif
+
+SoundDriver_Original = 0
+SoundDriver_MegaPCM = 1
+SoundDriver_S3K = 2
+	if (FeatureSoundDriver<SoundDriver_Original)|(FeatureSoundDriver>SoundDriver_S3K)
+		error "FeatureSoundDriver must be 0, 1 or 2"
+	endif
+FeatureMegaPCM = (FeatureSoundDriver==SoundDriver_MegaPCM)&1	; derived: Mega PCM integration in the 68000 driver
 
 ZoneCount = 6
 ;	| Used for the "zonewarning" macro. Do not change, unless more zones get added.
@@ -135,6 +148,9 @@ ZoneCount = 6
 	include	"Macros.asm"
 	if FeatureMegaPCM
 	include	"MegaPCM/MegaPCM.Macros.asm"
+	endif
+	if FeatureSoundDriver=SoundDriver_S3K
+	include	"sound/flamedriver/Definitions.asm"	; driver constants and the bgm_ IDs
 	endif
 
 ; ===========================================================================
@@ -504,7 +520,11 @@ GameInit:
 
 		jsr	(InitDMAQueue).l			; initialize queued VRAM transfers
 		bsr.w	VDPSetupGame				; initialize (proper) VDP registers
+	if FeatureSoundDriver=SoundDriver_S3K
+		jsr	(DACDriverLoad).l				; initialize the Z80 sound driver
+	else
 		bsr.w	DACDriverLoad				; initialize Z80 DAC driver
+	endif
 		bsr.w	JoypadInit				; initialize controller ports
 		jsr	(Settings_Load).l			; validated settings, independent of save states
 		move.b	#id_Sega,(v_gamemode).w			; set first Game Mode to Sega Screen
@@ -1421,6 +1441,7 @@ ClearScreen:
 ; ---------------------------------------------------------------------------
 
 ; SoundDriverLoad: <-- old misnomer
+	if FeatureSoundDriver<>SoundDriver_S3K	; Flamedriver has its own, in "sound/S3K Driver.asm"
 DACDriverLoad:
 	if FeatureMegaPCM
 		jsr	(MegaPCM_LoadDriver).l			; upload Mega PCM to the Z80
@@ -1448,6 +1469,7 @@ DACDriverLoad:
 		rts						; return
 	endif
 ; End of function DACDriverLoad
+	endif
 
 ; ===========================================================================
 ; >>> Subroutines to queue sound commands to be executed by the sound driver during VBlank
@@ -1814,17 +1836,23 @@ Sega_WaitPal:		; while light scanning effect is active
 Sega_WaitEnd:
 		move.b	#id_VBlank_SegaPCM,(v_vblank_routine).w ; keep PCM playing without driver updates
 		bsr.w	WaitForVBlank				; wait for VBlank to finish
+	if FeatureSoundDriver=SoundDriver_S3K
+		bsr.w	ReadJoypads				; poll Start; stopping the Z80 would stall the chant
+	else
 		stopZ80
 		waitZ80
 		bsr.w	ReadJoypads				; poll Start during the sound
 		startZ80
+	endif
 		tst.w	(v_generictimer).w			; has post-chant timer expired?
 		beq.s	Sega_GotoTitle				; if yes, go to title screen
 		move.b	(v_jpadpress1).w,d0
 		andi.b	#btnStart,d0				; is Start pressed?
 		beq.s	Sega_WaitEnd				; if not, loop post-chant routine
 		disable_ints
-	if FeatureMegaPCM
+	if FeatureSoundDriver=SoundDriver_S3K
+		jsr	(StopSegaPCM).l				; stop the chant before entering the title screen
+	elseif FeatureMegaPCM
 		MPCM_stop					; stop the chant before entering the title screen
 	else
 		bsr.w	DACDriverLoad				; stop PCM before entering the title screen
@@ -1853,7 +1881,7 @@ GM_Title:		; fading out from previous game mode
 
 		; screen setup and loading "SONIC TEAM PRESENTS" (STP) patterns
 		disable_ints					; disable ints while accessing the VDP
-	if FeatureMegaPCM=0
+	if FeatureSoundDriver=SoundDriver_Original
 		bsr.w	DACDriverLoad				; load Z80 driver
 	endif
 		lea	(vdp_control_port).l,a6			; load VDP control port
@@ -5537,7 +5565,11 @@ Rings_Null:	dc.w $FFFF, $FFFF
 		include	"MegaPCM/MegaPCM.asm"
 		include	"MegaPCM/SampleTable.asm"
 	endif
+	if FeatureSoundDriver=SoundDriver_S3K
+SoundDriver:	include "sound/S3K Driver.asm"
+	else
 SoundDriver:	include "s1.sounddriver.asm"
+	endif
 		even
 
 ; Uncompressed copy for immediate DMA restoration after a giant ring leaves VRAM.

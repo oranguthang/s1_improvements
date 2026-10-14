@@ -61,6 +61,7 @@ COMMANDS = {
     "sonlvl": {"sync": ("sonlvl", "sync_main"), "roundtrip": ("sonlvl", "roundtrip_main")},
     "sprites": {"render": ("sprites", "main")},
     "tables": {"ring-loss": ("tables", "main")},
+    "sound": {"sega": ("sound", "sega_main")},
 }
 
 

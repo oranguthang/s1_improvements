@@ -10,7 +10,9 @@ SndA7_Push_Block_Header:
 SndA7_Push_Block_FM4:
 	smpsSetvoice        $00
 	dc.b	nD1, $07, nRst, $02, nD1, $06, nRst, $10
+	if SonicDriverVer==1
 	smpsClearPush
+	endif	; Flamedriver: UpdateMusic keeps the push sound from restarting instead
 	smpsStop
 
 SndA7_Push_Block_Voices:

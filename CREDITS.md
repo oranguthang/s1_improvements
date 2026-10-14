@@ -20,6 +20,8 @@ Their character-specific endings use the official Sonic the Hedgehog mobile rema
 
 ## Sound driver
 
+Flamedriver, the Sonic 3 & Knuckles sound driver disassembled by MarkeyJester, with routines by Linncaki and improved by [Flamewing](https://github.com/flamewing/flamedriver), and its DAC samples are used under the BSD Zero Clause License in `sound/flamedriver/LICENSE`. Its SMPS2ASM include converts the Sonic 1 songs for it.
+
 Mega PCM 2 and its Sonic 1 sample table are by [Vladikcomper](https://github.com/vladikcomper/MegaPCM) (MIT license, included at the end of `MegaPCM/MegaPCM.asm`). The SMPS integration follows [Add Mega PCM 2 to Sonic 1](https://info.sonicretro.org/SCHG_How-to:Add_Mega_PCM_2_to_Sonic_1), adapted by Selbi from Vladikcomper's tutorial.
 
 ## Seventh Chaos Emerald

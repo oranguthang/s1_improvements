@@ -121,6 +121,8 @@ After changing act header resource paths, run `sonlvl sync --write`. Only resour
 
 `sprites render Monitor --frame 0` renders a Flex object definition to BMP. `levels gallery GHZ` creates a block/palette viewer under `tmp/`. No preview files are stored as game assets.
 
+`sound sega` verifies `sound/flamedriver/Sega PCM.bin`, the SEGA chant from `sound/dac/pcm/sega.wav` resampled to Flamedriver's playback rate. Use `--apply` after replacing the chant.
+
 `tables ring-loss` verifies the air/underwater velocity table against the engine sine data. Use `--apply` after intentionally changing the sine table.
 
 ## Verification boundaries

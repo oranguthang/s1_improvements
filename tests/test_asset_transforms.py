@@ -217,6 +217,7 @@ def test_nemesis_pixels_preserve_template(name: str) -> None:
         ("art", "shield"),
         ("art", "walls"),
         ("tables", "ring-loss"),
+        ("sound", "sega"),
         ("title", "import"),
     ],
 )
