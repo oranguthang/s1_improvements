@@ -54,8 +54,8 @@ Sonic_Main:	; Routine 0
 		clr.w	(v_superpal_frame).w
 		clr.b	(v_superpal_timer).w
 		clr.b	(v_superpal_state).w
-		clr.b	objoff_3D(a0)
-		clr.b	objoff_3F(a0)
+		clr.b	super_combo_timer(a0)
+		clr.b	super_combo_buttons(a0)
 		cmpi.b	#id_Ending,(v_gamemode).w
 		bne.s	.notEnding
 		jsr	(End_InitSuper).l			; cinematic form, with normal scripted physics/music
@@ -1992,8 +1992,8 @@ Sonic_ResetOnFloor:
 		bclr	#4,obStatus(a0)				; clear roll-jump flag
 	endif
 		bclr	#7,obStatus(a0)				; allow another homing attack after landing
-		clr.b	objoff_3D(a0)				; reset Super toggle window
-		clr.b	objoff_3F(a0)
+		clr.b	super_combo_timer(a0)				; reset Super toggle window
+		clr.b	super_combo_buttons(a0)
 	if FixBugs
 		; This line was placed too late into the routine,
 		; occasionally causing Sonic "sliding" on the floor
@@ -2790,9 +2790,9 @@ Sonic_ChkDebugToggle:
 		move.b	(v_jpadhold1).w,d0
 		andi.b	#btnA|btnC,d0		; simultaneous A+B or B+C
 		bne.s	.supercombo
-		cmpi.b	#1,objoff_3D(a0)		; one frame left expires in Sonic_ToggleSuper
+		cmpi.b	#1,super_combo_timer(a0)		; one frame left expires in Sonic_ToggleSuper
 		bls.s	.enterdebug
-		move.b	objoff_3F(a0),d0
+		move.b	super_combo_buttons(a0),d0
 		andi.b	#btnA|btnC,d0		; A/C was pressed in the existing combo window
 		beq.s	.enterdebug
 .supercombo:
@@ -2812,27 +2812,27 @@ Sonic_ToggleSuper:
 	if FeatureSuper=0
 		rts						; Super forms disabled
 	endif
-		btst	#7,objoff_3F(a0)	; is Super toggle locked until button release?
+		btst	#7,super_combo_buttons(a0)	; is Super toggle locked until button release?
 		beq.s	.checktimer		; if not, branch
 		move.b	(v_jpadhold2).w,d0
 		andi.b	#btnABC,d0
 		bne.w	.return			; keep lock while buttons are still held
-		clr.b	objoff_3D(a0)
-		clr.b	objoff_3F(a0)
+		clr.b	super_combo_timer(a0)
+		clr.b	super_combo_buttons(a0)
 		rts
 
 .checktimer:
-		tst.b	objoff_3D(a0)
+		tst.b	super_combo_timer(a0)
 		beq.s	.checkpress
-		subq.b	#1,objoff_3D(a0)
+		subq.b	#1,super_combo_timer(a0)
 		bne.s	.checkpress
-		clr.b	objoff_3F(a0)
+		clr.b	super_combo_buttons(a0)
 
 .checkpress:
 		move.b	(v_jpadpress2).w,d0
 		andi.b	#btnABC,d0		; was any jump button newly pressed?
 		beq.s	.return			; if not, branch
-		move.b	objoff_3F(a0),d1
+		move.b	super_combo_buttons(a0),d1
 		andi.b	#btnABC,d1
 		or.b	d0,d1			; merge with recent jump-button presses
 		cmpi.b	#Character_Sonic,(v_character_p1).w
@@ -2840,8 +2840,8 @@ Sonic_ToggleSuper:
 		or.b	(v_jpadhold2).w,d1	; allow holding one button and pressing another
 	.pressesOnly:
 		andi.b	#btnABC,d1
-		move.b	d1,objoff_3F(a0)
-		move.b	#super_combo_window,objoff_3D(a0)	; frames the second button may follow the first
+		move.b	d1,super_combo_buttons(a0)
+		move.b	#super_combo_window,super_combo_timer(a0)	; frames the second button may follow the first
 		move.b	d1,d2
 		andi.b	#btnA|btnB,d2		; was A+B pressed within the window?
 		cmpi.b	#btnA|btnB,d2
@@ -2855,8 +2855,8 @@ Sonic_ToggleSuper:
 		bne.s	.return			; if not, branch
 
 .toggle:
-		clr.b	objoff_3D(a0)
-		move.b	#$80,objoff_3F(a0)
+		clr.b	super_combo_timer(a0)
+		move.b	#$80,super_combo_buttons(a0)
 		bclr	#bitB,(v_jpadpress2).w	; consume the combo this frame
 		bclr	#bitA,(v_jpadpress2).w
 		bclr	#bitC,(v_jpadpress2).w
@@ -2966,8 +2966,8 @@ Sonic_ActivateSuper:
 		beq.s	.starsReady			; prototype S3K: Super Tails has no stars or Flickies (see Tails_SpawnFlickies)
 		move.b	#id_SuperSonicStars,(v_superstars).w
 	.starsReady:
-		clr.b	objoff_3D(a0)
-		move.b	#$80,objoff_3F(a0)
+		clr.b	super_combo_timer(a0)
+		move.b	#$80,super_combo_buttons(a0)
 		bsr.w	Sonic_ApplySpeedSettings
 		move.w	#sfx_SuperTransform,d0
 		jsr	(QueueSound2).l				; play Sonic 2's transformation effect
@@ -3123,8 +3123,8 @@ Sonic_ResetSuperState:
 		move.b	#id_ShieldItem,(v_shieldobj).w
 
 .noshield:
-		clr.b	objoff_3D(a0)
-		move.b	#$80,objoff_3F(a0)
+		clr.b	super_combo_timer(a0)
+		move.b	#$80,super_combo_buttons(a0)
 		bsr.w	Sonic_ApplySpeedSettings
 
 Sonic_Super_Return:

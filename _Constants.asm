@@ -293,6 +293,8 @@ angleleft:		equ $37					; angle of floor on Sonic's left side
 sticktoconvex:		equ $38					; flag set while running on an SBZ gear
 spindash_flag:		equ $29				; bit 0 Spin Dash, bit 1 Peel-Out charging
 spindash_count:		equ $2A				; Spin Dash revs / Peel-Out speed charge (2 bytes)
+super_combo_timer:	equ $2C				; frames left for the second button of a Super combo
+super_combo_buttons:	equ $2D				; buttons of the pending Super combo; bit 7 locks until release
 victorypose:		equ $39					; set after the act ends: stand in the victory pose
 restartime:		equ $3A					; time left before level restarts after dying (2 bytes)
 jumping:		equ $3C					; flag set while Sonic is jumping
