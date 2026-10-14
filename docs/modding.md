@@ -24,6 +24,8 @@ The `Feature*` switches in `sonic.asm` turn this project's gameplay additions on
 | `FeatureVictoryPoses` | After the signpost the player runs off to the right, and after a capsule walks right, as in the original game. |
 | `FeatureS3KDrums` | With the Sonic 3 & Knuckles driver, Sonic 1 songs play Sonic 1's own kick, snare and timpani samples. |
 
+The attract and credits demos were recorded for the original controls, so while `f_demo` is set the button moves (Spin Dash, Peel-Out, Air Roll, Jump Dash and Homing Attack, Light Dash) stay off. A new move started from a button press needs the same `f_demo` check.
+
 `FeatureSoundDriver` chooses the sound driver: 2 (the default) is Flamewing's Flamedriver, the Sonic 3 & Knuckles Z80 driver; 1 is Sonic 1's 68000 driver with Mega PCM 2; 0 is Sonic 1's 68000 driver with its original Z80 DAC driver. See Sound driver below.
 
 Five optional alternatives are off by default; 1 enables them:

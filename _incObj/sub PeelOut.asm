@@ -11,6 +11,10 @@ Sonic_PeelOut:
 	if FeaturePeelOut=0
 		rts						; Super Peel-Out disabled
 	endif
+		tst.w	(f_demo).w				; demo inputs were recorded for the original controls
+		beq.s	.notDemo
+		rts
+	.notDemo:
         btst    #1,spindash_flag(a0)
         bne.w   .charge
         btst    #0,spindash_flag(a0)

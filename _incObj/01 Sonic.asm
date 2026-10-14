@@ -3308,6 +3308,10 @@ Sonic_AirRoll:
 	if FeatureAirRoll=0
 		rts						; Air Roll disabled
 	endif
+		tst.w	(f_demo).w				; demo inputs were recorded for the original controls
+		beq.s	.notDemo
+		rts
+	.notDemo:
 		moveq	#btnABC,d0
 		and.b	(v_jpadpress2).w,d0
 		beq.s	.return
@@ -3326,6 +3330,10 @@ Sonic_HomingAttack:
 	if FeatureHomingAttack=0
 		rts						; Jump Dash and Homing Attack disabled
 	endif
+		tst.w	(f_demo).w				; demo inputs were recorded for the original controls
+		beq.s	.notDemo
+		rts
+	.notDemo:
 		cmpi.b #Character_Sonic,(v_character_p1).w
 		bne.s .return
 		btst	#7,obStatus(a0)				; only one attack per jump until a target is hit

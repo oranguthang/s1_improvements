@@ -18,6 +18,10 @@ Sonic_LightDashStart:
 	if FeatureLightDash=0
 		rts						; Light Dash disabled
 	endif
+		tst.w	(f_demo).w				; demo inputs were recorded for the original controls
+		beq.s	.notDemo
+		rts
+	.notDemo:
         tst.b (v_lightdash).w
         bne.w .return
         btst #bitA,(v_jpadpress2).w
