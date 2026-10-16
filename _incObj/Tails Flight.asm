@@ -126,10 +126,12 @@ Tails_FlightPose:
         move.w (v_framecount).w,d0
         btst #6,obStatus(a0)
         bne.s .swim
-        moveq #$75,d0                  ; flying
+        moveq #$77,d0                  ; ascending while a pulse lasts, so a ceiling
+        tst.b (v_tails_flap).w         ; that keeps zeroing the climb does not flicker
+        bne.s .fatigue
         tst.w obVelY(a0)
-        bpl.s .fatigue
-        moveq #$77,d0                  ; ascending
+        bmi.s .fatigue
+        moveq #$75,d0                  ; flying
 .fatigue:
         tst.w (v_tails_flytime).w
         bne.s .frame

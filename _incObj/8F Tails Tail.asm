@@ -123,9 +123,12 @@ TTail_SelectAnim:
 		moveq	#tailani_Fly,d0
 		tst.w	(v_tails_flytime).w
 		beq.s	.return					; exhausted flight keeps the slow rotor
-		tst.w	obVelY(a2)
-		bpl.s	.return
 		moveq	#tailani_Ascend,d0
+		tst.b	(v_tails_flap).w			; a pulse keeps the fast rotor, also
+		bne.s	.return					; against a ceiling that zeroes the climb
+		tst.w	obVelY(a2)
+		bmi.s	.return
+		moveq	#tailani_Fly,d0
 	.return:
 		rts
 	.byAnimation:
