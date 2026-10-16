@@ -80,7 +80,7 @@ KnucklesAni_Balance: dc.b 3,$87,$87,$88,$88,$89,$89,$8A,$8A,$8B,$8B,$8C,$8C
         dc.b $8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D,$8D
         dc.b $8E,$8E,$8E,$8F,$8F,$8F,$90,$90,$91,$91,$92,$92,afBack,6
         even
-KnucklesAni_LookUp: dc.b 5,$04,fr_LookUp,afEnd
+KnucklesAni_LookUp: dc.b 5,$04,fr_LookUp,afBack,1	; raise the head once, then hold
         even
 KnucklesAni_Duck: dc.b 5,fr_Duck,afEnd
         even
