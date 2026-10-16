@@ -2897,7 +2897,12 @@ Sonic_PartnerSuperCombo:
 
 	.ability:
 		tst.b	(v_super_combo_grace).w			; did flight or the glide just start from the jump?
-		beq.s	.return
+		bne.s	.grace
+		tst.b	(v_supersonic).w			; a Super player may still revert later on;
+		bne.w	Sonic_ToggleSuper			; flight or the glide then simply goes on
+		rts
+
+	.grace:
 		subq.b	#1,(v_super_combo_grace).w
 		move.b	(v_supersonic).w,-(sp)
 		bsr.w	Sonic_ToggleSuper
@@ -2907,7 +2912,14 @@ Sonic_PartnerSuperCombo:
 		clr.b	(v_super_combo_grace).w
 		clr.b	(v_tails_flying).w			; cancel flight...
 		clr.b	(v_tails_flap).w
-		jmp	(Knuckles_EndAbility).l			; ...or the glide
+		jsr	(Knuckles_EndAbility).l			; ...or the glide
+		move.b	obAnim(a0),d0
+		cmpi.b	#id_Float1,d0				; flight and the glide use the water
+		beq.s	.fall					; tunnel animations: leave them
+		cmpi.b	#id_Float2,d0
+		bne.s	.return
+	.fall:
+		move.b	#id_Walk,obAnim(a0)			; airborne, as after a reversion
 	.return:
 		rts
 

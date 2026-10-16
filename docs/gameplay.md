@@ -54,7 +54,7 @@ Labyrinth uses a subdued blue-grey cycle. Scrap Brain Act 3 uses a related pink-
 
 ## Super Tails and Super Knuckles
 
-Solo Tails and Knuckles use the same emerald, ring and drain rules. Press two jump buttons in quick succession (A+B, A+C or B+C, within ten frames) during a jump; unlike Sonic, holding one button and pressing another does not count, because a button held after a jump already keeps flight or gliding going. The first button already starts flight or gliding, so the second may still follow during their first ten frames: the ability is then cancelled and the player transforms. A combo never starts later in a flight or glide.
+Solo Tails and Knuckles use the same emerald, ring and drain rules. Press two jump buttons in quick succession (A+B, A+C or B+C, within ten frames) during a jump; unlike Sonic, holding one button and pressing another does not count, because a button held after a jump already keeps flight or gliding going. The first button already starts flight or gliding, so the second may still follow during their first ten frames: the ability is then cancelled and the player transforms. Later in a flight or glide a combo only reverts a Super player, and the flight or glide goes on.
 
 As in Sonic 3 & Knuckles, both keep their normal sprites and change only fur colours: Tails cycles through a yellow ramp, Knuckles through a pink ramp, each with its S3K timing. Each plays the S3K transformation pose. Labyrinth and Scrap Brain Act 3 use underwater versions of both cycles. Super movement uses the S3K values for these characters: top speed $800, acceleration $18 and deceleration $C0, halved underwater. Super Knuckles glides and climbs faster.
 
