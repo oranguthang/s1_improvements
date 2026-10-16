@@ -338,7 +338,7 @@ __LABEL___ConData: label *
 		set name_target, $0120
 		set name_start, $0000
 		set zone_target, $00F0+(sizeX/2)+noActAdjust
-		set zone_start, zone_target-$0240+noActAdjust
+		set zone_start, zone_target-$0240
 		set oval_target, zone_target+$0018-noActAdjust
 		set oval_start, oval_target+$00C0
 		if hideAct<>0
@@ -347,6 +347,11 @@ __LABEL___ConData: label *
 		else
 			set act_target, oval_target
 			set act_start, act_target+$02C0
+		endif
+		; Cards leave at $20 pixels per frame and stop only on the exact
+		; start position. Level startup waits for all of them to leave.
+		if ((zone_target-zone_start)|(act_target-act_start)|(oval_target-oval_start)|(name_target-name_start))&$1F
+			fatal "title card travel for \{textline} must be a multiple of $20"
 		endif
 		dc.w name_start&$FFFF, name_target&$FFFF
 		dc.w zone_start&$FFFF, zone_target&$FFFF
