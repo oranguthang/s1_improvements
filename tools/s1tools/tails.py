@@ -190,7 +190,10 @@ def frame_plan() -> list[tuple[int, int, int, int]]:
     assign(0x77, 0xA1, 0x27)  # ascending
     assign(0x78, 0xA1, 0x28)
     for step in range(5):
-        assign(0x79 + step, 0xBD + step)  # swimming, tails included in body art
+        # Swimming, tails included in body art. The pose lies flat, so align
+        # its top with the S1 hitbox (19 px) as S3K does with its 15 px one:
+        # Tails can then swim right up against a ceiling.
+        assign(0x79 + step, 0xBD + step, dy=-4)
     assign(0x7E, 0xA3, 0x27)  # exhausted flight
     assign(0x7F, 0xA4, 0x28)
     for step in range(5):

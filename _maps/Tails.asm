@@ -908,32 +908,32 @@ TailsMap_78: spriteHeader
 TailsMap_78_End
 
 TailsMap_79: spriteHeader
-	spritePiece -22, -10, 1, 2, 0, 0, 0, 0, 0
-	spritePiece -14, -10, 4, 3, 2, 0, 0, 0, 0
-	spritePiece -14, 14, 3, 1, 14, 0, 0, 0, 0
+	spritePiece -22, -18, 1, 2, 0, 0, 0, 0, 0
+	spritePiece -14, -18, 4, 3, 2, 0, 0, 0, 0
+	spritePiece -14, 6, 3, 1, 14, 0, 0, 0, 0
 TailsMap_79_End
 
 TailsMap_7A: spriteHeader
-	spritePiece -12, -10, 4, 3, 0, 0, 0, 0, 0
-	spritePiece -20, -10, 1, 2, 12, 0, 0, 0, 0
-	spritePiece -12, 14, 3, 1, 14, 0, 0, 0, 0
+	spritePiece -12, -18, 4, 3, 0, 0, 0, 0, 0
+	spritePiece -20, -18, 1, 2, 12, 0, 0, 0, 0
+	spritePiece -12, 6, 3, 1, 14, 0, 0, 0, 0
 TailsMap_7A_End
 
 TailsMap_7B: spriteHeader
-	spritePiece -18, -10, 4, 4, 0, 0, 0, 0, 0
-	spritePiece 14, 6, 1, 1, 16, 0, 0, 0, 0
+	spritePiece -18, -18, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 14, -2, 1, 1, 16, 0, 0, 0, 0
 TailsMap_7B_End
 
 TailsMap_7C: spriteHeader
-	spritePiece -14, -10, 4, 2, 0, 0, 0, 0, 0
-	spritePiece -22, -10, 1, 1, 8, 0, 0, 0, 0
-	spritePiece -22, 6, 4, 2, 9, 0, 0, 0, 0
-	spritePiece 10, 6, 1, 1, 17, 0, 0, 0, 0
+	spritePiece -14, -18, 4, 2, 0, 0, 0, 0, 0
+	spritePiece -22, -18, 1, 1, 8, 0, 0, 0, 0
+	spritePiece -22, -2, 4, 2, 9, 0, 0, 0, 0
+	spritePiece 10, -2, 1, 1, 17, 0, 0, 0, 0
 TailsMap_7C_End
 
 TailsMap_7D: spriteHeader
-	spritePiece -19, -10, 4, 4, 0, 0, 0, 0, 0
-	spritePiece 13, -10, 1, 2, 16, 0, 0, 0, 0
+	spritePiece -19, -18, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 13, -18, 1, 2, 16, 0, 0, 0, 0
 TailsMap_7D_End
 
 TailsMap_7E: spriteHeader
