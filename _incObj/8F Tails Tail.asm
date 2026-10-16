@@ -66,7 +66,7 @@ TTail_Main:
 
 	.animated:
 		tst.b	obFrame(a0)				; frame 0 is blank: the body draws its tails
-		beq.w	TTail_Return
+		beq.w	TTail_Hidden				; and its art may cover the tails slot
 		bsr.w	TTail_BodyFitsHalf
 		bne.w	TTail_Hidden				; the body art covers the tails slot this frame
 		move.w	flashtime(a2),d0			; blink with the player after being hit
