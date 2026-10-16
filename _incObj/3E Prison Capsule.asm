@@ -113,10 +113,10 @@ Pri_Switch:	; Routine 4
 		move.b	#$A,obRoutine(a0)			; advance to Pri_Explosion
 		move.w	#1*60,obTimeFrame(a0)			; set time between animal spawns
 		clr.b	(f_timecount).w				; stop time counter
+	if FeatureVictoryPoses=0
+		; With victory poses the player keeps control until the results
+		; appear (Pri_EndAct), then stops and poses at once.
 		move.b	#1,(f_lockctrl).w			; lock controls
-	if FeatureVictoryPoses
-		clr.w	(v_jpadhold2).w				; stand still until the victory pose
-	else
 		move.w	#(btnR<<8),(v_jpadhold2).w		; simulate holding down the right D-Pad button to move Sonic
 	endif
 		clr.b	obSolid(a0)				; clear capsule's collision flag
