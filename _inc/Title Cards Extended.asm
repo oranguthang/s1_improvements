@@ -548,6 +548,9 @@ Map_SSR:	mappingsTable
 	mappingsTableEntry.w	TTLCard_SSR_Continue	; continue tally without mini Sonic
 	mappingsTableEntry.w	TTLCard_SSR_SpeStage	; "SPECIAL STAGE"
 	mappingsTableEntry.w	TTLCard_SSR_GotAll	; "SONIC GOT THEM ALL"
+	mappingsTableEntry.w	TTLCard_SSR_Continue	; (keeps the next two an even/odd pair)
+	mappingsTableEntry.w	TTLCard_SSR_ContIcon1	; continue tally, selected character (foot down)
+	mappingsTableEntry.w	TTLCard_SSR_ContIcon2	; continue tally, selected character (foot up)
 
 TTLCard_SSR_Chaos:	maketitlecard TitleCard_ChaosEmeralds,1,TTL_SSRTextTile,-8
 TTLCard_SSR_SpeStage:	maketitlecard TitleCard_SpecialStage,1,TTL_SSRTextTile,-8
@@ -589,6 +592,19 @@ TTLCard_SSR_ContSon2:	spriteHeader
 	spritePiece	-$10, -8, 1, 2, -$1F, 0, 0, 0, 0		; small oval (right half)
 	spritePiece	$40, -8, 2, 3, -$17, 0, 0, 1, 0			; mini Sonic (foot up)
 TTLCard_SSR_ContSon2_End
+; Mini Tails or Knuckles (LoadSSResultContinueIcon) use line 2
+TTLCard_SSR_ContIcon1:	spriteHeader
+	spritePiece	-$50, -8, 4, 2, -$2F, 0, 0, 0, 0		; "CONT"
+	spritePiece	-$30, -8, 4, 2, -$27, 0, 0, 0, 0		; "INUE" and small oval (left half)
+	spritePiece	-$10, -8, 1, 2, -$1F, 0, 0, 0, 0		; small oval (right half)
+	spritePiece	$40, -8, 2, 3, -$1D, 0, 0, 2, 0			; mini character (foot down)
+TTLCard_SSR_ContIcon1_End
+TTLCard_SSR_ContIcon2:	spriteHeader
+	spritePiece	-$50, -8, 4, 2, -$2F, 0, 0, 0, 0		; "CONT"
+	spritePiece	-$30, -8, 4, 2, -$27, 0, 0, 0, 0		; "INUE" and small oval (left half)
+	spritePiece	-$10, -8, 1, 2, -$1F, 0, 0, 0, 0		; small oval (right half)
+	spritePiece	$40, -8, 2, 3, -$17, 0, 0, 2, 0			; mini character (foot up)
+TTLCard_SSR_ContIcon2_End
 
 TTLCard_SSR_Continue:	spriteHeader
 	spritePiece	-$50, -8, 4, 2, -$2F, 0, 0, 0, 0		; "CONT"

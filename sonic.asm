@@ -3480,6 +3480,7 @@ SS_FinLoop_NoBrighten:
 		jsr (LoadPlayerHUD).l
 		moveq	#plcid_SSResult,d0			; load Special Stage results screen patterns
 		bsr.w	AddPLC					; add to PLC queue
+		jsr	(LoadSSResultContinueIcon).l		; the selected character's continue icon
 
 		move.b	#1,(f_scorecount).w			; update score counter
 		move.b	#1,(f_endactbonus).w			; update ring bonus counter
@@ -4907,6 +4908,13 @@ KosM_Bonus:	binclude	"artkosm/Hidden Bonuses.kosm" ; hidden bonuses at end of a 
 KosM_ContSonic:	binclude	"artkosm/Continue Screen Sonic.kosm"
 		even
 KosM_MiniSonic:	binclude	"artkosm/Continue Screen Stuff.kosm"
+		even
+KosM_ContTails:	binclude	"artkosm/Continue Icon - Tails.kosm"	; Sonic 2's (player ui)
+		even
+KosM_ContKnuckles:	binclude	"artkosm/Continue Icon - Knuckles.kosm"	; Knuckles in Sonic 2's
+		even
+Pal_ContinueIconTails:	binclude	"palette/Continue Icon - Tails.bin"	; line 2, slots 7-F
+Pal_ContinueIconKnuckles:	binclude	"palette/Continue Icon - Knuckles.bin"
 		even
 
 ; ---------------------------------------------------------------------------

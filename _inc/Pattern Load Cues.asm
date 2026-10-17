@@ -85,6 +85,8 @@ plcid_KnucklesMonitors: plcptr PLC_KnucklesMonitors
 plcid_SonicEnding: plcptr PLC_SonicEnding
 plcid_TailsEnding: plcptr PLC_TailsEnding
 plcid_KnucklesEnding: plcptr PLC_KnucklesEnding
+plcid_TailsContinueIcon: plcptr PLC_TailsContinueIcon
+plcid_KnucklesContinueIcon: plcptr PLC_KnucklesContinueIcon
 	if FeatureTextCredits
 plcid_CreditsText:	plcptr	PLC_CreditsText
 	endif
@@ -434,6 +436,14 @@ PLC_SSResult:	plcheader
 		plcm	KosM_ResultEm,	ArtTile_SS_Results_Emeralds	; emeralds
 		plcm	KosM_MiniSonic,	ArtTile_Mini_Sonic		; mini Sonic
 PLC_SSResult_end:
+
+; The selected character's continue icon over mini Sonic (LoadSSResultContinueIcon)
+PLC_TailsContinueIcon: plcheader
+		plcm	KosM_ContTails,	ArtTile_Mini_Sonic+$12		; mini Tails
+PLC_TailsContinueIcon_end:
+PLC_KnucklesContinueIcon: plcheader
+		plcm	KosM_ContKnuckles,	ArtTile_Mini_Sonic+$12	; mini Knuckles
+PLC_KnucklesContinueIcon_end:
 
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - ending sequence

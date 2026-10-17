@@ -1,4 +1,4 @@
-"""Adapt shared title-card colours and S3K signpost portraits for solo players."""
+"""Adapt shared title-card colours, S3K signpost portraits and S2 continue icons for solo players."""
 
 from __future__ import annotations
 
@@ -96,6 +96,33 @@ def monitor_portrait(source: Path, name: str, colours: tuple[int, ...]) -> bytes
     return bytes(lookup[b >> 4] << 4 | lookup[b & 15] for b in raw[: 4 * 32])
 
 
+# Sonic 2's continue icons (Tails' from Sonic 2, Knuckles' from Knuckles in
+# Sonic 2) have Sonic 1's mini Sonic tile layout: two 2x3 frames. On the
+# Special Stage results line 1 also colours the emeralds, so these icons use
+# line 2, whose slots 7-F are free there (slot 1 is black).
+CONTINUE_ICON_SLOTS = 9
+CONTINUE_ICON_FIRST_SLOT = 7
+# Knuckles uses ten colours besides black: fold the rarest ones together.
+KNUCKLES_ICON_MERGES = {0x9: 0x8, 0xC: 0x3, 0xE: 0xA, 0xF: 0xB, 0x2: 0xD}
+
+
+def continue_icon(art: bytes, palette: bytes, merges: dict[int, int]) -> tuple[bytes, bytes]:
+    """Return the icon's tiles in palette line 2 and the colours for slots 7-F."""
+    if len(art) != 12 * 32 or len(palette) < 32:
+        raise ValueError("Expected a 12-tile continue icon and a 16-colour palette")
+    used = sorted({merges.get(n, n) for byte in art for n in (byte >> 4, byte & 15)} - {0, 1})
+    if len(used) > CONTINUE_ICON_SLOTS:
+        raise ValueError(f"Continue icon needs {len(used)} colours, line 2 has {CONTINUE_ICON_SLOTS}")
+    lookup = list(range(16))
+    for slot, index in enumerate(used):
+        lookup[index] = CONTINUE_ICON_FIRST_SLOT + slot
+    for index, target in merges.items():
+        lookup[index] = lookup[target]
+    tiles = bytes(lookup[b >> 4] << 4 | lookup[b & 15] for b in art)
+    colours = b"".join(palette[i * 2 : i * 2 + 2] for i in used)
+    return tiles, colours.ljust(CONTINUE_ICON_SLOTS * 2, b"\0")
+
+
 def expected_outputs() -> dict[Path, bytes]:
     root, source, sk = get_root(), get_source("s1"), get_source("sk")
     extras = get_source("sonicretro")
@@ -106,7 +133,22 @@ def expected_outputs() -> dict[Path, bytes]:
     raw = title_card(decode(template))
     if decode_moduled((source / "artkosm/Title Cards.kosm").read_bytes()) != decode(template):
         raise ValueError("Title-card source formats differ")
+    s2, kis2 = get_source("s2"), get_source("kis2")
+    tails_icon, tails_icon_colours = continue_icon(
+        decode((s2 / "art/nemesis/Tails continue.nem").read_bytes()),
+        (s2 / "art/palettes/SonicAndTails.bin").read_bytes(),
+        {},
+    )
+    knuckles_icon, knuckles_icon_colours = continue_icon(
+        decode((kis2 / "art/nemesis/Knuckles continue.nem").read_bytes()),
+        (kis2 / "art/palettes/SonicAndTails.bin").read_bytes(),
+        KNUCKLES_ICON_MERGES,
+    )
     return {
+        root / "artkosm/Continue Icon - Tails.kosm": encode_moduled(tails_icon),
+        root / "palette/Continue Icon - Tails.bin": tails_icon_colours,
+        root / "artkosm/Continue Icon - Knuckles.kosm": encode_moduled(knuckles_icon),
+        root / "palette/Continue Icon - Knuckles.bin": knuckles_icon_colours,
         root / "artkosm/Monitor - Tails 1UP.kosm": encode_moduled(
             monitor_portrait(sk, "Tails", tails.COLOURS)
         ),

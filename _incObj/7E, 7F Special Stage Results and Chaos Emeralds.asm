@@ -176,7 +176,15 @@ SSR_Exit:	; Routine $A, $12
 ; ===========================================================================
 
 SSR_Continue:	; Routine $E
-		move.b	#4,(v_ssrescontinue+obFrame).w		; set Continue tally to frame ID (show mini-Sonic)
+		jsr	(GetSelectedCharacter).l
+		tst.w	d0
+		beq.s	.sonicIcon
+		moveq	#$A,d0					; the selected character's icon (LoadSSResultContinueIcon)
+		bra.s	.setIcon
+	.sonicIcon:
+		moveq	#4,d0					; mini Sonic
+	.setIcon:
+		move.b	d0,(v_ssrescontinue+obFrame).w		; set Continue tally to frame ID (show mini-Sonic)
 		move.b	#$14,(v_ssrescontinue+obRoutine).w	; set Continue tally it to SSR_ContAni
 		move.w	#sfx_Continue,d0			; set continue jingle
 		jsr	(QueueSound2).l				; play it
