@@ -150,7 +150,12 @@ CSon_Main:	; Routine 0
 ; ---------------------------------------------------------------------------
 
 CSon_ChkLand:	; Routine 2
-		cmpi.w	#$1A0,obY(a0)				; has Sonic landed yet?
+		move.w	#$1A0,d0				; Sonic lies on the light spot
+		cmpi.b	#Character_Sonic,(v_character_p1).w
+		beq.s	.chkLanded
+		move.w	#$1A0-8,d0				; Tails and Knuckles stand on it, 8 pixels higher
+	.chkLanded:
+		cmp.w	obY(a0),d0				; has Sonic landed yet?
 		bne.s	CSon_ShowFall				; if not, branch
 
 		addq.b	#2,obRoutine(a0)			; advance to CSon_Animate
@@ -158,12 +163,45 @@ CSon_ChkLand:	; Routine 2
 		cmpi.b #Character_Sonic,(v_character_p1).w
 		beq.s .sonicPose
 		move.b #id_Wait,obAnim(a0)			; Tails and Knuckles wait standing: S3K's idle animation
+		move.b #id_Wait,obPrevAni(a0)			; keep the frame CSon_StartIdle picks
+		bsr.s CSon_StartIdle
 		bra.s CSon_Animate
 .sonicPose:
 		move.l	#Map_ContScr,obMap(a0)			; swap out mappings with continue screen Sonic mappings
 		move.w	#ArtTile_Continue_Sonic|Tile_Prio,obGfx(a0) ; swap out art tile with continue screen Sonic art tile
 		move.b	#0,obAnim(a0)				; use "on floor" animation (this isn't Sonic's main animation script!)
 		bra.s	CSon_Animate				; don't use main Sonic object's logic anymore
+; ---------------------------------------------------------------------------
+
+; S3K's idle animations open with seconds of standing still (Tails also
+; blinks): start them at their first move, Tails' yawn or Knuckles' foot tap.
+CSon_StartIdle:
+		moveq	#0,d1
+		move.b	(v_character_p1).w,d1
+		move.b	CSon_IdleMove(pc,d1.w),d2		; the frame the move starts with
+		character_asset CharacterAsset_Anim,a1,GetPlayer1Assets_Normal
+		move.w	id_Wait*2(a1),d0
+		lea	(a1,d0.w),a1				; the Wait script: duration, then frames
+		moveq	#0,d0
+	.find:
+		move.b	1(a1,d0.w),d1
+		cmpi.b	#afEnd-5,d1				; an animation flag ($FA-$FF)?
+		bhs.s	.return					; then start from the beginning
+		cmp.b	d2,d1
+		beq.s	.found
+		addq.w	#1,d0
+		bra.s	.find
+	.found:
+		move.b	d0,obAniFrame(a0)
+		clr.b	obTimeFrame(a0)				; show it on the next frame
+	.return:
+		rts
+
+CSon_IdleMove:
+		dc.b	0	; Sonic (lies on the floor instead)
+		dc.b	4	; Tails: yawn ("Tails - Wait.asm")
+		dc.b	2	; Knuckles: foot tap ("Knuckles - Wait.asm")
+		even
 ; ---------------------------------------------------------------------------
 
 CSon_ShowFall:
@@ -189,12 +227,15 @@ CSon_Animate:	; Routine 4
 		addq.b	#2,obRoutine(a0)			; advance to CSon_RunRight
 		character_asset CharacterAsset_Map,obMap(a0)		,GetPlayer1Assets_Normal ; set mappings (cross-referenced from main Sonic object)
 		move.w	#ArtTile_Sonic,obGfx(a0)		; set art tile (cross-referenced from main Sonic object)
-		move.b	#id_Float4,obAnim(a0)			; use "getting up" animation (changes to id_Walk on finish)
 		clr.w	obInertia(a0)				; stop ground speed
 		cmpi.b	#Character_Sonic,(v_character_p1).w
-		bne.s	.standing				; Tails and Knuckles already stand
+		bne.s	.standing
+		move.b	#id_Float4,obAnim(a0)			; use "getting up" animation (changes to id_Walk on finish)
 		subq.w	#8,obY(a0)				; shift Sonic up by a tile
+		bra.s	.fadeMusic
 	.standing:
+		move.b	#id_Walk,obAnim(a0)			; Tails and Knuckles already stand: straight into the run
+	.fadeMusic:
 		move.b	#bgm_Fade,d0				; set fade-out music command
 		bsr.w	QueueSound2				; fade out music
 ; ---------------------------------------------------------------------------
