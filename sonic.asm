@@ -3565,6 +3565,7 @@ GM_Continue:
 		moveq	#palid_Continue,d0			; load continue screen palette...
 		bsr.w	PalLoad_Fade				; ...into fade-in buffer
 		jsr (ApplyPlayerFadeColours).l
+		jsr	(LoadContinueScreenIcon).l		; Tails' or Knuckles' continue icons
 		move.b	#bgm_Continue,d0			; play continue screen music
 		bsr.w	QueueSound1				; play it
 

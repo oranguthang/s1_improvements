@@ -65,6 +65,10 @@ CSI_CreateMiniSonics:
 	.checkEven:
 		move.b	d1,d2					; copy final number of mini-Sonics to draw
 		andi.b	#1,d2					; limit it to 1 for even/odd check
+		move.w	#ArtTile_Mini_Sonic|Tile_Prio,d4
+		cmpi.b	#Character_Sonic,(v_character_p1).w
+		beq.s	.loopMiniSonics
+		ori.w	#Tile_Pal3,d4				; Tails' or Knuckles' icons use line 2 (LoadContinueScreenIcon)
 
 .loopMiniSonics:
 		_move.b	#id_ContScrItem,obID(a1)		; load another mini-Sonic object
@@ -77,7 +81,7 @@ CSI_CreateMiniSonics:
 		move.b	#6,obFrame(a1)				; set to first mini-Sonic frame (foot down)
 		move.b	#6,obRoutine(a1)			; use CSI_ShowMiniSonic routine
 		move.l	#Map_ContScr,obMap(a1)			; set mappings
-		move.w	#ArtTile_Mini_Sonic|Tile_Prio,obGfx(a1)	; set art tile and priority flag
+		move.w	d4,obGfx(a1)				; set art tile, palette line and priority flag
 		move.b	#sprite_cam_screen,obRender(a1)		; set to screen-positioned mode
 		lea	object_size(a1),a1			; advance to next object RAM slot
 		dbf	d1,.loopMiniSonics			; repeat for number of continues
@@ -140,6 +144,9 @@ CSon_Main:	; Routine 0
 		move.b	#2,obPriority(a0)			; set sprite priority (behind other elements)
 		move.b	#id_Float3,obAnim(a0)			; use "floating" animation
 		move.w	#$400,obVelY(a0)			; make Sonic fall from above
+		cmpi.b	#Character_Tails,(v_character_p1).w
+		bne.s	CSon_ChkLand
+		move.b	#id_TailsTail,(v_continuetails).w	; Tails' tails follow him here too
 ; ---------------------------------------------------------------------------
 
 CSon_ChkLand:	; Routine 2
@@ -150,7 +157,7 @@ CSon_ChkLand:	; Routine 2
 		clr.w	obVelY(a0)				; stop Sonic falling
 		cmpi.b #Character_Sonic,(v_character_p1).w
 		beq.s .sonicPose
-		move.b #id_Duck,obAnim(a0)
+		move.b #id_Wait,obAnim(a0)			; Tails and Knuckles wait standing: S3K's idle animation
 		bra.s CSon_Animate
 .sonicPose:
 		move.l	#Map_ContScr,obMap(a0)			; swap out mappings with continue screen Sonic mappings
@@ -184,7 +191,10 @@ CSon_Animate:	; Routine 4
 		move.w	#ArtTile_Sonic,obGfx(a0)		; set art tile (cross-referenced from main Sonic object)
 		move.b	#id_Float4,obAnim(a0)			; use "getting up" animation (changes to id_Walk on finish)
 		clr.w	obInertia(a0)				; stop ground speed
+		cmpi.b	#Character_Sonic,(v_character_p1).w
+		bne.s	.standing				; Tails and Knuckles already stand
 		subq.w	#8,obY(a0)				; shift Sonic up by a tile
+	.standing:
 		move.b	#bgm_Fade,d0				; set fade-out music command
 		bsr.w	QueueSound2				; fade out music
 ; ---------------------------------------------------------------------------

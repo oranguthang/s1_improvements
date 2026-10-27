@@ -60,6 +60,11 @@ TitleCard_Passed:	equ "PASSED"
 TitleCard_SpecialStage:	equ "SPECIAL STAGE"
 TitleCard_ChaosEmeralds: equ "CHAOS EMERALDS"
 TitleCard_GotThemAll:	equ "SONIC GOT THEM ALL"
+TitleCard_TailsGotThemAll: equ "TAILS GOT THEM ALL"
+; Knuckles' line is wider than one card can reach (sprite pieces sit at most
+; 128 pixels from the object), so it takes two lines.
+TitleCard_KnucklesName:	equ "KNUCKLES"
+TitleCard_GotThemAllEnd: equ "GOT THEM ALL"
 
 ; ---------------------------------------------------------------------------
 ; Art layout: A-Z, the act numbers in the gap before a-z, "ACT"/"Act", the
@@ -174,7 +179,18 @@ SpecStagResults_LoadArt:
 		lea	TTLCard_SSR_Chaos_Array(pc),a2		; some emeralds
 		cmpi.b	#ss_emeralds_num,d0
 		blo.s	.loadText
-		lea	TTLCard_SSR_GotAll_Array(pc),a2		; all emeralds
+		lea	TTLCard_SSR_GotAll_Array(pc),a2		; all emeralds: the selected character's line
+		jsr	(GetSelectedCharacter).l
+		cmpi.b	#Character_Tails,d0
+		bne.s	.notTails
+		lea	TTLCard_SSR_TailsGotAll_Array(pc),a2
+		bra.s	.loadText
+	.notTails:
+		cmpi.b	#Character_Knuckles,d0
+		bne.s	.loadText
+		lea	TTLCard_SSR_KnucklesName_Array(pc),a2	; Knuckles' name, then "GOT THEM ALL" right after it
+		bsr.s	TTL_WriteLetters
+		lea	TTLCard_SSR_GotAllEnd_Array(pc),a2
 	.loadText:
 		bsr.s	TTL_WriteLetters
 		locVRAM	(ArtTile_Title_Card+TTL_SSRBonuTile)*tile_size
@@ -551,13 +567,23 @@ Map_SSR:	mappingsTable
 	mappingsTableEntry.w	TTLCard_SSR_Continue	; (keeps the next two an even/odd pair)
 	mappingsTableEntry.w	TTLCard_SSR_ContIcon1	; continue tally, selected character (foot down)
 	mappingsTableEntry.w	TTLCard_SSR_ContIcon2	; continue tally, selected character (foot up)
+	mappingsTableEntry.w	TTLCard_SSR_TailsGotAll	; "TAILS GOT THEM ALL"
+	mappingsTableEntry.w	TTLCard_SSR_KnucklesName ; "KNUCKLES", upper line of Knuckles' text
+	mappingsTableEntry.w	TTLCard_SSR_GotAllEnd	; "GOT THEM ALL", lower line of Knuckles' text
 
 TTLCard_SSR_Chaos:	maketitlecard TitleCard_ChaosEmeralds,1,TTL_SSRTextTile,-8
 TTLCard_SSR_SpeStage:	maketitlecard TitleCard_SpecialStage,1,TTL_SSRTextTile,-8
 TTLCard_SSR_GotAll:	maketitlecard TitleCard_GotThemAll,1,TTL_SSRTextTile,-8
+TTLCard_SSR_TailsGotAll: maketitlecard TitleCard_TailsGotThemAll,1,TTL_SSRTextTile,-8
+; Knuckles' two lines, each on its own object (SSR_KnucklesGotAll)
+TTLCard_SSR_KnucklesName: maketitlecard TitleCard_KnucklesName,1,TTL_SSRTextTile,-8
+TTLCard_SSR_GotAllEnd:	maketitlecard TitleCard_GotThemAllEnd,1,TTL_SSRTextTile+strlen(TitleCard_KnucklesName)*TTL_LetterTiles,-8
 
 	if TTL_SSRTextTile+(strlen(TitleCard_GotThemAll)-3)*TTL_LetterTiles>TTL_SSRBonuTile
 		fatal "Special Stage results text overlaps BONU"
+	endif
+	if TTL_SSRTextTile+(strlen(TitleCard_KnucklesName)+strlen(TitleCard_GotThemAllEnd)-2)*TTL_LetterTiles>TTL_SSRBonuTile
+		fatal "Knuckles' Special Stage results text overlaps BONU"
 	endif
 
 TTLCard_SSR_Score:	spriteHeader

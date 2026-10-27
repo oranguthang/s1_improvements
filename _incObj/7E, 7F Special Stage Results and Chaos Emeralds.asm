@@ -65,10 +65,42 @@ SSR_Loop:
 		moveq	#0,d0					; use "CHAOS EMERALDS" text
 		cmpi.b	#ss_emeralds_num,d1			; do you have all chaos emeralds?
 		bne.s	.setFrame				; if not, branch
-		moveq	#8,d0					; use "SONIC GOT THEM ALL" text (the card centres itself)
+		jsr	(GetSelectedCharacter).l
+		move.b	d0,d1
+		move.b	SSR_GotAllFrames(pc,d0.w),d0		; "SONIC/TAILS GOT THEM ALL" (the card centres itself)
+		cmpi.b	#Character_Knuckles,d1
+		bne.s	.setFrame
+		bsr.s	SSR_KnucklesGotAll			; or Knuckles' two cards
 	; loc_C842:
 	.setFrame:
 		move.b	d0,obFrame(a0)				; set specified frame ID for text object
+		bra.s	SSR_Move
+; ---------------------------------------------------------------------------
+SSR_GotAllFrames:
+		dc.b	8	; Sonic
+		dc.b	$C	; Tails
+		dc.b	$D	; Knuckles, with "GOT THEM ALL" as a second card
+		even
+; ---------------------------------------------------------------------------
+; "KNUCKLES GOT THEM ALL" is wider than one card can reach, so it takes two
+; lines: the header shows the name, a second card "GOT THEM ALL" below it.
+; Both move in from the left like the header, over the oval.
+; ---------------------------------------------------------------------------
+SSR_KnucklesGotAll:
+		subi.w	#$C,obScreenY(a0)			; the name goes up half a line...
+		lea	(v_ssresgotall).w,a1
+		_move.b	#id_SSResult,obID(a1)
+		move.w	obX(a0),obX(a1)
+		move.w	ssr_mainX(a0),ssr_mainX(a1)
+		move.w	obScreenY(a0),obScreenY(a1)
+		addi.w	#$14,obScreenY(a1)			; ...and "GOT THEM ALL" goes under it
+		move.b	#2,obRoutine(a1)
+		move.b	#$E,obFrame(a1)
+		move.l	#Map_SSR,obMap(a1)
+		move.w	#ArtTile_Title_Card|Tile_Prio,obGfx(a1)
+		move.b	#sprite_cam_screen,obRender(a1)
+		move.b	#1,(v_ssresoval+obPriority).w		; the oval's object comes first: keep it behind the second line
+		rts
 ; ---------------------------------------------------------------------------
 
 SSR_Move:	; Routine 2

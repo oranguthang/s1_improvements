@@ -168,12 +168,14 @@ v_ssresscore:		equ	v_ssrescard+object_size*1	; object variable space for the Spe
 v_ssresring:		equ	v_ssrescard+object_size*2	; object variable space for the Special Stage results card ring bonus tally ($40 bytes)
 v_ssresoval:		equ	v_ssrescard+object_size*3	; object variable space for the Special Stage results card oval ($40 bytes)
 v_ssrescontinue:	equ	v_ssrescard+object_size*4	; object variable space for the Special Stage results card continue icon ($40 bytes)
+v_ssresgotall:		equ	v_ssrescard+object_size*5	; object variable space for "GOT THEM ALL" under Knuckles' name ($40 bytes)
 v_ssresemeralds:	equ	v_objspace+object_size*32	; object variable space for the emeralds in the Special Stage results ($180 bytes)
 
 ; Continue screen objects
 v_continuetext:		equ	v_objspace+object_size*1	; object variable space for the continue screen text ($40 bytes)
 v_continuelight:	equ	v_objspace+object_size*2	; object variable space for the continue screen light spot ($40 bytes)
 v_continueicon:		equ	v_objspace+object_size*3	; object variable space for the continue screen icon ($40 bytes)
+v_continuetails:	equ	v_objspace+object_size*18	; Tails' tails on the continue screen, after the 15 icons from slot 3 ($40 bytes)
 
 ; Ending objects
 v_endemeralds:		equ	v_objspace+object_size*16	; object variable space for the emeralds in the ending ($180 bytes)

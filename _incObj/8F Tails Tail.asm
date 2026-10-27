@@ -36,7 +36,10 @@ TTail_Main:
 		cmpi.b	#id_SonicSpecial,obID(a2)		; rolling through a Special Stage?
 		beq.w	TTail_Special
 		cmpi.b	#id_SonicPlayer,obID(a2)		; replaced by an ending or results object?
+		beq.s	.player
+		cmpi.b	#id_ContSonic,obID(a2)			; the Continue screen's player keeps them
 		bne.w	TTail_Delete
+	.player:
 		cmpi.b	#Character_Tails,(v_character_p1).w
 		bne.w	TTail_Delete
 		tst.w	(v_debuguse).w				; placement mode shows an item instead
