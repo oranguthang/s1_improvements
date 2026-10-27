@@ -137,12 +137,24 @@ SoundS3K_Dispatch:
 		tst.b	d2
 		bne.s	.deferred
 		cmpi.b	#bgm_ExtraLife,d1			; the driver resumes the song under a 1-up itself
-		beq.s	.sendMusic
+		bne.s	.notExtraLife
+		; The driver saves the song over its sound effect tracks. A sound
+		; effect it starts in the same update would overwrite the saved song,
+		; so the ones still waiting are dropped, and so are later ones this
+		; frame (d2 = -1).
+		moveq	#-1,d2
+		stopZ80
+		waitZ80
+		clr.b	(z80_ram+zSFXNumber0).l
+		clr.b	(z80_ram+zSFXNumber1).l
+		bra.s	.writeMusic
+	.notExtraLife:
 		move.b	d1,SMPS_RAM.v_current_music(a6)
 	.sendMusic:
 		moveq	#1,d2
 		stopZ80
 		waitZ80
+	.writeMusic:
 		move.b	d1,(z80_ram+zMusicNumber).l
 		startZ80
 	.handled:
@@ -151,6 +163,8 @@ SoundS3K_Dispatch:
 		rts
 ; ---------------------------------------------------------------------------
 .soundEffect:
+		tst.b	d2					; a 1-up sent this frame?
+		bmi.s	.handled				; then the sound effect is dropped
 		cmpi.b	#sfx_Push,d1				; the pushable block asks every frame
 		bne.s	.notPush
 		tst.b	SMPS_RAM.f_push_playing(a6)		; still playing?
