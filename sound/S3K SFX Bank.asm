@@ -57,4 +57,6 @@ Sound_Spindash:	include "sound/sfx/SndD1 - Spin Dash Rev.asm"
 Sound_PeelCharge:	include "sound/sfx/SndD2 - Peelout Charge.asm"
 Sound_PeelRelease:	include "sound/sfx/SndD3 - Peelout Release.asm"
 Sound_PeelStop:	include "sound/sfx/SndD4 - Peelout Stop.asm"
+Sound_TailsFly:	include "sound/sfx/SndD5 - Tails Fly.asm"
+Sound_TailsTired:	include "sound/sfx/SndD6 - Tails Tired.asm"
 	finishBank

@@ -472,6 +472,8 @@ sfx_SpinDash:		equ ((ptr_sndD1-ExtSoundIndex)/4)+ext__First
 sfx_PeelCharge: equ ((ptr_sndD2-ExtSoundIndex)/4)+ext__First
 sfx_PeelRelease: equ ((ptr_sndD3-ExtSoundIndex)/4)+ext__First
 sfx_PeelStop: equ ((ptr_sndD4-ExtSoundIndex)/4)+ext__First
+sfx_TailsFly: equ ((ptr_sndD5-ExtSoundIndex)/4)+ext__First
+sfx_TailsTired: equ ((ptr_sndD6-ExtSoundIndex)/4)+ext__First
 ext__Last:		equ ((ptr_extend-ExtSoundIndex-4)/4)+ext__First
 
 ; Sound commands

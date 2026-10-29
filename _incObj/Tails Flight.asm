@@ -112,9 +112,9 @@ Tails_FlightPose:
         cmpi.b #Character_Tails,(v_character_p1).w
         bne.w .return
         tst.b (v_tails_flying).w
-        beq.s .return
+        beq.w .return
         btst #1,obStatus(a0)
-        beq.s .cancel
+        beq.w .cancel
         cmpi.b #2,obRoutine(a0)
         bne.s .cancel
         tst.b (v_lightdash).w
@@ -133,12 +133,16 @@ Tails_FlightPose:
         bmi.s .fatigue
         moveq #$75,d0                  ; flying
 .fatigue:
+        move.w #sfx_TailsFly,d1
         tst.w (v_tails_flytime).w
-        bne.s .frame
+        bne.s .sound
         move.w (v_framecount).w,d0
         lsr.w #3,d0
         andi.w #1,d0
         addi.b #$7E,d0
+        move.w #sfx_TailsTired,d1
+.sound:
+        bsr.s Tails_FlightSound
         bra.s .frame
 .swim:
         lsr.w #2,d0
@@ -156,4 +160,18 @@ Tails_FlightPose:
 .cancel:
         clr.b (v_tails_flying).w
         clr.b (v_tails_flap).w
+        rts
+
+; The propeller while flying (not swimming), as in s2_improvements: d1 =
+; sfx_TailsFly or sfx_TailsTired, played every 16 frames. Keeps d0.
+Tails_FlightSound:
+        move.b (v_framecount+1).w,d2
+        addq.b #8,d2
+        andi.b #$F,d2
+        bne.s .return
+        move.l d0,-(sp)
+        move.w d1,d0
+        jsr (QueueSound2).l
+        move.l (sp)+,d0
+.return:
         rts

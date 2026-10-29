@@ -214,6 +214,8 @@ Gen_Sound_Table macro declsfx
 	declsfx PeelCharge
 	declsfx PeelRelease
 	declsfx PeelStop
+	declsfx TailsFly
+	declsfx TailsTired
 	endm
 
 ; ---------------------------------------------------------------------------
