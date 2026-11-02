@@ -573,6 +573,7 @@ v_ss_manual: ds.b 1			; return a manually selected SS to title after results
 v_endring_bonus: ds.b 1			; end ring already collected in this act
 v_options_menuitem: ds.b 1             ; reserved former player-options cursor
 v_character_selected: ds.b 1          ; persisted solo gameplay choice, independent of scenes
+v_dev_supermusic: ds.b 1              ; CHEATS: play the Super theme
 v_dev_settings_end:
 			ds.b	$1C-(v_dev_settings_end-v_dev_settings) ; unused
 f_levselcheat:		ds.b	1				; level select cheat flag

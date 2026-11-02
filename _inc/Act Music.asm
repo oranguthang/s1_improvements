@@ -26,6 +26,12 @@ GetSonicMusic:
         move.w #bgm_Boss,d0
         rts
 .super:
+        tst.b (v_dev_supermusic).w
+        bne.s .superTheme
+        tst.b (f_bossmusic).w
+        bne.s .boss
+        bra.w GetActMusic
+.superTheme:
         move.w #bgm_Super,d0
         rts
 .invincible:

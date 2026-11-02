@@ -7,7 +7,7 @@
 ; The write invalidates the signature first and commits its first byte last.
 ; ---------------------------------------------------------------------------
 settings_sram_size: equ 16
-settings_sram_version: equ 2
+settings_sram_version: equ 3
 settings_sram_payload: equ 8
 
 
@@ -35,7 +35,7 @@ GetEffectiveEmeraldCount:
 Settings_Normalize:
 		movem.l	d0-d1/a0-a1,-(sp)
 		lea	Settings_BoolFields(pc),a0
-		moveq	#4-1,d1
+		moveq	#5-1,d1
 	.loop:
 		movea.w	(a0)+,a1
 		cmpi.b	#1,(a1)
@@ -78,12 +78,13 @@ Settings_Normalize:
 Settings_BoolFields:
 		dc.w v_title_unlocked&$FFFF, v_dev_all_emeralds&$FFFF
 		dc.w v_dev_debug&$FFFF, v_dev_god&$FFFF
+		dc.w v_dev_supermusic&$FFFF
 
 Settings_Fields:
 		dc.w v_title_unlocked&$FFFF, v_dev_all_emeralds&$FFFF
 		dc.w v_dev_debug&$FFFF, v_dev_superrings&$FFFF
 		dc.w v_dev_superdrain&$FFFF, v_dev_god&$FFFF
-		dc.w v_character_selected&$FFFF, v_character_p2&$FFFF
+		dc.w v_character_selected&$FFFF, v_dev_supermusic&$FFFF
 
 ; d0.w = sum of 14 bytes at a0. Clobbers d1/a0.
 Settings_Checksum:
@@ -123,6 +124,11 @@ Settings_Load:
 		moveq #settings_sram_payload,d2
 		cmpi.w #(settings_sram_version<<8)|settings_sram_payload,4(sp)
 		beq.s .checkChecksum
+		cmpi.w #$0208,4(sp)
+		bne.s .version1
+		moveq #7,d2
+		bra.s .checkChecksum
+.version1:
 		cmpi.w #$0106,4(sp)               ; preserve unlock/cheats from older saves
 		bne.s .done
 		tst.w 12(sp)

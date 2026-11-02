@@ -15,14 +15,17 @@ CHEATS uses Up/Down to select, Left/Right/A/B/C to change, and Start to leave.
 | SUPER RINGS | 0 / 10 / 50 | 50 |
 | RING DRAIN | OFF / ON | ON |
 | GOD MODE | OFF / ON | OFF |
+| SUPER MUSIC | OFF / ON | ON |
 
 ALL EMERALDS overlays the six earned emeralds without altering the earned list. Disabling it reveals only earned progress. With six effective emeralds, every uncollected giant ring flashes and awards 50 rings without entering a Special Stage.
+
+SUPER MUSIC OFF keeps the current level or boss song during Super transformations and reversions. Drowning, 1-ups and scripted music keep their normal priority. The setting is remembered in SRAM.
 
 Selecting zero required rings switches drain OFF. Enabling drain at zero changes the threshold to 10. DEBUG applies on level/Special Stage entry. B toggles placement; A+B/A+C/B+C while controlling the airborne rolling player can transform before placement is entered. Returning from placement restores the current form. Death rescue reverts Super and power-ups; ordinary music keeps its playback position, and shoes only restore normal tempo.
 
 ## SRAM record
 
-Odd-byte SRAM is declared at `$200001–$20FFFF`; only the first 16 logical bytes are used. Logical byte N is at `$200001 + 2*N`. The record stores `S1DV`, version 2, payload length 8, menu unlock and five cheats, the selected character and an unused legacy byte, then a big-endian checksum of logical bytes 0–13. The character is 0 for Sonic, 1 for Tails or 2 for Knuckles; the legacy byte is normalized to `$FF` to retain compatibility with older version 2 saves. Valid version 1 records retain their unlock and cheats and default to Sonic. Invalid signatures, lengths, versions or checksums load defaults. Writes invalidate the signature first and restore it last.
+Odd-byte SRAM is declared at `$200001–$20FFFF`; only the first 16 logical bytes are used. Logical byte N is at `$200001 + 2*N`. The record stores `S1DV`, version 3, payload length 8, menu unlock and five original cheats, the selected character and SUPER MUSIC, then a big-endian checksum of logical bytes 0–13. The character is 0 for Sonic, 1 for Tails or 2 for Knuckles. Valid version 2 records retain their settings and character, discard the obsolete partner byte and default SUPER MUSIC to ON. Valid version 1 records retain their unlock and cheats and default to Sonic with SUPER MUSIC ON. Invalid signatures, lengths, versions or checksums load defaults. Writes invalidate the signature first and restore it last.
 
 The ROM bank is restored after access, and the routines must remain below `$200000`. Keep the emulator `.srm` file when replacing a ROM with the same basename. Save states independently restore RAM and can temporarily restore earlier settings. Earned progress is not a persistent SRAM save system.
 
@@ -41,6 +44,8 @@ With six effective emeralds Tails can become Super Tails, with four Super Flicki
 Select KNUCKLES in OPTIONS. Jump with A/B/C, then hold A/B/C after a second press to glide. Release to fall. Gliding into a vertical terrain wall grabs it; Up/Down climbs, A/B/C jumps away, and holding away releases the wall. At the top Knuckles climbs onto the ledge. His jump is lower than Sonic's. Gliding can defeat badniks, damage bosses (including Eggman in Final Zone's cylinders), and break monitors and compatible walls. Near a chain of rings, A starts Light Dash instead; standalone B retains its debug-placement function when debug is enabled.
 
 With six effective emeralds Knuckles can become Super Knuckles. His fur uses protected palette slots 2/4/5, with a separate red/pink ramp and underwater tints; green shoe panels use protected slot 3. Objects retain their three gray shades independently of the selected character. The lives label uses the S3K KTE abbreviation. Large title illustrations remain Sonic artwork. The Continue screen shows Knuckles waiting with Sonic 3 & Knuckles' idle animation and Knuckles in Sonic 2's mini Knuckles as its counters, the same icon as on the Special Stage results. With every emerald the results say KNUCKLES GOT THEM ALL on two lines, as one line would be wider than a sprite frame reaches. Water tunnels approximate rotation by cycling the ten Sonic 3 & Knuckles glide headings; the original game has no dedicated Knuckles water-spin artwork. Only one playable character is supported.
+
+In debug mode the act-end sign graphics load when approaching the end of a normal act, just as outside debug. Final Zone keeps its own ending sequence.
 
 ## Debug display
 

@@ -13,7 +13,8 @@ SpinDust:
 		jmp	SpinDust_Index(pc,d1.w)		; jump to that routine
 ; ===========================================================================
 SpinDust_Index:	dc.w SpinDust_Init-SpinDust_Index	; [0] initialize dust object
-		dc.w SpinDust_Main-SpinDust_Index	; [2] main dust object logic
+		dc.w SpinDust_Main-SpinDust_Index	; [2] fixed player dust controller
+		dc.w SpinDust_SkidPuff-SpinDust_Index	; [4] individual S2 skid cloud
 ; ===========================================================================
 
 SpinDust_Init:
@@ -25,7 +26,10 @@ SpinDust_Init:
 		move.w	#(SpinDust_VRAM/$20),obGfx(a0)	; set VRAM location to $F400 (tile offset $7A0)
 
 SpinDust_Main:
-		lea	(v_player).w,a2			; load Sonic object to a2
+		lea	(v_player).w,a2			; the selected player uses this slot
+		btst	#0,spindash_flag(a2)
+		beq.w	SpinDust_CheckSkid
+		clr.b	objoff_31(a0)			; spin art replaces the shared skid tiles
 		btst	#0,spindash_flag(a2)		; is a Spin Dash currently active?
 		beq.s	SpinDust_Hide			; if not, don't make dust
 		btst	#1,obStatus(a2)			; is Sonic airborne?
@@ -185,4 +189,101 @@ DustDynPLC_6:	dplcHeader
 	dplcEntry	14, 60
 DustDynPLC_6_End
 
+	even
+
+; Sonic 2's skid clouds: a cloud every four frames, four 2x2 frames at
+; four frames each. All clouds use the same static 16-tile block, allowing
+; their animation phases to differ without fighting over a DPLC slot.
+SpinDust_CheckSkid:
+	if FeatureSkidDust=0
+		rts
+	endif
+		cmpi.b	#2,obRoutine(a2)
+		bne.w	.idle
+		btst	#1,obStatus(a2)
+		bne.w	.idle
+		cmpi.b	#id_Stop,obAnim(a2)
+		beq.s	.skidding
+		cmpi.b	#Character_Knuckles,(v_character_p1).w
+		bne.w	.idle
+		cmpi.b	#5,(v_knux_state).w
+		bne.w	.idle
+		tst.w	obVelX(a2)
+		beq.w	.idle
+.skidding:
+		tst.b	objoff_31(a0)
+		bne.s	.loaded
+		move.b	#1,objoff_31(a0)
+		move.l	#Art_SkidDust,d1
+		move.w	#SpinDust_VRAM,d2
+		move.w	#16*16,d3
+		jsr	(QueueDMATransfer).l
+		lea	(v_player).w,a2
+.loaded:
+		subq.b	#1,objoff_30(a0)
+		bpl.w	.return
+		move.b	#3,objoff_30(a0)
+		jsr	(FindFreeObj).l
+		bne.w	.return
+		move.b	#id_SpinDust,obID(a1)
+		move.b	#4,obRoutine(a1)
+		move.l	#Map_SkidDust,obMap(a1)
+		move.b	#4,obRender(a1)
+		move.w	obGfx(a2),d0
+		andi.w	#$8000,d0
+		ori.w	#SpinDust_VRAM/$20,d0
+		move.w	d0,obGfx(a1)
+		move.b	#1,obPriority(a1)
+		move.b	#4,obActWid(a1)
+		move.b	#4,obTimeFrame(a1)
+		move.w	obX(a2),obX(a1)
+		move.w	obY(a2),obY(a1)
+		addi.w	#$10,obY(a1)
+		cmpi.b	#Character_Tails,(v_character_p1).w
+		bne.s	.notTails
+		subq.w	#4,obY(a1)
+.notTails:
+		cmpi.b	#5,(v_knux_state).w
+		bne.s	.return
+		subi.w	#$10-6,obY(a1)
+.return:
+		rts
+.idle:
+		clr.b	objoff_30(a0)
+		clr.b	objoff_31(a0)
+		rts
+
+SpinDust_SkidPuff:
+		tst.w	(v_debuguse).w
+		bne.s	.delete
+		btst	#0,(v_player+spindash_flag).w
+		bne.s	.delete		; the slot now contains Spin Dash art
+		subq.b	#1,obTimeFrame(a0)
+		bpl.s	.display
+		move.b	#3,obTimeFrame(a0)
+		addq.b	#1,obFrame(a0)
+		cmpi.b	#4,obFrame(a0)
+		bhs.s	.delete
+.display:
+		jmp	(DisplaySprite).l
+.delete:
+		jmp	(DeleteObject).l
+
+Map_SkidDust: mappingsTable
+	mappingsTableEntry.w Map_SkidDust_0
+	mappingsTableEntry.w Map_SkidDust_1
+	mappingsTableEntry.w Map_SkidDust_2
+	mappingsTableEntry.w Map_SkidDust_3
+Map_SkidDust_0: spriteHeader
+	spritePiece -8, -8, 2, 2, 0, 0, 0, 0, 0
+Map_SkidDust_0_End
+Map_SkidDust_1: spriteHeader
+	spritePiece -8, -8, 2, 2, 4, 0, 0, 0, 0
+Map_SkidDust_1_End
+Map_SkidDust_2: spriteHeader
+	spritePiece -8, -8, 2, 2, 8, 0, 0, 0, 0
+Map_SkidDust_2_End
+Map_SkidDust_3: spriteHeader
+	spritePiece -8, -8, 2, 2, $C, 0, 0, 0, 0
+Map_SkidDust_3_End
 	even

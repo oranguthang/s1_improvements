@@ -12,6 +12,10 @@ Scattered rings use underwater gravity and flashing near expiry. Their lifetime 
 
 Movement can preserve speed above the normal running cap. Input acceleration and braking still apply.
 
+## Braking dust
+
+Sonic, Tails and Knuckles leave Sonic 2 skid clouds when braking from a run. Knuckles also leaves them while sliding on his belly after a glide. The art is copied from Sonic 2 Improvements: a cloud every four frames, with four animation frames lasting four frames each. Spin Dash keeps its separate dust animation.
+
 ## Rolling jumps
 
 Directional steering remains available after jumping from a roll.

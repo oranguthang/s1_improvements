@@ -130,7 +130,7 @@ Spin_Spinner:	; Routine 4
 		move.w	obX(a0),d4				; collision X-position (stood-on)
 		bsr.w	SolidObject				; make platform solid
 
-		bra.w	RememberState				; display platform, or delete it if out of range
+		jmp	(RememberState).l				; display platform, or delete it if out of range
 ; ---------------------------------------------------------------------------
 
 .notSolid:
@@ -142,7 +142,7 @@ Spin_Spinner:	; Routine 4
 		clr.b	obSolid(a0)				; clear platform's solidity flag
 
 	.display:
-		bra.w	RememberState				; display platform, or delete it if out of range
+		jmp	(RememberState).l				; display platform, or delete it if out of range
 
 ; ===========================================================================
 

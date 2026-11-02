@@ -6,6 +6,7 @@ The `Feature*` switches in `sonic.asm` turn this project's gameplay additions on
 
 | Option | When 0 |
 |---|---|
+| `FeatureSkidDust` | No braking or belly-slide dust. Spin Dash dust is unchanged. |
 | `FeatureSpinDash` | Down+A/B/C while ducking jumps as in the original game. |
 | `FeaturePeelOut` | Up+A/B/C jumps. |
 | `FeatureAirRoll` | Pressing A/B/C again in the air does nothing. |

@@ -14,7 +14,7 @@ devmenu_row_debug: equ 1
 devmenu_row_rings: equ 2
 devmenu_row_drain: equ 3
 devmenu_row_god: equ 4
-devmenu_rows: equ 5
+devmenu_rows: equ 6
 
 devmenu_header_len:	equ 6					; "CHEATS"
 devmenu_label_len:	equ 21					; characters per option name
@@ -47,6 +47,7 @@ Settings_Defaults:
 		move.b	#50,(v_dev_superrings).w
 		move.b	#1,(v_dev_superdrain).w
 		clr.b	(v_dev_god).w
+		move.b	#1,(v_dev_supermusic).w
 		clr.b	(v_dev_menuitem).w
 		move.b	#devmenu_magic,(v_dev_magic).w
 		rts
@@ -197,6 +198,7 @@ DevMenu_Vars:
 		dc.w v_dev_superrings&$FFFF
 		dc.w v_dev_superdrain&$FFFF
 		dc.w v_dev_god&$FFFF
+		dc.w v_dev_supermusic&$FFFF
 
 DevMenu_RingSteps:
 		dc.b 0, 10, 50					; SUPER RINGS values in menu order
@@ -239,7 +241,7 @@ DevMenu_Draw:
 		addq.w	#1,d1
 		cmpi.w	#devmenu_rows,d1			; have all rows been drawn?
 		blo.s	.row					; if not, loop
-		locVRAM vram_win+(17<<7)+(levsel_start_col<<1),4(a6)
+		locVRAM vram_win+((devmenu_start_row+devmenu_rows+1)<<7)+(levsel_start_col<<1),4(a6)
 		lea	DevMenu_Hint(pc),a1
 		move.w	#levsel_white,d3
 		moveq	#19-1,d2
@@ -330,6 +332,7 @@ DevMenu_Labels:
 		dc.b "SUPER RINGS          "
 		dc.b "RING DRAIN           "
 		dc.b "GOD MODE             "
+		dc.b "SUPER MUSIC          "
 DevMenu_Labels_end:
 
 DevMenu_Hint:
@@ -355,7 +358,7 @@ DevMenu_Values_end:
 		if DevMenu_Values_end-DevMenu_Values<>6*devmenu_value_len
 			warning "DevMenu_Values does not match expected value count/length."
 		endif
-		if (DevMenu_RingSteps-DevMenu_Vars)/2<>devmenu_row_god+1
+		if (DevMenu_RingSteps-DevMenu_Vars)/2<>devmenu_rows
 			warning "DevMenu_Vars does not match the ON/OFF rows."
 		endif
 	endif

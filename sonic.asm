@@ -68,6 +68,8 @@ WaterSurfaceGradual = 1
 ; Gameplay features added by this project. Each is 1 by default; 0 restores
 ; the original Sonic 1 behaviour. Disabled code stays assembled but is never
 ; entered, so data layouts and other features do not change.
+FeatureSkidDust = 1
+;	| Sonic 2 dust when braking, including Knuckles' belly slide
 FeatureSpinDash = 1
 ;	| Hold Down and press A/B/C to charge a Spin Dash
 FeaturePeelOut = 1
@@ -122,7 +124,7 @@ FeatureCDDrowning = 0
 Feature7thEmerald = 0
 ;	| If 1, a cyan seventh Chaos Emerald waits in Special Stage 7, a copy of stage 6
 
-	if (FeatureSpinDash|FeaturePeelOut|FeatureAirRoll|FeatureHomingAttack|FeatureLightDash|FeatureSpringPoses|FeatureExtendedCamera|FeatureMomentum|FeatureRollJumpSteering|FeatureInstantTally|FeatureExtraLives|FeatureLamppostRings|FeatureSuper|FeatureTails|FeatureKnuckles|FeatureCentiseconds|FeatureS2Stars|FeatureVictoryPoses|FeatureS3KDrums|FeatureCDDrowning|FeatureInfiniteLives|FeatureTextCredits|Feature7thEmerald)&~1
+	if (FeatureSkidDust|FeatureSpinDash|FeaturePeelOut|FeatureAirRoll|FeatureHomingAttack|FeatureLightDash|FeatureSpringPoses|FeatureExtendedCamera|FeatureMomentum|FeatureRollJumpSteering|FeatureInstantTally|FeatureExtraLives|FeatureLamppostRings|FeatureSuper|FeatureTails|FeatureKnuckles|FeatureCentiseconds|FeatureS2Stars|FeatureVictoryPoses|FeatureS3KDrums|FeatureCDDrowning|FeatureInfiniteLives|FeatureTextCredits|Feature7thEmerald)&~1
 		error "Feature options must be 0 or 1"
 	endif
 
@@ -3265,8 +3267,7 @@ RingArt_Queue:
 ; ---------------------------------------------------------------------------
 
 SignpostArtLoad:
-		tst.w	(v_debuguse).w				; is debug mode being used?
-		bne.w	.return					; if yes, do not lock screen or load art
+		; Debug placement still streams the selected character's signpost art.
 		cmpi.b	#act3,(v_act).w				; is this a third act?
 		beq.s	.return					; if yes, don't load art (due to the boss fight)
 
@@ -4610,6 +4611,7 @@ Art_SuperTailsFlickies_End:
 		error "Shield/star DMA art crosses a 128kB boundary; the DMA would be corrupted. Move or align it."
 	endif
 Art_SpinDust:	binclude	"artunc/SpinDust.unc"
+Art_SkidDust:	binclude	"artunc/Skid Dust S2.unc"
 		even
 
 ; ---------------------------------------------------------------------------

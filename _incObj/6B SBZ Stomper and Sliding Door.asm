@@ -119,7 +119,7 @@ Sto_Action:	; Routine 2
 		move.b	obHeight(a0),d2				; object collision height (initial)
 		move.w	d2,d3					; object collision height (stood-on)
 		addq.w	#1,d3					; +1px height when stood-on
-		bsr.w	SolidObject				; make object solid and handle squash kills
+		jsr	(SolidObject).l				; make object solid and handle squash kills
 ; ---------------------------------------------------------------------------
 
 	.chkdel:
