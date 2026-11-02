@@ -116,11 +116,11 @@ Tails_FlightPose:
         btst #1,obStatus(a0)
         beq.w .cancel
         cmpi.b #2,obRoutine(a0)
-        bne.s .cancel
+        bne.w .cancel
         tst.b (v_lightdash).w
-        bne.s .cancel
+        bne.w .cancel
         cmpi.b #id_GetAir,obAnim(a0)
-        beq.s .return                  ; let Sonic_Animate finish the inhalation script
+        beq.w .return                  ; let Sonic_Animate finish the inhalation script
         move.b #id_Float1,obAnim(a0)
         moveq #0,d0
         move.w (v_framecount).w,d0
@@ -145,10 +145,19 @@ Tails_FlightPose:
         bsr.s Tails_FlightSound
         bra.s .frame
 .swim:
+        tst.w (v_tails_flytime).w
+        beq.s .swimTired
         lsr.w #2,d0
         divu.w #5,d0
         swap d0
         addi.b #$79,d0
+        bra.s .frame
+.swimTired:
+        divu.w #12,d0                 ; S3K AniTails28: three frames, 12f each
+        andi.l #$FFFF,d0
+        divu.w #3,d0
+        swap d0
+        addi.b #fr_TailsSwimTired,d0
 .frame:
         move.b d0,obFrame(a0)
         andi.b #~(sprite_xflip|sprite_yflip),obRender(a0)

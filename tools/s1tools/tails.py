@@ -30,7 +30,9 @@ VICTORY_SOURCES = (0xA5, 0xA6)
 # uses; the whole wait script is translated from S3K (see wait_script).
 IDLE = VICTORY + len(VICTORY_SOURCES)
 IDLE_SOURCES = (0xB2, 0xB3, 0xB4)
-FRAME_COUNT = IDLE + len(IDLE_SOURCES)
+TIRED_SWIM = IDLE + len(IDLE_SOURCES)
+TIRED_SWIM_SOURCES = (0xC2, 0xCD, 0xCE)
+FRAME_COUNT = TIRED_SWIM + len(TIRED_SWIM_SOURCES)
 # S3K reads body frames from $D1 onward from a separate extra sheet.
 EXTRA_BODY_FIRST = 0xD1
 # The tails are a separate object, as in S3K (Obj_Tails_Tail), drawn from the
@@ -192,8 +194,9 @@ def frame_plan() -> list[tuple[int, int, int, int]]:
     for step in range(5):
         # Swimming, tails included in body art. The pose lies flat, so align
         # its top with the S1 hitbox (19 px) as S3K does with its 15 px one:
-        # Tails can then swim right up against a ceiling.
-        assign(0x79 + step, 0xBD + step, dy=-4)
+        # Tails can then swim right up against a ceiling. Shift X back by
+        # three pixels to keep the flight-to-water transition centred.
+        assign(0x79 + step, 0xBD + step, dx=-3, dy=-4)
     assign(0x7E, 0xA3, 0x27)  # exhausted flight
     assign(0x7F, 0xA4, 0x28)
     for step in range(5):
@@ -210,6 +213,8 @@ def frame_plan() -> list[tuple[int, int, int, int]]:
         assign(VICTORY + step, body)
     for step, body in enumerate(IDLE_SOURCES):
         assign(IDLE + step, body)
+    for step, body in enumerate(TIRED_SWIM_SOURCES):
+        assign(TIRED_SWIM + step, body, dx=-3, dy=-4)
     for group, (dx, dy) in enumerate(offsets):
         for step in range(8):
             assign(WALK8 + group * 8 + step, 1 + group * 8 + step, dx=dx, dy=dy)
@@ -346,7 +351,7 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
     art, mappings, cues = emit_frames("Tails", frames)
     mappings = (
         f"fr_TailsTransform equ ${TRANSFORM_FRAME_FIRST:X}\nfr_TailsWalk equ ${WALK8:X}\n"
-        f"fr_TailsVictory equ ${VICTORY:X}\n\n"
+        f"fr_TailsVictory equ ${VICTORY:X}\nfr_TailsSwimTired equ ${TIRED_SWIM:X}\n\n"
     ).encode("ascii") + mappings
     tail_art, tail_mappings, tail_cues = emit_frames("TailsTail", tail_frames)
     ss_art, ss_mappings, ss_cues, ss_tiles = layered_assets(

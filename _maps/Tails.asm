@@ -1,6 +1,7 @@
 fr_TailsTransform equ $97
 fr_TailsWalk equ $9A
 fr_TailsVictory equ $BA
+fr_TailsSwimTired equ $BF
 
 ; S3K Tails, repacked for the S1 player frame IDs.
 TailsMap_internal: mappingsTable
@@ -195,6 +196,9 @@ TailsMap_internal: mappingsTable
 	mappingsTableEntry.w TailsMap_BC
 	mappingsTableEntry.w TailsMap_BD
 	mappingsTableEntry.w TailsMap_BE
+	mappingsTableEntry.w TailsMap_BF
+	mappingsTableEntry.w TailsMap_C0
+	mappingsTableEntry.w TailsMap_C1
 
 TailsMap_00: spriteHeader
 TailsMap_00_End
@@ -908,32 +912,32 @@ TailsMap_78: spriteHeader
 TailsMap_78_End
 
 TailsMap_79: spriteHeader
-	spritePiece -22, -18, 1, 2, 0, 0, 0, 0, 0
-	spritePiece -14, -18, 4, 3, 2, 0, 0, 0, 0
-	spritePiece -14, 6, 3, 1, 14, 0, 0, 0, 0
+	spritePiece -25, -18, 1, 2, 0, 0, 0, 0, 0
+	spritePiece -17, -18, 4, 3, 2, 0, 0, 0, 0
+	spritePiece -17, 6, 3, 1, 14, 0, 0, 0, 0
 TailsMap_79_End
 
 TailsMap_7A: spriteHeader
-	spritePiece -12, -18, 4, 3, 0, 0, 0, 0, 0
-	spritePiece -20, -18, 1, 2, 12, 0, 0, 0, 0
-	spritePiece -12, 6, 3, 1, 14, 0, 0, 0, 0
+	spritePiece -15, -18, 4, 3, 0, 0, 0, 0, 0
+	spritePiece -23, -18, 1, 2, 12, 0, 0, 0, 0
+	spritePiece -15, 6, 3, 1, 14, 0, 0, 0, 0
 TailsMap_7A_End
 
 TailsMap_7B: spriteHeader
-	spritePiece -18, -18, 4, 4, 0, 0, 0, 0, 0
-	spritePiece 14, -2, 1, 1, 16, 0, 0, 0, 0
+	spritePiece -21, -18, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 11, -2, 1, 1, 16, 0, 0, 0, 0
 TailsMap_7B_End
 
 TailsMap_7C: spriteHeader
-	spritePiece -14, -18, 4, 2, 0, 0, 0, 0, 0
-	spritePiece -22, -18, 1, 1, 8, 0, 0, 0, 0
-	spritePiece -22, -2, 4, 2, 9, 0, 0, 0, 0
-	spritePiece 10, -2, 1, 1, 17, 0, 0, 0, 0
+	spritePiece -17, -18, 4, 2, 0, 0, 0, 0, 0
+	spritePiece -25, -18, 1, 1, 8, 0, 0, 0, 0
+	spritePiece -25, -2, 4, 2, 9, 0, 0, 0, 0
+	spritePiece 7, -2, 1, 1, 17, 0, 0, 0, 0
 TailsMap_7C_End
 
 TailsMap_7D: spriteHeader
-	spritePiece -19, -18, 4, 4, 0, 0, 0, 0, 0
-	spritePiece 13, -18, 1, 2, 16, 0, 0, 0, 0
+	spritePiece -22, -18, 4, 4, 0, 0, 0, 0, 0
+	spritePiece 10, -18, 1, 2, 16, 0, 0, 0, 0
 TailsMap_7D_End
 
 TailsMap_7E: spriteHeader
@@ -1294,5 +1298,23 @@ TailsMap_BD_End
 TailsMap_BE: spriteHeader
 	spritePiece -12, -12, 3, 4, 0, 0, 0, 0, 0
 TailsMap_BE_End
+
+TailsMap_BF: spriteHeader
+	spritePiece -16, -15, 4, 3, 0, 0, 0, 0, 0
+	spritePiece -24, -15, 1, 3, 12, 0, 0, 0, 0
+	spritePiece -24, -23, 2, 1, 15, 0, 0, 0, 0
+TailsMap_BF_End
+
+TailsMap_C0: spriteHeader
+	spritePiece -24, -23, 2, 1, 0, 0, 0, 0, 0
+	spritePiece -16, -15, 4, 3, 2, 0, 0, 0, 0
+	spritePiece -24, 1, 1, 1, 14, 0, 0, 0, 0
+TailsMap_C0_End
+
+TailsMap_C1: spriteHeader
+	spritePiece -16, -23, 2, 1, 0, 0, 0, 0, 0
+	spritePiece -16, -15, 4, 3, 2, 0, 0, 0, 0
+	spritePiece -24, 1, 1, 1, 14, 0, 0, 0, 0
+TailsMap_C1_End
 
 	even
