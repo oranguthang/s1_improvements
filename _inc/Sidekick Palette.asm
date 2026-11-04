@@ -64,6 +64,16 @@ Sidekick_RemapDMA:
         move.w sr,-(sp)
         cmpi.l #Sidekick_GeneratedAssets,d1
         bhs.s .return
+        ; The paired Sonic sheets now occupy holes before the solo art banks.
+        cmpi.l #Art_SidekickSuperSonicCombined,d1
+        blo.s .variants
+        cmpi.l #Art_SidekickSuperSonicCombined_End,d1
+        blo.s .return
+        cmpi.l #Art_SidekickSonicCombined,d1
+        blo.s .variants
+        cmpi.l #Art_SidekickSonicCombined_End,d1
+        blo.s .return
+.variants:
         movem.l d0/a0,-(sp)
         jsr (Sidekick_PaletteActive).l
         beq.s .done

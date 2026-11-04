@@ -120,109 +120,82 @@ SidekickAsset_3A: binclude "artkosm/sidekick/Unused - Goggles.kosm"
         even
 SidekickAsset_3B: binclude "artkosm/sidekick/Unused - LZ Sonic.kosm"
         align $20
+SidekickAsset_40_BeforeAlign:
+        if ((SidekickAsset_40_BeforeAlign&$1FFFF)+74592)>$20000
+        align $20000
+        endif
+SidekickAsset_40: binclude "artunc/sidekick/Knuckles.unc"
+SidekickAsset_40_End:
+        align $20
+Art_SidekickTails_BeforeAlign:
+        if ((Art_SidekickTails_BeforeAlign&$1FFFF)+56000)>$20000
+        align $20000
+        endif
+Art_SidekickTails: binclude "artunc/Sidekick Tails.unc"
+Art_SidekickTails_End:
+        align $20
+Art_SidekickTailsTail_BeforeAlign:
+        if ((Art_SidekickTailsTail_BeforeAlign&$1FFFF)+4448)>$20000
+        align $20000
+        endif
+Art_SidekickTailsTail: binclude "artunc/Sidekick Tails Tail.unc"
+Art_SidekickTailsTail_End:
+        align $20
 SidekickAsset_3C_BeforeAlign:
         if ((SidekickAsset_3C_BeforeAlign&$1FFFF)+3072)>$20000
         align $20000
         endif
 SidekickAsset_3C: binclude "artunc/sidekick/Explosion Restore.unc"
+SidekickAsset_3C_End:
         align $20
 SidekickAsset_3D_BeforeAlign:
         if ((SidekickAsset_3D_BeforeAlign&$1FFFF)+1152)>$20000
         align $20000
         endif
 SidekickAsset_3D: binclude "artunc/sidekick/Invincibility Stars Restore.unc"
+SidekickAsset_3D_End:
         align $20
 SidekickAsset_3E_BeforeAlign:
         if ((SidekickAsset_3E_BeforeAlign&$1FFFF)+1088)>$20000
         align $20000
         endif
 SidekickAsset_3E: binclude "artunc/sidekick/Invincibility Stars S2.unc"
+SidekickAsset_3E_End:
         align $20
 SidekickAsset_3F_BeforeAlign:
         if ((SidekickAsset_3F_BeforeAlign&$1FFFF)+4000)>$20000
         align $20000
         endif
 SidekickAsset_3F: binclude "artunc/sidekick/Knuckles SS.unc"
-        align $20
-SidekickAsset_40_BeforeAlign:
-        if ((SidekickAsset_40_BeforeAlign&$1FFFF)+74592)>$20000
-        align $20000
-        endif
-SidekickAsset_40: binclude "artunc/sidekick/Knuckles.unc"
+SidekickAsset_3F_End:
         align $20
 SidekickAsset_41_BeforeAlign:
         if ((SidekickAsset_41_BeforeAlign&$1FFFF)+864)>$20000
         align $20000
         endif
 SidekickAsset_41: binclude "artunc/sidekick/Shield.unc"
-        align $20
-SidekickAsset_42_BeforeAlign:
-        if ((SidekickAsset_42_BeforeAlign&$1FFFF)+4288)>$20000
-        align $20000
-        endif
-SidekickAsset_42: binclude "artunc/sidekick/Sonic Air Poses.unc"
-        align $20
-SidekickAsset_43_BeforeAlign:
-        if ((SidekickAsset_43_BeforeAlign&$1FFFF)+1152)>$20000
-        align $20000
-        endif
-SidekickAsset_43: binclude "artunc/sidekick/Sonic Carry.unc"
-        align $20
-SidekickAsset_44_BeforeAlign:
-        if ((SidekickAsset_44_BeforeAlign&$1FFFF)+10432)>$20000
-        align $20000
-        endif
-SidekickAsset_44: binclude "artunc/sidekick/Sonic Figure8.unc"
-        align $20
-SidekickAsset_45_BeforeAlign:
-        if ((SidekickAsset_45_BeforeAlign&$1FFFF)+1408)>$20000
-        align $20000
-        endif
-SidekickAsset_45: binclude "artunc/sidekick/Sonic Victory.unc"
-        align $20
-SidekickAsset_46_BeforeAlign:
-        if ((SidekickAsset_46_BeforeAlign&$1FFFF)+44128)>$20000
-        align $20000
-        endif
-SidekickAsset_46: binclude "artunc/sidekick/Sonic.unc"
-        align $20
-SidekickAsset_47_BeforeAlign:
-        if ((SidekickAsset_47_BeforeAlign&$1FFFF)+11712)>$20000
-        align $20000
-        endif
-SidekickAsset_47: binclude "artunc/sidekick/Super Sonic Figure8.unc"
+SidekickAsset_41_End:
         align $20
 SidekickAsset_48_BeforeAlign:
         if ((SidekickAsset_48_BeforeAlign&$1FFFF)+448)>$20000
         align $20000
         endif
 SidekickAsset_48: binclude "artunc/sidekick/Super Sonic Stars.unc"
-        align $20
-SidekickAsset_49_BeforeAlign:
-        if ((SidekickAsset_49_BeforeAlign&$1FFFF)+87072)>$20000
-        align $20000
-        endif
-SidekickAsset_49: binclude "artunc/sidekick/Super Sonic.unc"
+SidekickAsset_48_End:
         align $20
 SidekickAsset_4A_BeforeAlign:
         if ((SidekickAsset_4A_BeforeAlign&$1FFFF)+9024)>$20000
         align $20000
         endif
 SidekickAsset_4A: binclude "artunc/sidekick/Title Cards Extended.unc"
-        align $20
-Art_SidekickSonicCombined_BeforeAlign:
-        if ((Art_SidekickSonicCombined_BeforeAlign&$1FFFF)+61408)>$20000
-        align $20000
-        endif
-Art_SidekickSonicCombined: binclude "artunc/sidekick/Sonic Combined.unc"
-Art_SidekickSonicCombined_End:
-        align $20
-Art_SidekickSuperSonicCombined_BeforeAlign:
-        if ((Art_SidekickSuperSonicCombined_BeforeAlign&$1FFFF)+98784)>$20000
-        align $20000
-        endif
-Art_SidekickSuperSonicCombined: binclude "artunc/sidekick/Super Sonic Combined.unc"
-Art_SidekickSuperSonicCombined_End:
+SidekickAsset_4A_End:
+SidekickAsset_46 equ Art_SidekickSonicCombined+$0
+SidekickAsset_44 equ Art_SidekickSonicCombined+$AC60
+SidekickAsset_42 equ Art_SidekickSonicCombined+$D520
+SidekickAsset_45 equ Art_SidekickSonicCombined+$E5E0
+SidekickAsset_43 equ Art_SidekickSonicCombined+$EB60
+SidekickAsset_49 equ Art_SidekickSuperSonicCombined+$0
+SidekickAsset_47 equ Art_SidekickSuperSonicCombined+$15420
         even
 Sidekick_PLCVariants:
         ifdef KosM_GHZ_2nd

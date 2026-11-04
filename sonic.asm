@@ -5653,6 +5653,8 @@ KnucklesDynPLC: include "_maps/Knuckles - Dynamic Gfx Script.asm"
 Map_KnucklesSS:	include "_maps/Knuckles SS.asm"
 KnucklesSSDynPLC: include "_maps/Knuckles SS - Dynamic Gfx Script.asm"
 		include "_anim/Knuckles.asm"
+        ; Fill the space before Tails' bank with the paired Super Sonic sheet.
+        include "_inc/Sidekick Super Sonic Art.asm"
 		align $20000                   ; all Tails DPLC sources must stay within one DMA bank
 Art_Tails: binclude "artunc/Tails.unc"
 Art_Tails_size: equ *-Art_Tails
@@ -5671,6 +5673,8 @@ Art_TailsTailSS_End:
 		error "Tails art exceeds a 128 KiB DMA bank. Split or repack the resource."
 	endif
 
+        ; Fill the space before Knuckles' bank with the paired Sonic sheet.
+        include "_inc/Sidekick Sonic Art.asm"
 		align $20000
 Art_Knuckles: binclude "artunc/Knuckles.unc"
 Art_Knuckles_size: equ *-Art_Knuckles
@@ -5702,12 +5706,6 @@ Sidekick_GeneratedAssets:
         include "_inc/Sidekick Stage Assets.asm"
         include "_inc/Sidekick Debug Assets.asm"
         include "_inc/Sidekick Assets.asm"
-        align $20000
-Art_SidekickTails: binclude "artunc/Sidekick Tails.unc"
-Art_SidekickTails_End:
-        align $20
-Art_SidekickTailsTail: binclude "artunc/Sidekick Tails Tail.unc"
-Art_SidekickTailsTail_End:
         align $20
 Art_SidekickStars_BeforeAlign:
         if ((Art_SidekickStars_BeforeAlign&$1FFFF)+24*tile_size)>$20000
