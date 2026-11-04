@@ -253,8 +253,8 @@ BossFinal_Eggman_Crush:
 		tst.b	obBossHits(a0)				; has the boss been defeated?
 		beq.s	.animate				; if so, don't let it be hit again
 	endif
-		subq.b	#1,obBossHits(a0) 			; decrement hits remaining
-		exg	a0,a1					; give the successful hit reaction to the player
+		exg	a0,a1					; a0 = player, a1 = boss
+		jsr	(Boss_ConsumeHit).l
 		jsr	(Knuckles_BossBounce).l
 		exg	a0,a1
 		move.b	#100,BossFinal_HitFlash(a0)		; set a flash timer for 100 frames

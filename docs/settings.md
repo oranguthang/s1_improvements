@@ -31,7 +31,7 @@ The ROM bank is restored after access, and the routines must remain below `$2000
 
 ## God Mode
 
-God Mode prevents damage, drowning and time-over death. Crossing the lower death boundary bounces Sonic upward; left/right input can move him back to solid ground. Air countdown and drowning music do not start while protection is active.
+God Mode prevents damage, drowning and time-over death. Crossing the lower death boundary bounces Sonic upward; left/right input can move him back to solid ground. Air countdown and drowning music do not start while protection is active. Bosses are defeated by the first valid hit, including the Star Light spike ball and the Final Zone pistons. With only DEBUG enabled, hits, the time limit and the air countdown apply during normal gameplay.
 
 ## Solo Tails
 

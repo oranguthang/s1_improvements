@@ -766,10 +766,9 @@ BossSpikeball_CheckCollision:
 		blo.s	.checkPhysics				; if not, branch
 		addq.b	#2,obRoutine(a0)			; increment object routine
 		clr.w	obSubtype(a0)				; clear explosion timer
-		clr.b	obColType(a1)				; disable boss collision
-		subq.b	#1,obBossHits(a1)			; subtract hits
+		jsr	(React_DamageBoss).l
+		tst.b	obBossHits(a1)
 		bne.s	.checkPhysics				; if there are more hits, branch
-		bset	#7,obStatus(a1)				; set boss flag to defeated
 		clr.w	obVelX(a0)				; stop moving
 		clr.w	obVelY(a0)
 

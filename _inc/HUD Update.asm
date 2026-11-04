@@ -48,8 +48,6 @@ HUD_Update:
 		lea	(v_time).w,a1				; load current time as pointer
 		cmpi.l	#(9*$10000)+(59*$100)+59,(a1)+		; is the time 9:59:59? (and advance pointer by 4)
 		bne.s	.advancetime				; if not, branch
-		tst.w	(f_debugmode).w				; debug retains its exemption from time over
-		bne.w	.chklives
 		tst.b	(v_dev_god).w				; is God Mode on?
 		bne.w	.chklives				; if yes, hold the clock at 9:59 without a time over
 		bra.w	TimeOver				; kill Sonic from a time over

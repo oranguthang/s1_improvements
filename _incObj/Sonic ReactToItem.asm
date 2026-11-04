@@ -321,12 +321,28 @@ React_BossHit:
 React_DamageBoss:
 		move.b	#col_none,obColType(a1)			; set boss to no collision while it's damaged
 
-		subq.b	#1,obBossHits(a1)			; decrement 1 boss HP
+		bsr.s	Boss_ConsumeHit
 		bne.s	.return					; if boss HP remain, branch
 		bset	#7,obStatus(a1)				; set flag that boss has been defeated
 
 	.return:
-		rts						; return
+		rts
+
+; Consume a valid hit on the boss at a1. Z is set when its HP reach zero.
+Boss_ConsumeHit:
+		tst.b	(v_sidekick_incontext).w
+		bne.s	.sidekick
+		tst.b	(v_dev_god).w
+		bra.s	.check
+	.sidekick:
+		tst.b	(sk_ctx_god).w				; the active companion context holds P1's setting here
+	.check:
+		beq.s	.normal
+		clr.b	obBossHits(a1)
+		rts
+	.normal:
+		subq.b	#1,obBossHits(a1)
+		rts
 ; ===========================================================================
 
 React_BadnikHit:
@@ -453,7 +469,7 @@ HurtSonic:
 		tst.b	(v_shield).w				; does Sonic have a shield?
 		bne.s	.bounceSonicAway			; if yes, branch
 		tst.w	(v_rings).w				; does Sonic have any rings?
-		beq.w	.hitWithoutRings			; if not, branch to kill Sonic
+		beq.w	KillSonic			; if not, branch to kill Sonic
 
 		jsr	(FindFreeObj).l				; find a free object slot
 		bne.s	.bounceSonicAway			; if object RAM is full, branch
@@ -511,13 +527,6 @@ HurtSonic:
 		moveq	#-1,d0					; collision detected
 		rts						; return
 ; ===========================================================================
-
-; .norings:
-.hitWithoutRings:
-		tst.w	(f_debugmode).w				; is debug mode cheat on?
-		bne.w	.bounceSonicAway			; if yes, survive dying from no rings
-		; continue straight to KillSonic...
-
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to kill Sonic
