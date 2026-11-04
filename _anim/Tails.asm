@@ -181,7 +181,7 @@ TailsAni_Hurt:	dc.b 3
 		even
 
 TailsAni_Slide:	dc.b 7
-		dc.b fr_Injury, fr_Slide
+		dc.b fr_Slide
 		dc.b afEnd
 		even
 

@@ -1,7 +1,8 @@
 ; CPU top speed increases only while catching a distant leader. Manual
 ; control and swimming keep their normal speed, acceleration and endurance.
-; Return visibly from above the camera, easing towards the leader. Collision
-; is restored close to him; waiting never removes a life or restarts a stage.
+; Return from above the camera in air or from below if the leader is swimming.
+; Collision is restored close to the leader.
+sidekick_below_screen: equ 224+32
 Sidekick_ReturnFlight:
         jsr (Sidekick_SwapContext).l
         move.w (v_player+obX).w,d0
@@ -28,6 +29,14 @@ Sidekick_ReturnFlight:
         move.w d0,obVelX(a0)
         move.w (v_player+obY).w,d0
         subi.w #40,d0
+        btst #6,(v_player+obStatus).w
+        beq.s .targetY
+        move.w (v_waterpos1).w,d1
+        addq.w #1,d1                  ; keep the swim target below the surface
+        cmp.w d1,d0
+        bge.s .targetY
+        move.w d1,d0
+.targetY:
         sub.w obY(a0),d0
         move.w d0,d5
         cmpi.w #64,d0
@@ -54,6 +63,14 @@ Sidekick_ReturnFlight:
         bset #0,obStatus(a0)
 .facing:
         jsr (SpeedToPos).l
+        bclr #6,obStatus(a0)
+        cmpi.b #id_LZ,(v_zone).w
+        bne.s .pose
+        move.w (v_waterpos1).w,d0
+        cmp.w obY(a0),d0
+        bge.s .pose
+        bset #6,obStatus(a0)           ; use the swimming art and skip rotor SFX
+.pose:
         move.b #1,(v_tails_flying).w
         move.w #480,(v_tails_flytime).w
         move.b #id_Float1,obAnim(a0)
@@ -68,7 +85,7 @@ Sidekick_ReturnFlight:
         clr.b (v_sidekick_state).w
         clr.w (v_sidekick_stuck).w
         clr.w obVelY(a0)
-        ; Keep the rotor running until native floor collision lands Tails.
+        ; Keep flying or swimming until native floor collision lands Tails.
         ; v_sidekick_returning separately prevents an automatic pickup.
         bra.s .draw
 .timeout:

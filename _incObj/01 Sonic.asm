@@ -2206,8 +2206,13 @@ Sonic_HandleDeath:
 .gameOverBgmAndPatterns:
 		move.w	#bgm_GameOver,d0			; set GAME OVER music
 		jsr	(QueueSound1).l				; play it
-		moveq	#plcid_GameOver,d0			; set game over patterns
-		jmp	(AddPLC).l				; load them
+		jsr	(Sidekick_PaletteActive).l
+		beq.s	.soloGameOver
+		lea	(PLC_PairedGameOver).l,a1
+		jmp	(AddPLCFromAddress).l
+	.soloGameOver:
+		moveq	#plcid_GameOver,d0
+		jmp	(AddPLC).l
 ; ===========================================================================
 
 ; loc_138D4:

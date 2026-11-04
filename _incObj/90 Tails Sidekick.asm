@@ -207,7 +207,9 @@ Sidekick_Run:
         rts
 .levelScene:
         cmpi.b #6,(v_player+obRoutine).w
-        bhs.w .return
+        bhs.w Sidekick_DrawFrozenBody
+        tst.b (f_nobgscroll).w          ; drowning starts before Sonic_Death
+        bne.w Sidekick_DrawFrozenBody
         move.b #2,obPriority(a0)       ; default level priority, including return flights
         tst.b victorypose(a0)
         bne.w Sidekick_Victory
@@ -229,10 +231,7 @@ Sidekick_Run:
         beq.w .special
         jsr (Sidekick_Water).l
         cmpi.b #4,(v_sidekick_state).w
-        bne.s .notDrowning
-        jsr (Sonic_Animate).l
-        bra.w .draw
-.notDrowning:
+        beq.w Sidekick_DrowningInContext
         jsr (Sidekick_SpeedSettings).l
         jsr (Sidekick_LZGimmicks).l
         tst.b d0
@@ -270,6 +269,10 @@ Sidekick_Run:
         bne.s .demoCollision
         jsr (ReactToItem).l
 .demoCollision:
+        cmpi.b #id_Hurt,obAnim(a0)
+        bne.s .loops
+        move.b #fr_Slide,obFrame(a0)   ; Sonic 2 Hurt2 looks sideways instead of at the screen
+.loops:
         jsr (Sonic_Loops).l
         bra.s .draw
 .special:
@@ -341,9 +344,14 @@ Sidekick_Run:
         bne.w .returnFlying
         jmp (Sidekick_SSStartReturn).l
 .returnFlying:
+        bclr #7,obGfx(a0)             ; restore normal priority after drowning
         move.b #3,(v_sidekick_state).w
         move.w (v_screenposy).w,obY(a0)
         subi.w #32,obY(a0)
+        btst #6,(v_player+obStatus).w
+        beq.s .returnReady
+        addi.w #32+sidekick_below_screen,obY(a0) ; swim in from below the viewport
+.returnReady:
         move.w #240,(v_sidekick_timer).w
         clr.b (sk_ctx_shield).w
         clr.b (sk_ctx_invinc).w
@@ -382,9 +390,7 @@ Sidekick_ReadControls:
         bne.w .pressed
         ; S2 reads the record 16 frames behind the most recently written
         ; entry (the ring-buffer cursor already points at the NEXT entry).
-        move.w (v_trackpos).w,d2
-        subi.b #17*4,d2
-        andi.w #$FC,d2
+        bsr.w Sidekick_GetFollowIndex
         lea (v_sidekick_history).w,a1
         move.b (a1,d2.w),d0
         cmpi.b #id_Special,(v_gamemode).w
@@ -443,6 +449,13 @@ Sidekick_ReadControls:
         move.b d1,(sk_ctx_controls+1).w
         move.w obX(a0),(v_sidekick_lastx).w
         move.w obY(a0),(v_sidekick_prev_y).w
+        rts
+
+; d2.w indexes the delayed P1 input and position records.
+Sidekick_GetFollowIndex:
+        move.w (v_trackpos).w,d2
+        subi.b #17*4,d2
+        andi.w #$FC,d2
         rts
 
 Sidekick_RecordInput:
@@ -591,10 +604,6 @@ SidekickTail:
 .leaderPresent:
         tst.b (v_sidekick_active).w
         beq.s .delete
-        cmpi.b #id_GotThroughCard,(v_endcard+obID).w
-        beq.w .return
-        tst.b (v_player+victorypose).w
-        bne.w .return
         cmpi.b #4,(v_sidekick_state).w
         beq.w .return
         cmpi.b #2,(v_sidekick_state).w
@@ -602,10 +611,16 @@ SidekickTail:
         tst.b (v_sidekick_player+victorypose).w
         bne.w .return                  ; the victory frames include the tails
         btst #sprite_cam_bg_bit,(v_sidekick_player+obRender).w
-        bne.s .animate
+        bne.s .results
         cmpi.b #6,(v_player+obRoutine).w
-        bhs.w .return
-.animate:
+        bhs.s .frozen
+        tst.b (f_nobgscroll).w
+        bne.s .frozen
+.results:
+        cmpi.b #id_GotThroughCard,(v_endcard+obID).w
+        beq.w .return
+        tst.b (v_player+victorypose).w
+        bne.w .return
         jsr (Sidekick_SwapEffectContext).l
         jsr (TailsTail).l
         jsr (Sidekick_SwapEffectContext).l
@@ -613,6 +628,23 @@ SidekickTail:
         rts
 .delete:
         jmp (DeleteObject).l
+.frozen:
+        ; P1's victory pose byte holds the death origin by this point.
+        tst.b tail_vramframe(a0)        ; no separate tail tiles in the last pose?
+        bmi.s .return
+        move.b tail_vramframe(a0),obFrame(a0)
+        bra.s Sidekick_DrawFrozen
+
+; Keep the last visible pose in the sprite queue without running physics.
+Sidekick_DrawFrozenBody:
+        cmpi.b #2,(v_sidekick_state).w ; waiting off-screen for a respawn
+        beq.s Sidekick_DrawFrozen.return
+Sidekick_DrawFrozen:
+        tst.b obRender(a0)
+        bpl.s .return
+        jmp (DisplaySprite).l
+.return:
+        rts
 
 Sidekick_TailParent:
         lea (v_player).w,a2

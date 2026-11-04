@@ -35,20 +35,20 @@ Smash_Solid:	; Routine 2
 		move.w	#64/2,d3
 		move.w	obX(a0),d4
 		bsr.w	SolidObject				; check collision with Sonic and wall
-		btst	#5,obStatus(a0)				; is Sonic pushing against the wall?
-		bne.s	.chkroll				; if yes, branch
+		cmpi.b	#Character_Knuckles,(v_character_p1).w
+		bne.s	.chkroll
+		cmpi.l	#1,d4					; Knuckles breaks the wall on a side collision
+		beq.s	.break
 
 	.return:
 		rts
 ; ===========================================================================
 
 .chkroll:
-		cmpi.b #1,(v_knux_state).w
-		beq.s .knucklesSmash
-		cmpi.b	#id_Roll,obAnim(a1)			; is Sonic rolling?
-		bne.s	.return					; if not, don't smash
-
-.knucklesSmash:
+		btst	#5,obStatus(a0)				; is the player pushing against the wall?
+		beq.s	.return
+		cmpi.b	#id_Roll,obAnim(a1)			; is the player rolling?
+		bne.s	.return
 		move.w	smash_speed(a0),d0			; get Sonic's impact speed
 		bpl.s	.chkspeed				; if positive, branch
 		neg.w	d0					; make it positive for check
@@ -56,6 +56,7 @@ Smash_Solid:	; Routine 2
 		cmpi.w	#$480,d0				; was Sonic's impact speed $480 or higher?
 		blo.s	.return					; if not, don't smash
 
+.break:
 		move.w	smash_speed(a0),obVelX(a1)		; restore Sonic's speed before SolidObject got called
 		addq.w	#4,obX(a1)				; push Sonic to the right a bit for pseudo-seamless movement
 

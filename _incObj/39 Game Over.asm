@@ -29,7 +29,11 @@ Over_Main:
 	.moreSetup:
 		move.w	#$80+(224/2),obScreenY(a0)		; set Y-position to be vertically centered on screen
 		move.l	#Map_Over,obMap(a0)			; set mappings
-		move.w	#ArtTile_Game_Over|Tile_Prio,obGfx(a0)	; set art tile and priority flag
+		move.w	#ArtTile_Game_Over|Tile_Prio,obGfx(a0)
+		jsr	(Sidekick_PaletteActive).l
+		beq.s	.artReady
+		move.w	#ArtTile_Paired_Game_Over|Tile_Prio,obGfx(a0)
+	.artReady:
 		move.b	#sprite_cam_screen,obRender(a0)		; set to screen-positioned mode
 		move.b	#0,obPriority(a0)			; set to max sprite priority
 ; ---------------------------------------------------------------------------
@@ -86,3 +90,24 @@ Over_Wait:	; Routine 4
 		move.w	#1,(f_restart).w			; restart level
 	.display:
 		bra.w	DisplaySprite				; display sprites
+
+; Z clear if the over card reuses art from this frozen object.
+GameOver_CheckFrozenArt:
+		cmpi.b	#id_GameOverCard,(v_gameovertext1).w
+		beq.s	.card
+		cmpi.b	#id_GameOverCard,(v_gameovertext2).w
+		bne.s	.keep
+.card:
+		cmpi.b	#id_Splats,d0
+		beq.s	.hide
+		cmpi.b	#id_SpinDust,d0
+		bne.s	.keep
+		tst.b	obFrame(a0)			; only skid frame 0 uses the first two P1 dust tiles
+		bne.s	.keep
+		jmp	(Sidekick_PaletteActive).l
+.hide:
+		moveq	#1,d0
+		rts
+.keep:
+		moveq	#0,d0
+		rts

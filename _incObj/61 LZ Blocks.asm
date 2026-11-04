@@ -74,6 +74,13 @@ LBlk_Action:	; Routine 2
 		move.b	obHeight(a0),d2				; get object height as solidity height (initial)
 		move.w	d2,d3					; copy for stood-on check
 		addq.w	#1,d3					; +1px for stood-on check
+		cmpi.b	#4,(v_knux_state).w
+		bne.s	.solid
+		cmpa.w	(v_knux_wall_x).w,a0
+		bne.s	.solid
+		jsr	(Sidekick_Solid).l			; P1 is mantling this block's edge
+		bra.s	.chkdel
+	.solid:
 		bsr.w	SolidObject				; make platform solid for Sonic
 		move.b	d4,lblk_touchtype(a0)			; store collision response value (0, +1, -1)
 		bsr.w	LBlk_Nudge				; nudge platform as Sonic stands on it

@@ -179,7 +179,7 @@ KnucklesAni_Hurt:	dc.b 3
 		even
 
 KnucklesAni_Slide:	dc.b 7
-		dc.b fr_Injury, fr_Slide
+		dc.b fr_Slide
 		dc.b afEnd
 		even
 

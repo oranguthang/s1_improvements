@@ -711,9 +711,9 @@ KnucklesMap_56: spriteHeader
 KnucklesMap_56_End
 
 KnucklesMap_57: spriteHeader
-	spritePiece -16, -17, 3, 4, 0, 0, 0, 0, 0
-	spritePiece 8, -17, 2, 3, 12, 0, 0, 0, 0
-	spritePiece -8, 15, 2, 1, 18, 0, 0, 0, 0
+	spritePiece -16, -15, 3, 4, 0, 0, 0, 0, 0
+	spritePiece 8, -15, 2, 3, 12, 0, 0, 0, 0
+	spritePiece -8, 17, 2, 1, 18, 0, 0, 0, 0
 KnucklesMap_57_End
 
 KnucklesMap_58: spriteHeader

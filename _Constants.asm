@@ -695,6 +695,9 @@ ArtTile_HUDCentiSep:		equ $7BE			; centiseconds colon, 2 free tiles after the ri
 ArtTile_HUDCentis:		equ (vram_hscroll+hscroll_table_size)/tile_size ; two centisecond digits, 4 tiles
 
 ArtTile_Sonic:			equ $780
+; With a companion, the over card replaces the departed leader's art and two dust tiles.
+ArtTile_Paired_Game_Over: equ ArtTile_Sonic
+Game_Over_Tiles: equ $22
 Sonic_Slot_Tiles:		equ 32			; Super frames use up to 31 tiles; ends before spin dust
 Tails_Tail_Tiles:		equ 16			; Tails' tails use the second half of the player slot
 ArtTile_Tails_Tail:		equ ArtTile_Sonic+Sonic_Slot_Tiles-Tails_Tail_Tiles
@@ -908,6 +911,7 @@ check_game_art_slot: macro first,tiles
 	check_game_art_slot ArtTile_Debug_Stats,Debug_Stats_Tiles
 	check_game_art_slot ArtTile_Splats,Splats_Tiles
 	check_game_art_slot ArtTile_Sonic,Sonic_Slot_Tiles
+	check_game_art_slot ArtTile_Paired_Game_Over,Game_Over_Tiles
 	check_game_art_slot ArtTile_SpinDust,18
 	check_game_art_slot ArtTile_Shield,Shield_Slot_Tiles
 	check_game_art_slot ArtTile_Debug_Coords,Debug_Coords_Tiles

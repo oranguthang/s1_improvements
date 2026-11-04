@@ -233,12 +233,66 @@ Knuckles_GrabWall:
 Knuckles_WallDistance:
         move.w obY(a0),d2
         add.w d0,d2
+        bsr.w Knuckles_FindFixedWallBlock
+        beq.s .terrain
+        move.w d0,obX(a0)              ; object collision uses a wider side sensor
+        move.w d0,(v_knux_wall_x).w
+        moveq #$40,d3
+        btst #0,obStatus(a0)
+        bne.s .fixed
+        neg.b d3
+.fixed:
+        moveq #0,d1
+        rts
+.terrain:
         move.w obX(a0),d3
         btst #0,obStatus(a0)
         bne.w .left
         jmp (Sonic_FindWallRight_Quick).l
 .left:
         jmp (Sonic_FindWallLeft_Quick).l
+
+; The stationary $30 Labyrinth block can continue a tile wall (SBZ3).
+; Input d2 = probe Y. On a match: a1 = block, d0 = aligned X, d1 = block top.
+Knuckles_FindFixedWallBlock:
+        cmpi.b #id_LZ,(v_zone).w
+        bne.s .miss
+        lea (v_lvlobjspace).w,a1
+        moveq #(v_lvlobjend-v_lvlobjspace)/object_size-1,d4
+.loop:
+        cmpi.b #id_LabyrinthBlock,obID(a1)
+        bne.s .next
+        cmpi.b #$30,obSubtype(a1)
+        bne.s .next
+        tst.b obRender(a1)
+        bpl.s .next
+        move.w obY(a1),d1
+        subi.w #16,d1
+        cmp.w d1,d2
+        blo.s .next
+        move.w d2,d3
+        sub.w d1,d3
+        cmpi.w #32,d3
+        bhs.s .next
+        moveq #16+sonic_solid_width,d0
+        btst #0,obStatus(a0)
+        bne.s .face
+        neg.w d0
+.face:
+        add.w obX(a1),d0
+        move.w d0,d3
+        sub.w obX(a0),d3
+        addq.w #2,d3
+        cmpi.w #4,d3
+        bhi.s .next                    ; only accept a continuation of this wall face
+        moveq #1,d3
+        rts
+.next:
+        lea object_size(a1),a1
+        dbf d4,.loop
+.miss:
+        moveq #0,d3
+        rts
 
 Knuckles_Climb:
         btst #3,obStatus(a0)
@@ -366,6 +420,20 @@ Knuckles_ClimbFloor:
         rts
 
 Knuckles_StartLedge:
+        move.w obY(a0),d2
+        bsr.w Knuckles_FindFixedWallBlock
+        beq.s .terrain
+        move.w a1,(v_knux_wall_x).w    ; the block allows the scripted mantle through its edge
+        sub.w obY(a0),d1
+        addi.w #31,d1                 ; same floor distance as the terrain probe below
+        moveq #4,d0
+        btst #0,obStatus(a0)
+        beq.s .inside
+        neg.w d0
+.inside:
+        add.w d0,obX(a0)               ; finish a few pixels inside the platform
+        bra.s .start
+.terrain:
         ; Find the top of the same wall before advancing onto it. A large hole
         ; or sloped wall detaches Knuckles instead of stepping through terrain.
         move.w obX(a0),d3
@@ -383,6 +451,7 @@ Knuckles_StartLedge:
         jsr (FindFloor).l
         cmpi.w #32,d1
         bhs.w Knuckles_Detach
+.start:
         move.b #4,(v_knux_state).w
         move.b #knux_ledge_frame,(v_knux_frame).w
         move.b #6,(v_knux_timer).w

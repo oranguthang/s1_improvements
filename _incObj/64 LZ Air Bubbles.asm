@@ -46,6 +46,10 @@ Bub_Main:	; Routine 0
 ; ===========================================================================
 
 .bubble:
+		tst.b	d0					; only subtype 0 is a small bubble
+		bne.s	.animateBubble
+		bsr.w	Bubble_KeepLatest
+.animateBubble:
 		move.b	d0,obAnim(a0)				; set bubble size from subtype (0 = small, 1 = medium, 2 = large)
 		move.w	obX(a0),bub_origX(a0)			; remember original X-position
 		move.w	#-$88,obVelY(a0)			; slowly float bubble upwards
@@ -247,6 +251,82 @@ Bub_BubbleMaker: ; Routine $A
 		rts						; otherwise, keep it hidden
 
 ; ===========================================================================
+
+; Admit a small bubble in display order. Dead/recycled slots are removed on
+; the next small bubble spawn.
+Bubble_KeepLatest:
+		movem.l	d0-d2/a1-a3,-(sp)
+		lea	(v_bubble_fifo).w,a1
+		movea.l	a1,a2
+		moveq	#bubble_limit-1,d2
+.scan:
+		move.w	(a1)+,d0
+		beq.s	.next
+		movea.w	d0,a3
+		cmpa.l	a0,a3
+		beq.s	.next				; this slot may have been recycled
+		tst.b	obRoutine(a3)
+		beq.s	.next
+		cmpi.b	#id_Bubble,obID(a3)
+		beq.s	.checkBubble
+		cmpi.b	#id_DrownCount,obID(a3)
+		beq.s	.checkBreath
+		cmpi.b	#id_SidekickAirBubble,obID(a3)
+		bne.s	.next
+.checkBreath:
+		cmpi.b	#drown_small_bubble,obSubtype(a3)
+		beq.s	.keep
+		bra.s	.next
+.checkBubble:
+		tst.b	obSubtype(a3)
+		bne.s	.next
+.keep:
+		move.w	a3,(a2)+
+.next:
+		dbf	d2,.scan
+		cmpa.w	#v_bubble_fifo_end,a2
+		blo.s	.append
+		bsr.s	Bubble_EvictOldest
+		lea	(v_bubble_fifo).w,a2
+		move.l	2(a2),(a2)+
+		move.l	2(a2),(a2)+
+.append:
+		move.w	a0,(a2)+
+.clear:
+		cmpa.w	#v_bubble_fifo_end,a2
+		bhs.s	.done
+		clr.w	(a2)+
+		bra.s	.clear
+.done:
+		movem.l	(sp)+,d0-d2/a1-a3
+		rts
+
+; An older bubble may already be in priority 1's sprite queue. Remove that
+; entry before freeing its slot so a new object can't inherit a stale draw.
+Bubble_EvictOldest:
+		move.w	(v_bubble_fifo).w,d0
+		lea	(v_spritequeue+spritelayer_size).w,a1
+		move.w	(a1),d2
+		beq.s	.delete
+		lea	2(a1),a2
+.find:
+		cmp.w	(a2)+,d0
+		beq.s	.unqueue
+		subq.w	#2,d2
+		bne.s	.find
+		bra.s	.delete
+.unqueue:
+		subq.w	#2,(a1)
+		bra.s	.shiftNext
+.shift:
+		move.w	(a2),-2(a2)
+		addq.w	#2,a2
+.shiftNext:
+		subq.w	#2,d2
+		bne.s	.shift
+.delete:
+		movea.w	d0,a1
+		jmp	(DeleteChild).l
 
 ; Non-inhalable bubbles production sequence: 0 = small, 1 = medium
 Bub_BblTypes:	dc.b 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0

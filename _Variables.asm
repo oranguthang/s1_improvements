@@ -99,7 +99,7 @@ v_tails_flytime: ds.w 1                ; flight endurance, in game frames
 v_knux_state: ds.b 1                  ; 0 normal, 1 glide, 2 fall, 3 climb, 4 ledge, 5 slide
 v_knux_turn: ds.b 1                   ; glide heading (0 right, $80 left)
 v_knux_speed: ds.w 1                  ; positive glide speed
-v_knux_wall_x: ds.w 1                 ; wall grab position, detects external pushes
+v_knux_wall_x: ds.w 1                 ; wall X while climbing, fixed block pointer during its mantle
 v_knux_frame: ds.b 1                  ; climbing/ledge pose
 v_knux_timer: ds.b 1                  ; climbing/ledge animation timer
 v_super_combo_grace: ds.b 1           ; frames a flight or glide started from the jump still takes a Super combo
@@ -329,7 +329,10 @@ v_opl_data:		ds.b	$10				; ObjPosLoad - data buffer
 v_ssangle:		ds.w	1				; Special Stage angle
 v_ssrotate:		ds.w	1				; Special Stage rotation speed
 v_ssangleprev:		ds.b	1				; Special Stage wall rotation frame currently queued to VRAM ($FF = none)
-			ds.b	$B				; unused
+                        ds.b 1                  ; align bubble FIFO without moving later RAM
+bubble_limit: equ 5
+v_bubble_fifo:          ds.w bubble_limit       ; oldest to newest, compacted on spawn
+v_bubble_fifo_end:
 v_btnpushtime1:		ds.w	1				; button push duration - in level
 v_btnpushtime2:		ds.w	1				; button push duration - in demo
 v_palchgspeed:		ds.w	1				; palette fade/transition speed (0 is fastest)

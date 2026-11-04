@@ -86,11 +86,11 @@ def frame_plan() -> list[tuple[int, int, int]]:
         (0x54, 0xC4),
         (0x55, 0x8D),
         (0x56, 0xB0),
-        (0x57, 0x8C),
         (0x73, 1),
         (0x74, 5),
     ):
         assign(index, source)
+    assign(0x57, 0x8C, dy=2)  # water slide: lower the open-eyed pose
     for step in range(4):
         assign(0x45 + step, 0xCE + step)
         assign(VICTORY + step, 0xB1 + step)

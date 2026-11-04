@@ -24,16 +24,16 @@ Sidekick_Water:
         rts
 .drown:
         move.b #4,(v_sidekick_state).w
-        move.w #90,(v_sidekick_timer).w
         jsr (Sidekick_DropRider).l
         clr.b (v_sidekick_carry).w
         clr.b (v_sidekick_assist).w
         clr.w (v_sidekick_platform).w
         clr.l (v_tails_flying).w
-        move.b #2,obStatus(a0)
+        andi.b #$41,obStatus(a0)      ; keep facing and underwater status
+        bset #1,obStatus(a0)
         move.b #id_Drown,obAnim(a0)
-        move.w #-$300,obVelY(a0)
-        clr.w obVelX(a0)
+        bset #7,obGfx(a0)             ; stay in front of terrain while sinking
+        clr.l obVelX(a0)              ; begin sinking from rest, like the leader
         move.w #sfx_Drown,d0
         jsr (QueueSound2).l
         rts
@@ -79,6 +79,16 @@ Sidekick_SpeedSettings:
         tst.b (v_shoes).w
         bne.s .return
         move.w (v_player+obX).w,d0
+        cmpi.b #Character_Knuckles,(sk_ctx_character).w ; leader while context is swapped
+        bne.s .distance
+        btst #1,obStatus(a0)
+        bne.s .distance
+        move.w #son_maxspeed-$80,(v_sonspeedmax).w
+        ; The expected replay gap can already exceed 80px at full speed.
+        jsr (Sidekick_GetFollowIndex).l
+        lea (v_tracksonic).w,a1
+        move.w (a1,d2.w),d0
+.distance:
         sub.w obX(a0),d0
         bpl.s .absolute
         neg.w d0
@@ -92,17 +102,28 @@ Sidekick_SpeedSettings:
 
 Sidekick_Drowning:
         jsr (Sidekick_SwapContext).l
+Sidekick_DrowningInContext:
         jsr (SpeedToPos).l
         addi.w #$10,obVelY(a0)
+        move.w obY(a0),d0
+        sub.w (v_screenposy).w,d0
+        tst.w (v_limittop2).w
+        bpl.s .checkBottom
+        lsl.w #5,d0
+        asr.w #5,d0                   ; signed distance across the level's vertical wrap
+.checkBottom:
+        cmpi.w #sidekick_below_screen,d0
+        bge.s .sunk
         move.b #id_Drown,obAnim(a0)
         jsr (Sonic_Animate).l
         jsr (Sidekick_LoadGfx).l
         jsr (Sidekick_SwapContext).l
-        subq.w #1,(v_sidekick_timer).w
-        bmi.s .lost
         jmp (DisplaySprite).l
-.lost:
-        jmp (Sidekick_Lost).l
+.sunk:
+        jsr (Sidekick_SwapContext).l
+        jsr (Sidekick_Lost).l
+        move.w #2*60-1,(v_sidekick_timer).w
+        rts
 
 ; P1 gets first refusal on a large bubble. Return Z clear only if Tails
 ; collected it; do not reset P1 air, drowning music or velocities.

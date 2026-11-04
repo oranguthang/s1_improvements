@@ -132,6 +132,10 @@ PLC_GameOver:	plcheader
 		plcm	KosM_GameOver,	ArtTile_Game_Over		; game/time over
 PLC_GameOver_end:
 
+PLC_PairedGameOver: plcheader
+        plcm KosM_GameOver,ArtTile_Paired_Game_Over
+PLC_PairedGameOver_end:
+
 ; ---------------------------------------------------------------------------
 ; Pattern load cues - Green Hill
 ; ---------------------------------------------------------------------------

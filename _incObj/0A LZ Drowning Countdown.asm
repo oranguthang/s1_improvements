@@ -20,6 +20,7 @@ Drown_Index:	dc.w Drown_Main-Drown_Index		; 0
 		dc.w Drown_Display-Drown_Index		; E
 		dc.w Drown_Delete-Drown_Index		; 10
 
+drown_small_bubble: equ 6		; small breath bubble subtype
 drown_restarttime:	equ objoff_2C	; time to restart after Sonic drowns
 drown_origX:		equ objoff_30	; original x-axis position
 drown_displaytime:	equ objoff_32	; time to display each number
@@ -55,6 +56,10 @@ Drown_Main:	; Routine 0
 ; ===========================================================================
 
 	.numberBubble:
+		cmpi.b	#drown_small_bubble,d0
+		bne.s	.animateBubble			; medium bubbles and air digits bypass the limit
+		jsr	(Bubble_KeepLatest).l
+	.animateBubble:
 		move.b	d0,obAnim(a0)				; set "appear" animation from subtype (0-5)
 		move.w	obX(a0),drown_origX(a0)			; remember base X-position for wobble effect
 		move.w	#-$88,obVelY(a0)			; slowly move bubbles upwards
