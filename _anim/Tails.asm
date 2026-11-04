@@ -76,7 +76,7 @@ TailsAni_Push:	dc.b $FD
 ; 	dc.b afChange, id_Surf	; switch to a different animation
 
 ; The tails object swishes the tails over these still body poses.
-	include "_anim/Tails - Wait.asm"	; S3K's yawning and stretching (player tails)
+	include "_anim/Tails - Wait.asm"	; Sonic 2's idle animation
 
 TailsAni_Balance:	dc.b 9
 		dc.b fr_Balance1,fr_Balance1,fr_Balance2,fr_Balance2

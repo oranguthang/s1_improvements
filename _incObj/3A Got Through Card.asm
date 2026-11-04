@@ -20,6 +20,7 @@ Got_Index:	dc.w Got_ChkPLC-Got_Index		; 0
 		dc.w Got_Wait-Got_Index			; C
 		dc.w Got_SBZ2_MoveOut-Got_Index		; E
 		dc.w Got_SBZ2_Boundary-Got_Index	; 10
+Got_IndexDisplay: dc.w Got_Display-Got_Index	; 12
 
 got_mainX:	equ	objoff_30	; target X-position for card while moving in
 got_finalX:	equ	objoff_32	; target X-position for card while moving out (SBZ2 cutscene only)
@@ -204,6 +205,8 @@ Got_Bonus:	; Routine 6
 ; ===========================================================================
 
 Got_NextLevel:	; Routine $A
+		; The ring's white fade still updates objects. Advance the act only once.
+		move.b	#Got_IndexDisplay-Got_Index,obRoutine(a0)
 		move.b	(v_zone).w,d0				; get current zone ID
 		andi.w	#7,d0					; mask out unrelated bits
 		lsl.w	#3,d0					; multiply by 8 (size per zone block in LevelOrder array)
@@ -221,7 +224,7 @@ Got_NextLevel:	; Routine $A
 		tst.w	d0					; is new level number 0? (GHZ1)
 		bne.s	.validLevelNumber			; if not, branch
 		move.b	#id_Sega,(v_gamemode).w			; otherwise, instantly return to the Sega screen
-		bra.s	.display				; display sprite
+		bra.s	Got_Display			; display sprite
 ; ---------------------------------------------------------------------------
 
 	; Got_ChkSS:
@@ -230,15 +233,14 @@ Got_NextLevel:	; Routine $A
 		tst.b	(f_bigring).w				; has Sonic jumped into a giant ring?
 		beq.s	.restartLevel				; if not, branch
 		move.b	#id_Special,(v_gamemode).w		; set game mode to Special Stage (10)
-		bra.s	.display				; do not set level restart flag
+		bra.s	Got_Display			; do not set level restart flag
 ; ===========================================================================
 
 	; loc_C6EA:
 	.restartLevel:
 		move.w	#1,(f_restart).w			; trigger level restart to load next level
 
-	; Got_Display2:
-	.display:
+Got_Display:	; Routine $12
 		bra.w	DisplaySprite				; keep displaying card during fade-out
 
 ; ===========================================================================
@@ -290,6 +292,7 @@ Got_SBZ2_MoveOut: ; Routine $E
 		cmpi.b	#4,obFrame(a0)				; is this the ring bonus element? (use ring bonus to control cutscene)
 		bne.w	DeleteObject				; if not, delete card element immediately
 
+		jsr	(Sidekick_ResumeAfterResults).l	; resume following into the cutscene
 		addq.b	#2,obRoutine(a0)			; set to Got_SBZ2_Boundary
 		clr.b	(f_lockctrl).w				; unlock controls
 	if FeatureVictoryPoses

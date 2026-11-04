@@ -33,14 +33,9 @@ Sidekick_SSBegin:
         move.l obY(a0),d2
         jsr (SonicSS_FindWall).l
         beq.s .clear
-        ; P1 can close a ghost gate while Tails is overlapping it.
-        ; Recover to a tested position instead of starting inside a wall.
-        bsr.w Sidekick_SSPlace
-        move.l obX(a0),d3
-        move.l obY(a0),d2
-        jsr (SonicSS_FindWall).l
-        beq.s .clear
-        jmp (Sidekick_Lost).l
+        ; A gate can close under Tails. Let him fly out from the current
+        ; displayed position instead of teleporting to the leader or hiding.
+        bra.w Sidekick_SSLost
 .clear:
         move.l obX(a0),(v_sidekick_ss_oldx).w
         move.l obY(a0),(v_sidekick_ss_oldy).w
@@ -127,6 +122,18 @@ Sidekick_SSBounds:
         bgt.s .lost
         rts
 .lost:
+Sidekick_SSLost:
+        jsr (SS_ProjectSprite).l
+        move.w d3,d0
+        subi.w #$80-32,d0
+        cmpi.w #320+64,d0
+        bhs.s .offScreen
+        move.w d2,d0
+        subi.w #$80-32,d0
+        cmpi.w #224+64,d0
+        bhs.s .offScreen
+        bra.s Sidekick_SSSetupReturn
+.offScreen:
         jmp (Sidekick_Lost).l
 
 ; Prefer a visible adjacent spawn, but never insert the companion into a
@@ -139,14 +146,14 @@ Sidekick_SSPlace:
         subi.w #24,obX(a0)
         cmpi.w #16,obX(a0)
         blo.s .right
-        bsr.s .check
+        bsr.s Sidekick_SSPlace_check
         beq.s .done
 .right:
         move.l (v_player+obX).w,obX(a0)
         addi.w #24,obX(a0)
         cmpi.w #(ss_layout_rowlength/2)*ss_blocksize-64,obX(a0)
         bhs.s .leader
-        bsr.s .check
+        bsr.s Sidekick_SSPlace_check
         beq.s .done
 .leader:
         move.l (v_player+obX).w,obX(a0)
@@ -156,7 +163,89 @@ Sidekick_SSPlace:
         clr.l sonss_touchedblock_ram(a0)
         movem.l (sp)+,d0-d7/a0-a6
         rts
-.check:
+Sidekick_SSPlace_check:
         move.l obY(a0),d2
         move.l obX(a0),d3
         jmp (SonicSS_FindWall).l
+
+; Fly above the rotating maze in screen coordinates. World collision and
+; items resume only when the displayed origin reaches a clear spawn point.
+Sidekick_SSStartReturn:
+        move.w #$80+320/2-48,d3
+        move.w #$80-32,d2
+        bsr.s Sidekick_SSSetupReturn
+        bra.s Sidekick_SSReturn
+
+Sidekick_SSSetupReturn:
+        move.b #sidekick_ss_return,(v_sidekick_state).w
+        move.w d3,obX(a0)
+        move.w d2,obScreenY(a0)
+        clr.l obVelX(a0)
+        clr.w obInertia(a0)
+        move.w #ArtTile_Sidekick_SSReturn,obGfx(a0)
+        move.b #fr_TailsSSReturn,obFrame(a0)
+        andi.b #sprite_xflip,obRender(a0)
+        rts
+
+Sidekick_SSReturn:
+        cmpi.b #2,(v_player+obRoutine).w
+        bne.w .display                 ; leave the current pose during the exit spin
+        tst.w (v_debuguse).w
+        bne.w .draw
+        move.w obX(a0),d6
+        move.w obScreenY(a0),d7
+        jsr (Sidekick_SSPlace).l
+        jsr (SS_ProjectSprite).l
+        move.w d3,d0
+        move.w d6,d1
+        bsr.w .approach
+        cmp.w d6,d1
+        beq.s .keepFacing
+        slt d4
+        andi.b #sprite_xflip,d4
+        move.b d4,obRender(a0)
+.keepFacing:
+        move.w d1,d6
+        move.w d2,d0
+        move.w d7,d1
+        bsr.w .approach
+        move.w d1,d7
+        cmp.w d3,d6
+        bne.s .inFlight
+        cmp.w d2,d7
+        bne.s .inFlight
+        bsr.w Sidekick_SSPlace_check   ; even the leader fallback must be clear
+        bne.s .inFlight
+        move.b #sprite_cam_ss,obRender(a0)
+        move.w #ArtTile_Sidekick_SS,obGfx(a0)
+        move.b #sonic_roll_height,obHeight(a0)
+        move.b #sonic_roll_width,obWidth(a0)
+        move.b #id_Roll,obAnim(a0)
+        move.b #fr_Roll1,obFrame(a0)
+        move.b #6,obStatus(a0)
+        clr.b (v_sidekick_state).w
+        clr.b (v_sidekick_returning).w
+        clr.w (v_sidekick_stuck).w
+        clr.l (sk_ctx_flight).w
+        bra.s .draw
+.inFlight:
+        move.w d6,obX(a0)
+        move.w d7,obScreenY(a0)
+.draw:
+        jsr (Sidekick_LoadGfx).l
+.display:
+        jmp (DisplaySprite).l
+
+; d1 approaches d0 by up to five screen pixels.
+.approach:
+        sub.w d1,d0
+        cmpi.w #5,d0
+        ble.s .lower
+        moveq #5,d0
+.lower:
+        cmpi.w #-5,d0
+        bge.s .step
+        moveq #-5,d0
+.step:
+        add.w d0,d1
+        rts

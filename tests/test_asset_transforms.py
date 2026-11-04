@@ -297,19 +297,30 @@ def test_shared_palette_preserves_unselected_tiles() -> None:
         asset_source = sources[asset.get("source_group", "shared")]
         before = input_decode((asset_source / asset["source"]).read_bytes())
         after = decode((ROOT / name).read_bytes())
-        for before_byte, after_byte in zip(before, after, strict=True):
-            if before_byte >> 4 == 8:
-                assert after_byte >> 4 == 8, name
-            if before_byte & 15 == 8:
-                assert after_byte & 15 == 8, name
-        selected = {tile for start, end in asset["ranges"] for tile in range(start, end)}
+        rules = [
+            {"tiles": tiles, "colours": asset.get("colours", {})}
+            for tiles in asset["ranges"]
+        ]
+        rules.extend(asset.get("colour_overrides", []))
+        grey_slot = {
+            tile: rule["colours"].get("8", 8)
+            for rule in rules
+            for tile in range(*rule["tiles"])
+        }
         assert len(before) == len(after), name
         for tile in range(len(before) // 32):
-            if tile not in selected:
-                assert before[tile * 32 : (tile + 1) * 32] == after[tile * 32 : (tile + 1) * 32], (
-                    name,
-                    tile,
-                )
+            start = tile * 32
+            old_tile = before[start : start + 32]
+            new_tile = after[start : start + 32]
+            if tile not in grey_slot:
+                assert old_tile == new_tile, (name, tile)
+            else:
+                for old, new in zip(old_tile, new_tile, strict=True):
+                    if old >> 4 == 8:
+                        assert new >> 4 == grey_slot[tile], (name, tile)
+                    if old & 15 == 8:
+                        assert new & 15 == grey_slot[tile], (name, tile)
+
 
 
 def test_score_label_uses_the_same_yellow_for_dynamic_e() -> None:

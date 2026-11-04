@@ -574,7 +574,7 @@ v_ss_selected: ds.b 1			; transient SS selector (0..5)
 v_ss_override: ds.b 1			; one-shot SS selector (1..6; 0 = automatic)
 v_ss_manual: ds.b 1			; return a manually selected SS to title after results
 v_endring_bonus: ds.b 1			; end ring already collected in this act
-v_options_menuitem: ds.b 1             ; reserved former player-options cursor
+v_options_menuitem: ds.b 1             ; options cursor (0 = character, 1 = sound test)
 v_character_selected: ds.b 1          ; persisted solo gameplay choice, independent of scenes
 v_dev_supermusic: ds.b 1              ; CHEATS: play the Super theme
 v_dev_settings_end:
@@ -645,7 +645,7 @@ v_ss_scroll_clouds:	ds.b	$1C				; buffer to store scroll positions for SS backgr
         phase v_256x256_def+$8800
 v_sidekick_ram:
 v_sidekick_active: ds.b 1
-v_sidekick_state: ds.b 1          ; 0 active, 2 waiting, 3 flying back, 4 drowning
+v_sidekick_state: ds.b 1          ; 0 active, 2 waiting, 3 flying back, 4 drowning, 5 SS return
 v_sidekick_lastframe: ds.b 1
 v_sidekick_prevheld: ds.b 1
 v_sidekick_manual: ds.w 1
@@ -668,7 +668,6 @@ v_sidekick_carrydelay: ds.w 1
 v_sidekick_rider_x: ds.w 1
 v_sidekick_rider_y: ds.w 1
 v_sidekick_airframes: ds.w 1
-v_sidekick_wasdebug: ds.w 1
 v_sidekick_context:
 sk_ctx_character: ds.b 1
 sk_ctx_super: ds.b 1

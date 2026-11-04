@@ -580,7 +580,12 @@
           10
         ]
       ],
-      "mappings": "_maps/Lamppost.asm"
+      "mappings": "_maps/Lamppost.asm",
+      "colours": {
+        "8": 9,
+        "9": 1,
+        "14": 13
+      }
     },
     "artkosm/Lamppost.kosm": {
       "source": "artkosm/Lamppost.kosm",
@@ -594,7 +599,12 @@
           10
         ]
       ],
-      "mappings": "_maps/Lamppost.asm"
+      "mappings": "_maps/Lamppost.asm",
+      "colours": {
+        "8": 9,
+        "9": 1,
+        "14": 13
+      }
     },
     "artnem/Monitors.nem": {
       "source": "artnem/Monitors.nem",
@@ -629,6 +639,15 @@
             "3": 8,
             "4": 7,
             "5": 7
+          }
+        },
+        {
+          "tiles": [
+            24,
+            28
+          ],
+          "colours": {
+            "2": 12
           }
         },
         {
@@ -678,6 +697,15 @@
             "3": 8,
             "4": 7,
             "5": 7
+          }
+        },
+        {
+          "tiles": [
+            24,
+            28
+          ],
+          "colours": {
+            "2": 12
           }
         },
         {
@@ -1147,7 +1175,11 @@
           64
         ]
       ],
-      "mappings": "_maps/LZ Conveyor.asm"
+      "mappings": "_maps/LZ Conveyor.asm",
+      "colours": {
+        "8": 7,
+        "14": 9
+      }
     },
     "artkosm/LZ Wheel.kosm": {
       "source": "artkosm/LZ Wheel.kosm",
@@ -1157,7 +1189,11 @@
           64
         ]
       ],
-      "mappings": "_maps/LZ Conveyor.asm"
+      "mappings": "_maps/LZ Conveyor.asm",
+      "colours": {
+        "8": 7,
+        "14": 9
+      }
     },
     "artnem/SBZ Electrocuter.nem": {
       "source": "artnem/SBZ Electrocuter.nem",
@@ -1437,7 +1473,27 @@
           793
         ]
       ],
-      "tilemap": "map16/SYZ.bin"
+      "tilemap": "map16/SYZ.bin",
+      "colour_overrides": [
+        {
+          "tiles": [
+            52,
+            53
+          ],
+          "colours": {
+            "8": 7
+          }
+        },
+        {
+          "tiles": [
+            67,
+            68
+          ],
+          "colours": {
+            "8": 7
+          }
+        }
+      ]
     },
     "artkosm/8x8 - SYZ.kosm": {
       "source": "artkosm/8x8 - SYZ.kosm",
@@ -1479,7 +1535,27 @@
           793
         ]
       ],
-      "tilemap": "map16/SYZ.bin"
+      "tilemap": "map16/SYZ.bin",
+      "colour_overrides": [
+        {
+          "tiles": [
+            52,
+            53
+          ],
+          "colours": {
+            "8": 7
+          }
+        },
+        {
+          "tiles": [
+            67,
+            68
+          ],
+          "colours": {
+            "8": 7
+          }
+        }
+      ]
     },
     "artnem/8x8 - GHZ (Combined).nem": {
       "source": "artnem/8x8 - GHZ (Combined).nem",

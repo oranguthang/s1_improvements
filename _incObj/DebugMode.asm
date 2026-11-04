@@ -18,6 +18,7 @@ Debug_Index:	dc.w Debug_Init-Debug_Index			; 0 - init
 
 ; Debug_Main:
 Debug_Init:	; Routine 0
+		clr.b victorypose(a0)				; resume play without the end-of-act pose
 		clr.b (v_tails_flying).w
 		clr.b (v_tails_flap).w
 		clr.b (v_knux_state).w

@@ -1,10 +1,37 @@
 """Context, object-loop ownership, debug art and SRAM lifetime regressions."""
 
 from check_dust_and_music import c1
-from unicorn.m68k_const import UC_M68K_REG_D7
+from unicorn.m68k_const import UC_M68K_REG_A0, UC_M68K_REG_D7
+
+
+def return_timeout():
+    c = c1()
+    for routine in ("DisplaySprite", "QueueDMATransfer", "QueueSound2"):
+        c.skip(routine)
+    b, p = c.s["v_sidekick_player"], c.s["v_player"]
+    c.reg(UC_M68K_REG_A0, b)
+    c.w("sk_ctx_character", c.s["Character_Tails"])
+    c.w(b + c.s["obRoutine"], 2)
+    c.w(b + c.s["obActWid"], 24)
+    c.w("v_sidekick_state", 3)
+    c.w(p + c.s["obX"], 240, 2)
+    c.w(p + c.s["obY"], 180, 2)
+    c.w(b + c.s["obX"], 100, 2)
+    c.w(b + c.s["obY"], 100, 2)
+    # The render flag starts clear. The current viewport still protects Tails.
+    for _ in range(10):
+        c.call("Sidekick_ReturnFlight")
+        assert c.r("v_sidekick_state") == 3 and c.r("v_sidekick_timer", 2) == 0
+    # A stale rendered flag cannot protect a position that is now off-screen.
+    c.w(b + c.s["obRender"], 0x84)
+    c.w("v_screenposx", 400, 2)
+    c.call("Sidekick_ReturnFlight")
+    assert c.r("v_sidekick_state") == 2 and c.r("v_sidekick_timer", 2) == 90
+    print("Expired Tails catch-up only retries once the sprite is outside the current viewport")
 
 
 def run():
+    return_timeout()
     c = c1()
     c.skip("Sidekick_Run", lambda cpu: cpu.reg(UC_M68K_REG_D7, 0xDEADBEEF))
     c.reg(UC_M68K_REG_D7, 23)
@@ -46,8 +73,6 @@ def run():
     c.w("v_sidekick_assist", 180)
     b = c.s["v_sidekick_player"]
     c.w(b + c.s["flashtime"], 1, 2)
-    from unicorn.m68k_const import UC_M68K_REG_A0
-
     c.reg(UC_M68K_REG_A0, b)
     c.call("Sidekick_Hurt")
     assert c.r("v_sidekick_carry") and c.r("v_sidekick_assist") == 180

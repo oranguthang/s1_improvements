@@ -87,8 +87,6 @@ Sidekick_CollisionEnabled:
         bne.w .off
         tst.b (v_sidekick_carry).w
         bne.w .off
-        tst.w (v_debuguse).w
-        bne.w .off
         cmpi.b #4,(v_sidekick_player+obRoutine).w
         bhs.w .off
         cmpi.b #6,(v_player+obRoutine).w

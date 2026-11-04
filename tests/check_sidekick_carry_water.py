@@ -29,6 +29,7 @@ def carry():
         c.call("Sidekick_UpdateCarry")
         assert c.r("v_sidekick_carry")
         assert c.r(p + c.s["obAnim"]) == c.s["id_Carry"]
+        assert c.r(p + c.s["obFrame"]) != 0  # rider animates on the first attached frame
         assert c.r(p + c.s["obHeight"]) == 19
         c.reg(UC_M68K_REG_A0, p)
         c.w(b + c.s["obX"], 320, 2)
@@ -82,7 +83,42 @@ def carry():
     print("Sonic/Knuckles catch, hanging, movement, jump release, script cancellation passed")
 
 
+def swim_carry_stroke():
+    c, b, _ = setup()
+    for routine in (
+        "Sonic_LightDashStart",
+        "Sonic_JumpDirection",
+        "Sonic_LevelBound",
+        "SpeedToPos",
+        "Sonic_JumpAngle",
+        "Sonic_Floor",
+    ):
+        c.skip(routine)
+    c.w("v_character_p1", c.s["Character_Tails"])
+    for player, underwater, carrying, pulse, expected in (
+        (b, True, True, 0, 0),
+        (b, True, True, 4, 3),  # allow a stroke begun before the grab to finish
+        (b, True, False, 0, 29),
+        (b, False, True, 0, 29),
+        (c.s["v_player"], True, False, 0, 29),
+    ):
+        c.reg(UC_M68K_REG_A0, player)
+        c.w(player + c.s["obRoutine"], 2)
+        place(c, player, 300, 200, status=0x42 if underwater else 2)
+        c.w("v_tails_flying", 1)
+        c.w("v_tails_flytime", 240, 2)
+        c.w("v_tails_flap", pulse)
+        c.w("v_sidekick_carry", 255 if carrying else 0)
+        c.w("v_jpadpress2", c.s["btnC"])
+        c.call("Tails_FlightControl")
+        assert c.r("v_tails_flap") == expected
+        assert c.r("v_tails_flytime", 2) == 239
+        assert read(c, player, "obVelY") == (0xFFE0 if expected else 8)
+    print("Underwater carrying blocks new strokes while preserving existing momentum")
+
+
 def water():
+    swim_carry_stroke()
     c, b, o = setup()
     c.reg(UC_M68K_REG_A0, b)
     c.w("v_zone", c.s["id_LZ"])

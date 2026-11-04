@@ -1,19 +1,14 @@
 ; When the companion is visible, debug coordinates use a resident font in
 ; the inactive shield slot instead of overwriting the companion's art.
 ; As with the existing invincibility exclusion, shield/Super effects own
-; their tiles and temporarily hide this extra debug row. Item placement
-; hides Tails and keeps the original dedicated coordinate writer.
+; their tiles and temporarily hide this extra debug row, including during
+; item placement, so Tails can keep his own art.
 Sidekick_DebugWanted:
         jsr (Sidekick_PaletteActive).l
         beq.s .return
         tst.b (v_sidekick_active).w
         beq.s .return
-        tst.w (v_debuguse).w
-        bne.s .off
         moveq #1,d0
-        rts
-.off:
-        moveq #0,d0
 .return:
         rts
 

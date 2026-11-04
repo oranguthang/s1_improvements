@@ -1,6 +1,8 @@
 ; Carried leader input: ABC jumps free, Up asks CPU Tails to climb.
 ; A second controller always overrides the CPU pilot. No camera or scripted
 ; lock flag is borrowed to keep the leader hanging.
+sidekick_carry_y equ $1D                  ; rider hangs below Tails
+
 Sidekick_RequestAssist:
         tst.b (v_sidekick_active).w
         beq.s .return
@@ -74,7 +76,7 @@ Sidekick_CarriedMovement:
         bhi.w .collisionRelease
         move.w (v_sidekick_player+obX).w,obX(a0)
         move.w (v_sidekick_player+obY).w,obY(a0)
-        addi.w #29,obY(a0)
+        addi.w #sidekick_carry_y,obY(a0)
         ; S2 mirrors both hanging sprites together, otherwise the hands
         ; miss when the pilot turns and the rider keeps facing the old way.
         andi.b #~sprite_xflip,obRender(a0)
@@ -109,7 +111,7 @@ Sidekick_CarriedMovement:
         bhi.s .collisionRelease
         move.w obY(a0),d0
         sub.w (v_sidekick_player+obY).w,d0
-        subi.w #27,d0
+        subi.w #sidekick_carry_y-2,d0
         cmpi.w #4,d0
         bhi.s .collisionRelease
         move.b #id_Carry,obAnim(a0)
@@ -145,6 +147,8 @@ Sidekick_UpdateCarry:
         subq.w #1,(v_sidekick_carrydelay).w
         bra.w .return
 .check:
+        tst.w (v_debuguse).w
+        bne.w .return
         tst.b (v_sidekick_returning).w
         bne.w .return
         cmpi.b #id_Special,(v_gamemode).w
@@ -189,7 +193,7 @@ Sidekick_UpdateCarry:
         bne.s .catch
         tst.b (v_sidekick_assist).w
         beq.w .return
-        cmpi.w #9,d0                    ; never pull a grounded rider down
+        cmpi.w #sidekick_carry_y-20,d0   ; never pull a grounded rider down
         blo.w .return
         tst.w obVelY(a0)
         bpl.w .return
@@ -207,12 +211,17 @@ Sidekick_UpdateCarry:
         clr.b (v_sidekick_assist).w
         move.w #10,(v_sidekick_carrydelay).w
         jsr (Sidekick_CarriedMovement).l
+        tst.b (v_sidekick_carry).w
+        beq.s .return
+        ; P1 already ran this frame. Draw the hanging pose on contact.
+        jsr (Sonic_Animate).l
+        jsr (Sonic_LoadGfx).l
         bra.s .return
 .attached:
         lea (v_player).w,a0
         cmpi.b #2,obRoutine(a0)
         bne.s .cancel
-        tst.w (sk_ctx_flight+2).w
+        tst.b (sk_ctx_flight).w
         beq.s .cancel
         jsr (Sidekick_CarriedMovement).l
         bra.s .return
@@ -247,7 +256,7 @@ Sidekick_AssistControls:
         moveq #btnL,d0
 .height:
         move.w (v_player+obY).w,d3
-        subi.w #29,d3
+        subi.w #sidekick_carry_y,d3
         sub.w obY(a0),d3
         btst #1,obStatus(a0)
         beq.s .flap
@@ -295,19 +304,75 @@ Sidekick_DropRider:
 .return:
         rts
 
-; End-card digits reuse the companion's upper tiles. Cancel a sprite already
-; queued earlier in this frame by giving it an explicitly blank mapping.
+; During results the bonus digits leave 18 body tiles at $55E-$56F.
+; Only use the compact landing and victory frames and retire the separate tail.
 Sidekick_FinishScene:
         tst.b (v_sidekick_active).w
         beq.s .return
         jsr (Sidekick_DropRider).l
+        move.l #Map_SidekickHidden,(v_sidekick_tail+obMap).w
+        clr.b (v_sidekick_tail+obFrame).w
+        tst.b (v_sidekick_state).w
+        beq.s .land
+        cmpi.b #3,(v_sidekick_state).w ; the companion is still flying back
+        bne.s Sidekick_HideResults
+        clr.b (v_sidekick_state).w
+        clr.b (v_sidekick_returning).w
+.land:
+        movem.l d0-d7/a0-a6,-(sp)
+        lea (v_sidekick_player).w,a0
+        st.b victorypose(a0)
+        clr.l obVelX(a0)
+        clr.w obInertia(a0)
+        clr.l (sk_ctx_flight).w
+        bclr #2,obStatus(a0)
+        beq.s .normalSize
+        subq.w #sonic_height-sonic_roll_height,obY(a0)
+.normalSize:
+        move.b #sonic_height,obHeight(a0)
+        move.b #sonic_width,obWidth(a0)
+        jsr (Sidekick_SwapContext).l
+        bsr.s Sidekick_VictoryArt       ; also update the sprite queued before the card
+        jsr (Sidekick_SwapContext).l
+        movem.l (sp)+,d0-d7/a0-a6
+.return:
+        rts
+
+Sidekick_HideResults:
         clr.b (v_sidekick_active).w
         move.l #Map_SidekickHidden,(v_sidekick_player+obMap).w
         clr.b (v_sidekick_player+obFrame).w
-        move.l #Map_SidekickHidden,(v_sidekick_tail+obMap).w
-        clr.b (v_sidekick_tail+obFrame).w
+        rts
+
+; SBZ2 resumes gameplay after the last tally has left the screen.
+Sidekick_ResumeAfterResults:
+        tst.b (v_sidekick_active).w
+        beq.s .return
+        clr.b (v_sidekick_player+victorypose).w
+        clr.b (v_sidekick_tail+obRoutine).w ; restore its mappings and reload tail tiles
 .return:
         rts
+
+Sidekick_Victory:
+        jsr (Sidekick_SwapContext).l
+        btst #1,obStatus(a0)
+        beq.s .draw
+        jsr (SpeedToPos).l
+        addi.w #$38,obVelY(a0)
+        jsr (Sonic_Floor).l
+.draw:
+        bsr.s Sidekick_VictoryArt
+        jsr (Sidekick_SwapContext).l
+        jmp (DisplaySprite).l
+
+Sidekick_VictoryArt:
+        move.b #id_Victory,obAnim(a0)
+        btst #1,obStatus(a0)
+        beq.s .animate
+        move.b #id_Spring,obAnim(a0)   ; upright descent, 16 tiles
+.animate:
+        jsr (Sonic_Animate).l
+        jmp (Sidekick_LoadGfx).l
 
 ; The leader disappearing into a ring does not remove his companion.
 ; Continue the stage during the white fade while keeping fade counters and

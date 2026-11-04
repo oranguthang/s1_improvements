@@ -3,16 +3,15 @@
 
 ; Here they point to the camera X-position, and it's expected that 4 bytes
 ; after it the camera Y-position is located (e.g. v_screenposx/v_screenposy).
-; Note that the last two background camera pointers go completely unused
-; in the entire game, though they may have once been used for the
-; foreground palm trees in the Tokyo Toy Show demo.
+; The background camera is unused by level objects. The fourth mode
+; rotates around the Special Stage camera centre.
 
 ; BldSpr_ScrPos:
 BuildSpr_Cameras:
 		dc.l 0						; null (fallback for on-screen coordinates)
 		dc.l v_screenposx&$FFFFFF			; foreground camera
 		dc.l v_bgscreenposx&$FFFFFF			; background camera 1 (unused)
-		dc.l v_bg3screenposx&$FFFFFF			; background camera 2 (unused)
+		dc.l 0			; rotated Special Stage coordinates
 ; ===========================================================================
 
 ; ---------------------------------------------------------------------------
@@ -54,6 +53,8 @@ BuildSprites:
 		move.b	d0,d4
 		andi.w	#sprite_cam_field|sprite_cam_bg,d0	; get drawing coordinate system in render flags (bit 2-3)
 		beq.s	.screenCoords				; branch if 0 (on-screen positioning coordinate system)
+		cmpi.w	#sprite_cam_ss,d0
+		beq.w	.rotateSpecial
 		movea.l	BuildSpr_Cameras(pc,d0.w),a1		; load camera pointers for coordinate system (in practice, only foreground camera is ever used)
 
 	; --- Screen bounds check for X-position ---
@@ -169,9 +170,48 @@ BuildSprites:
 		bsr.w	BuildSpr_Draw				; draw parent frame (keeps d2/d3)
 
 	.drawChildren:
-		bsr.s	BuildSpr_SubSprites
+		bsr.w	BuildSpr_SubSprites
 		bra.w	.setVisible
+
+	.rotateSpecial:
+		move.w	d4,-(sp)
+		bsr.s	SS_ProjectSprite
+		move.w	(sp)+,d4
+		cmpi.w	#$80-32,d3
+		blo.w	.skipObject
+		cmpi.w	#$80+320+32,d3
+		bhs.w	.skipObject
+		cmpi.w	#$80-32,d2
+		blo.w	.skipObject
+		cmpi.w	#$80+224+32,d2
+		bhs.w	.skipObject
+		bra.w	.drawObject
 ; End of function BuildSprites
+
+; Project the world position of a0 through the same rotation as SS_ShowLayout.
+; Outputs VDP X/Y in d3/d2 and clobbers d0, d1 and d4.
+SS_ProjectSprite:
+		move.b	(v_ssangle).w,d0
+		jsr	(CalcSine).l
+		move.w	obX(a0),d2
+		sub.w	(v_screenposx).w,d2
+		subi.w	#320/2,d2
+		move.w	obY(a0),d3
+		sub.w	(v_screenposy).w,d3
+		subi.w	#224/2,d3
+		move.w	d1,d4
+		muls.w	d2,d1				; X*cos
+		muls.w	d3,d4				; Y*cos
+		muls.w	d0,d2				; X*sin
+		muls.w	d0,d3				; Y*sin
+		sub.l	d3,d1
+		add.l	d4,d2
+		asr.l	#8,d1
+		asr.l	#8,d2
+		move.w	d1,d3
+		addi.w	#$80+320/2,d3
+		addi.w	#$80+224/2,d2
+		rts
 
 ; ---------------------------------------------------------------------------
 ; Draw the child frames of a sub-sprite parent (see subspr_* in _Constants.asm).

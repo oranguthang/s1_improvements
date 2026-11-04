@@ -244,6 +244,7 @@ sprite_yflip:		equ 1<<sprite_yflip_bit
 sprite_cam_screen:	equ 0					; position with screen-fixed coordinates (implied if bits 2-3 are 0)
 sprite_cam_field:	equ 1<<sprite_cam_field_bit
 sprite_cam_bg:		equ 1<<sprite_cam_bg_bit
+sprite_cam_ss:		equ sprite_cam_field|sprite_cam_bg ; rotated Special Stage coordinates
 sprite_customheight:	equ 1<<sprite_customheight_bit
 sprite_rawmappings:	equ 1<<sprite_rawmappings_bit
 sprite_subsprites:	equ 1<<sprite_subsprites_bit
@@ -729,7 +730,6 @@ ArtTile_Bonuses:		equ $570
 ArtTile_LevelBonuses:	equ $570
 ArtTile_Sidekick:	equ $55E
 ArtTile_SidekickTail:	equ ArtTile_Sidekick+16
-ArtTile_SidekickTail_SS: equ ArtTile_Sidekick+32-TailsTailSS_Tiles
 ; Debug coordinates share tiles with the Game Over art ($55E-$57F) and the
 ; bonus counters. HudDb_ChkHidden keeps them hidden, and their tiles
 ; unwritten, while either can be on screen; all 16 are rewritten every
@@ -836,7 +836,16 @@ ArtTile_Try_Again_Eggman:	equ $3E1
 ArtTile_SS_Background_Clouds:	equ $000
 ArtTile_SS_Background_Fish:	equ $051
 ArtTile_SS_Wall:		equ $142
+; The level slot ($55E) is inside a Special Stage background canvas.
+ArtTile_Sidekick_SS:	equ $160
+ArtTile_SidekickTail_SS: equ ArtTile_Sidekick_SS+32-TailsTailSS_Tiles
+ArtTile_Sidekick_SSReturn: equ ArtTile_Sidekick_SS+32
+ArtTile_SidekickTail_SSReturn: equ ArtTile_Sidekick_SSReturn+32
+sidekick_ss_return: equ 5
 ArtTile_SS_Plane_1:		equ $200
+	if (ArtTile_Sidekick_SS<ArtTile_SS_Wall+16)|(ArtTile_SidekickTail_SSReturn+32>ArtTile_SS_Plane_1)
+		fatal "Special Stage Tails slot overlaps walls or background maps"
+	endif
 ArtTile_SS_Bumper:		equ $23B
 ArtTile_SS_Goal:		equ $251
 ArtTile_SS_Up_Down:		equ $263

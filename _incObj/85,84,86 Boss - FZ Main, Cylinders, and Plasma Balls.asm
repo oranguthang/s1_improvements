@@ -254,6 +254,9 @@ BossFinal_Eggman_Crush:
 		beq.s	.animate				; if so, don't let it be hit again
 	endif
 		subq.b	#1,obBossHits(a0) 			; decrement hits remaining
+		exg	a0,a1					; give the successful hit reaction to the player
+		jsr	(Knuckles_BossBounce).l
+		exg	a0,a1
 		move.b	#100,BossFinal_HitFlash(a0)		; set a flash timer for 100 frames
 		move.w	#sfx_HitBoss,d0
 		jsr	(QueueSound2).l				; play boss damage sound

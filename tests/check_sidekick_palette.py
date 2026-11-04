@@ -81,7 +81,6 @@ def palettes():
     for label, path, ranges in [
         ("KosM_Eggman", "artkosm/Boss - Main.kosm", [(0, 16), (45, 108)]),
         ("KosM_Weapons", "artkosm/Boss - Weapons.kosm", [(0, 6)]),
-        ("KosM_LzWheel", "artkosm/LZ Wheel.kosm", [(0, 64)]),
     ]:
         original = decode_moduled((ROOT / path).read_bytes())
         c.reg(UC_M68K_REG_A0, c.s[label])
@@ -92,6 +91,20 @@ def palettes():
         for lo, hi in ranges:
             expected[lo * 32 : hi * 32] = recolour(original[lo * 32 : hi * 32], SHARED)
         assert actual == expected, (label, by_addr[target])
+    for p2 in (1, 255):
+        c.w("v_character_p2", p2)
+        for label, path, ranges in (
+            ("KosM_Lamp", "artkosm/Lamppost.kosm", ((0, 2), (6, 10))),
+            ("KosM_LzWheel", "artkosm/LZ Wheel.kosm", ((0, 64),)),
+        ):
+            c.reg(UC_M68K_REG_A0, c.s[label])
+            c.call("Sidekick_RemapPLC")
+            assert c.uc.reg_read(UC_M68K_REG_A0) == c.s[label]
+            art = decode_moduled((ROOT / path).read_bytes())
+            for lo, hi in ranges:
+                tiles = art[lo * 32 : hi * 32]
+                assert recolour(tiles, SHARED) == tiles
+    c.w("v_character_p2", 1)
     for label in ["KosM_Swing", "KosM_MzSwitch"]:
         c.reg(UC_M68K_REG_A0, c.s[label])
         c.call("Sidekick_RemapPLC")
@@ -101,6 +114,9 @@ def palettes():
     before = (ROOT / "map16/SYZ.bin").read_bytes()
     after = (ROOT / "map16/sidekick/SYZ.bin").read_bytes()
     assert new[: len(orig)] == orig
+    for tile in (0x34, 0x43):
+        light = orig[tile * 32 : (tile + 1) * 32]
+        assert recolour(light, SHARED) == light
     for i in range(0, len(before), 2):
         a = int.from_bytes(before[i : i + 2], "big")
         b = int.from_bytes(after[i : i + 2], "big")

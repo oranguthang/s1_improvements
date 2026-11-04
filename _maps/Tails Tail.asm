@@ -1,4 +1,4 @@
-; S3K TailsTail, repacked for the S1 player frame IDs.
+; Sonic 2 TailsTail, repacked for the S1 player frame IDs.
 TailsTailMap_internal: mappingsTable
 	mappingsTableEntry.w TailsTailMap_00
 	mappingsTableEntry.w TailsTailMap_01
@@ -50,19 +50,19 @@ TailsTailMap_00: spriteHeader
 TailsTailMap_00_End
 
 TailsTailMap_01: spriteHeader
-	spritePiece -30, 1, 3, 2, 0, 0, 0, 0, 0
+	spritePiece -32, -4, 3, 2, 0, 0, 0, 0, 0
 TailsTailMap_01_End
 
 TailsTailMap_02: spriteHeader
-	spritePiece -30, 1, 3, 2, 0, 0, 0, 0, 0
+	spritePiece -32, -4, 3, 2, 0, 0, 0, 0, 0
 TailsTailMap_02_End
 
 TailsTailMap_03: spriteHeader
-	spritePiece -30, 1, 3, 2, 0, 0, 0, 0, 0
+	spritePiece -32, -4, 3, 2, 0, 0, 0, 0, 0
 TailsTailMap_03_End
 
 TailsTailMap_04: spriteHeader
-	spritePiece -30, 1, 3, 2, 0, 0, 0, 0, 0
+	spritePiece -32, -4, 3, 2, 0, 0, 0, 0, 0
 TailsTailMap_04_End
 
 TailsTailMap_05: spriteHeader
@@ -98,71 +98,66 @@ TailsTailMap_0C: spriteHeader
 TailsTailMap_0C_End
 
 TailsTailMap_0D: spriteHeader
-	spritePiece -8, 12, 2, 3, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 4, 0, 0, 0, 0, 0
 TailsTailMap_0D_End
 
 TailsTailMap_0E: spriteHeader
-	spritePiece -8, 12, 2, 3, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 4, 0, 0, 0, 0, 0
 TailsTailMap_0E_End
 
 TailsTailMap_0F: spriteHeader
-	spritePiece -8, 12, 2, 3, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 4, 0, 0, 0, 0, 0
 TailsTailMap_0F_End
 
 TailsTailMap_10: spriteHeader
-	spritePiece -8, 12, 2, 3, 0, 0, 0, 0, 0
+	spritePiece -8, 12, 2, 4, 0, 0, 0, 0, 0
 TailsTailMap_10_End
 
 TailsTailMap_11: spriteHeader
-	spritePiece 7, 7, 2, 3, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 4, 0, 0, 0, 0, 0
 TailsTailMap_11_End
 
 TailsTailMap_12: spriteHeader
-	spritePiece 7, 7, 2, 3, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 4, 0, 0, 0, 0, 0
 TailsTailMap_12_End
 
 TailsTailMap_13: spriteHeader
-	spritePiece 7, 7, 2, 3, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 4, 0, 0, 0, 0, 0
 TailsTailMap_13_End
 
 TailsTailMap_14: spriteHeader
-	spritePiece 7, 7, 2, 3, 0, 0, 0, 0, 0
+	spritePiece 7, 7, 2, 4, 0, 0, 0, 0, 0
 TailsTailMap_14_End
 
 TailsTailMap_15: spriteHeader
-	spritePiece -26, -8, 2, 3, 0, 0, 0, 0, 0
 TailsTailMap_15_End
 
 TailsTailMap_16: spriteHeader
-	spritePiece -34, -8, 3, 3, 0, 0, 0, 0, 0
 TailsTailMap_16_End
 
 TailsTailMap_17: spriteHeader
-	spritePiece -34, -8, 3, 3, 0, 0, 0, 0, 0
 TailsTailMap_17_End
 
 TailsTailMap_18: spriteHeader
-	spritePiece -34, 0, 3, 2, 0, 0, 0, 0, 0
 TailsTailMap_18_End
 
 TailsTailMap_19: spriteHeader
-	spritePiece -34, -8, 3, 3, 0, 0, 0, 0, 0
 TailsTailMap_19_End
 
 TailsTailMap_1A: spriteHeader
-	spritePiece -29, 2, 3, 2, 0, 0, 0, 0, 0
+	spritePiece -29, 1, 3, 2, 0, 0, 0, 0, 0
 TailsTailMap_1A_End
 
 TailsTailMap_1B: spriteHeader
-	spritePiece -29, 2, 3, 2, 0, 0, 0, 0, 0
+	spritePiece -29, 1, 3, 2, 0, 0, 0, 0, 0
 TailsTailMap_1B_End
 
 TailsTailMap_1C: spriteHeader
-	spritePiece -29, 2, 3, 2, 0, 0, 0, 0, 0
+	spritePiece -29, 1, 3, 2, 0, 0, 0, 0, 0
 TailsTailMap_1C_End
 
 TailsTailMap_1D: spriteHeader
-	spritePiece -29, 2, 3, 2, 0, 0, 0, 0, 0
+	spritePiece -29, 1, 3, 2, 0, 0, 0, 0, 0
 TailsTailMap_1D_End
 
 TailsTailMap_1E: spriteHeader
@@ -182,15 +177,15 @@ TailsTailMap_21: spriteHeader
 TailsTailMap_21_End
 
 TailsTailMap_22: spriteHeader
-	spritePiece -21, -4, 2, 3, 0, 0, 0, 0, 0
+	spritePiece -20, -12, 2, 4, 0, 0, 0, 0, 0
 TailsTailMap_22_End
 
 TailsTailMap_23: spriteHeader
-	spritePiece -28, -4, 3, 3, 0, 0, 0, 0, 0
+	spritePiece -28, -12, 3, 4, 0, 0, 0, 0, 0
 TailsTailMap_23_End
 
 TailsTailMap_24: spriteHeader
-	spritePiece -28, -4, 3, 3, 0, 0, 0, 0, 0
+	spritePiece -28, -12, 3, 4, 0, 0, 0, 0, 0
 TailsTailMap_24_End
 
 TailsTailMap_25: spriteHeader
@@ -198,31 +193,31 @@ TailsTailMap_25: spriteHeader
 TailsTailMap_25_End
 
 TailsTailMap_26: spriteHeader
-	spritePiece -28, -4, 3, 3, 0, 0, 0, 0, 0
+	spritePiece -28, -12, 3, 4, 0, 0, 0, 0, 0
 TailsTailMap_26_End
 
 TailsTailMap_27: spriteHeader
-	spritePiece -25, -16, 4, 1, 0, 0, 0, 0, 0
+	spritePiece -22, -28, 4, 2, 0, 0, 0, 0, 0
 TailsTailMap_27_End
 
 TailsTailMap_28: spriteHeader
-	spritePiece -25, -16, 4, 1, 0, 1, 0, 0, 0
+	spritePiece -22, -28, 4, 2, 0, 1, 0, 0, 0
 TailsTailMap_28_End
 
 TailsTailMap_29: spriteHeader
-	spritePiece -28, -4, 3, 2, 0, 0, 0, 0, 0
+	spritePiece -32, -4, 3, 2, 0, 0, 0, 0, 0
 TailsTailMap_29_End
 
 TailsTailMap_2A: spriteHeader
-	spritePiece -28, -4, 3, 2, 0, 0, 0, 0, 0
+	spritePiece -32, -4, 3, 2, 0, 0, 0, 0, 0
 TailsTailMap_2A_End
 
 TailsTailMap_2B: spriteHeader
-	spritePiece -28, -4, 3, 2, 0, 0, 0, 0, 0
+	spritePiece -32, -4, 3, 2, 0, 0, 0, 0, 0
 TailsTailMap_2B_End
 
 TailsTailMap_2C: spriteHeader
-	spritePiece -28, -4, 3, 2, 0, 0, 0, 0, 0
+	spritePiece -32, -4, 3, 2, 0, 0, 0, 0, 0
 TailsTailMap_2C_End
 
 	even

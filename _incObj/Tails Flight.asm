@@ -46,6 +46,13 @@ Tails_FlightControl:
         beq.s .pulse
         cmpi.w #-$100,obVelY(a0)
         blt.s .pulse
+        btst #6,obStatus(a0)
+        beq.s .startPulse
+        cmpa.w #v_sidekick_player,a0
+        bne.s .startPulse
+        tst.b (v_sidekick_carry).w
+        bne.s .pulse                    ; S3K: no new stroke while carrying underwater
+.startPulse:
         move.b #30,(v_tails_flap).w
 .pulse:
         tst.b (v_tails_flap).w
@@ -126,7 +133,7 @@ Tails_FlightPose:
         move.w (v_framecount).w,d0
         btst #6,obStatus(a0)
         bne.s .swim
-        moveq #$75,d0                  ; S3K free-flight body, including ascent
+        moveq #$75,d0                  ; Sonic 2 free-flight body
         cmpa.w #v_sidekick_player,a0
         bne.s .fatigue
         tst.b (v_sidekick_carry).w
@@ -144,14 +151,19 @@ Tails_FlightPose:
         move.w (v_framecount).w,d0
         lsr.w #3,d0
         andi.w #1,d0
-        addi.b #$7E,d0
+        moveq #$7E,d1
+        cmpa.w #v_sidekick_player,a0
+        bne.s .tiredFrame
+        tst.b (v_sidekick_carry).w
+        beq.s .tiredFrame
+        move.w #fr_TailsCarryTired,d1
+.tiredFrame:
+        add.w d1,d0
         move.w #sfx_TailsTired,d1
 .sound:
         bsr.s Tails_FlightSound
         bra.s .frame
 .swim:
-        tst.w (v_tails_flytime).w
-        beq.s .swimTired
         cmpa.w #v_sidekick_player,a0
         bne.s .freeSwim
         tst.b (v_sidekick_carry).w
@@ -161,6 +173,8 @@ Tails_FlightPose:
         addi.w #fr_TailsSwimCarry,d0
         bra.s .frame
 .freeSwim:
+        tst.w (v_tails_flytime).w
+        beq.s .swimTired
         lsr.w #2,d0
         divu.w #5,d0
         swap d0

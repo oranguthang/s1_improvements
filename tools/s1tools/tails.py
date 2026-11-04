@@ -1,4 +1,4 @@
-"""Import Sonic 3 & Knuckles Tails into the Sonic 1 player frame layout."""
+"""Import Sonic 2 Tails into the Sonic 1 player frame layout."""
 
 from __future__ import annotations
 
@@ -11,40 +11,46 @@ from s1tools.codecs.kosinski import encode_moduled
 from s1tools.codecs.nemesis import decode as nemesis_decode
 from s1tools.common import get_root, get_source, write_outputs
 from s1tools.shared_palette import life_icon, player_palettes
+from s1tools.sprites import parse_number
 
-BASE = "General/Sprites/Tails/"
 # The selected solo player's fur uses protected colours 2..5.
 COLOURS = (0, 6, 5, 4, 2, 9, 12, 13, 5, 4, 10, 11, 7, 8, 9, 1)
 # Player art moves S3K's dark orange (11) to the free protected slot 3, so the
 # Super cycle can brighten it as S3K does without touching shared skin colour 11.
 PLAYER_COLOURS = (*COLOURS[:11], 3, *COLOURS[12:])
-# S3K's Super transformation frames $EB-$ED follow the gameplay frames.
+# S2's fur is drawn with slots 14, 15 and 11; the solo S1 ramp is protected.
+S2_COLOURS = tuple({14: 5, 15: 4, 11: 3}.get(index, index) for index in range(16))
+
 TRANSFORM_FRAME_FIRST = 151
-# All eight S3K walk frames for each of the four floor orientations.
 WALK8 = TRANSFORM_FRAME_FIRST + 3
-# S3K's victory animation (AniTails13): $A5, then $A6 is held. Both draw their
-# own tails, so the tails object shows nothing for this pose.
 VICTORY = WALK8 + 4 * 8
-VICTORY_SOURCES = (0xA5, 0xA6)
-# Waiting poses of S3K's AniTails05 (yawn and stretch) that no other script
-# uses; the whole wait script is translated from S3K (see wait_script).
-IDLE = VICTORY + len(VICTORY_SOURCES)
-IDLE_SOURCES = (0xB2, 0xB3, 0xB4)
-TIRED_SWIM = IDLE + len(IDLE_SOURCES)
-TIRED_SWIM_SOURCES = (0xC2, 0xCD, 0xCE)
-CARRY = TIRED_SWIM + len(TIRED_SWIM_SOURCES)
+IDLE = VICTORY + 2
+TIRED_SWIM = IDLE + 3
+CARRY = TIRED_SWIM + 3
 CARRY_UP = CARRY + 2
 SWIM_CARRY = CARRY_UP + 2
-FRAME_COUNT = SWIM_CARRY + 2
-# S3K reads body frames from $D1 onward from a separate extra sheet.
-EXTRA_BODY_FIRST = 0xD1
-# The tails are a separate object, as in S3K (Obj_Tails_Tail), drawn from the
-# second half of the player VRAM slot. Body frames that show them must fit the
-# first half. Tail frames are S3K's own, shifted down like the body frames
-# that show them: 1-4 spin dash, 5-$14 rolling headings (no shift), 4 pixels
-# for the rest.
-TAIL_FRAMES = 0x2D
+CARRY_TIRED = SWIM_CARRY + 2
+FRAME_COUNT = CARRY_TIRED + 2
 BODY_TILES_WITH_TAIL = 16
+# Keep the S1 tail animation indices, using S2's rotor, swish and four
+# directional sets. S2 shares the same DPLC table between body and tails.
+TAIL_SOURCES = (
+    0,
+    *range(0x81, 0x85),
+    *range(0x49, 0x59),
+    0,
+    0,
+    0,
+    0,
+    0,
+    *range(0x87, 0x8B),
+    *range(0x87, 0x8B),
+    *range(9, 14),
+    0x5E,
+    0x5F,
+    *range(0x81, 0x85),
+)
+TAIL_FRAMES = len(TAIL_SOURCES)
 
 
 def number(value: str) -> int:
@@ -72,10 +78,6 @@ def raw_table(path: Path) -> tuple[list[str], dict[str, bytes]]:
             for value in match[2].split(","):
                 records[current].extend(number(value).to_bytes(size, "big"))
     return table, {label: bytes(data) for label, data in records.items()}
-
-
-def remap_art(data: bytes) -> bytes:
-    return bytes((COLOURS[b >> 4] << 4) | COLOURS[b & 15] for b in data)
 
 
 def frame(
@@ -124,123 +126,102 @@ def frame(
     return bytes((lookup[b >> 4] << 4) | lookup[b & 15] for b in tiles), pieces
 
 
-def frame_plan() -> list[tuple[int, int, int, int]]:
-    """Body ID, optional tail ID, and origin adjustment for each S1 frame."""
-    plan = [(0xAD, 0x22, 0, 4)] * FRAME_COUNT
+def s2_frames(source: Path) -> list[tuple[bytes, list[tuple[int, ...]], tuple[int, ...]]]:
+    """Unpack the six checked-in source resources in their Sonic 2 ROM order."""
+    art = b"".join(
+        (source / "art/uncompressed" / name).read_bytes()
+        for name in ("Tails's art.bin", "Tails poses.bin")
+    )
+    mapping, dplc = (
+        "\n".join(
+            (source / "mappings" / kind / name).read_text(encoding="utf-8-sig")
+            for name in ("Tails.asm", "Tails poses.asm")
+        )
+        for kind in ("sprite", "spriteDPLC")
+    )
 
-    def assign(index: int, body: int, tail: int = 0, dx: int = 0, dy: int = 4) -> None:
-        plan[index] = (body, tail, dx, dy)
+    def records(text: str, header: str, macro: str) -> list[list[tuple[int, ...]]]:
+        bodies = re.findall(rf"^(\w+):[ \t]*{header}\b(.*?)(?=^\1_End\b)", text, re.M | re.S)
+        by_label = {
+            label: [
+                tuple(parse_number(arg) for arg in line.split(","))
+                for line in re.findall(rf"^[ \t]*{macro}[ \t]+([^;\n]+)", body, re.M)
+            ]
+            for label, body in bodies
+        }
+        return [by_label[label] for label in re.findall(r"mappingsTableEntry\.w\s+(\w+)", text)]
 
-    assign(0, 0, dy=0)
-    for index, body, tail in (
-        (1, 0xAD, 0x22),
-        (2, 0xAF, 0x23),
-        (3, 0xAE, 0x24),
-        (4, 0xB1, 0x25),
-        (5, 0xB0, 0x26),
+    result = []
+    for pieces, cues in zip(
+        records(mapping, "spriteHeader", "spritePiece"),
+        records(dplc, "dplcHeader", "dplcEntry"),
+        strict=True,
     ):
-        assign(index, body, tail)
-    offsets = ((0, 4), (-3, 3), (-4, 0), (-3, -3))
-    # Six evenly spaced samples from the original eight-frame walk cycle.
-    for group, (dx, dy) in enumerate(offsets):
-        for step, source in enumerate((1, 2, 4, 5, 6, 8)):
-            assign(6 + group * 6 + step, source + group * 8, dx=dx, dy=dy)
-        for step in range(4):
-            assign(0x1E + group * 4 + step, 0x21 + group * 4 + step, dx=dx, dy=dy)
-            assign(0x5E + group * 4 + step, 0x21 + group * 4 + step, dx=dx, dy=dy)
-    for step in range(5):
-        assign(0x2E + step, 0x96 + step % 3, 5 + step % 4, dy=0)
-    for index in range(0x33, 0x37):
-        assign(index, 0x82 + index - 0x33)
-    for index, body, tail in (
-        (0x37, 0x8E, 0x1A),
-        (0x38, 0x8F, 0x1B),
-        (0x39, 0x99, 0x22),
-        (0x3A, 0x9A, 0x29),
-        (0x3B, 0x9B, 0x2B),
-        (0x3C, 0xB5, 0),
-        (0x3D, 0xB6, 0),
-        (0x3E, 0xB7, 0),
-        (0x3F, 0xB8, 0),
-        (0x40, 0x8B, 0),
-        (0x41, 0x9D, 0),
-        (0x42, 0x9E, 0),
-        (0x43, 1, 0),
-        (0x44, 2, 0),
-        (0x49, 0x91, 0),
-        (0x4A, 0x9F, 0),
-        (0x4B, 0x9C, 0),
-        (0x4C, 0x9C, 0),
-        (0x4D, 0x9C, 0),
-        (0x53, 0xB9, 0),
-        (0x54, 0xBA, 0),
-        (0x55, 0x89, 0),
-        (0x56, 0x9F, 0),
-        (0x57, 0x8A, 0),
-    ):
-        assign(index, body, tail)
-    for step in range(4):
-        assign(0x45 + step, 0xA9 + step, 0x1E + step)
-    for step in range(5):
-        assign(0x4E + step, 0x82 + min(step, 3))
-    for step in range(6):
-        assign(0x58 + step, 0x86 + step % 3, 1 + step % 4, dy=5)
-    for step in range(5):
-        assign(0x6E + step, 0x8B + step % 2)
-    # CB/CC are death poses in S3K, not a spring descent animation.
-    assign(0x73, 1)
-    assign(0x74, 5)
-    assign(0x75, 0xA0, 0x27)  # fly/hover
-    assign(0x76, 0xA0, 0x28)
-    assign(0x77, 0xA0, 0x27)  # free ascent uses the same body as hover in S3K
-    assign(0x78, 0xA0, 0x28)
-    for step in range(5):
-        # Swimming, tails included in body art. The pose lies flat, so align
-        # its top with the S1 hitbox (19 px) as S3K does with its 15 px one:
-        # Tails can then swim right up against a ceiling. Shift X back by
-        # three pixels to keep the flight-to-water transition centred.
-        assign(0x79 + step, 0xBD + step, dx=-3, dy=-4)
-    assign(0x7E, 0xA3, 0x27)  # exhausted flight
-    assign(0x7F, 0xA4, 0x28)
-    for step in range(5):
-        assign(0x80 + step, 0xAD, 0x22 + step)
-        assign(0x85 + step, 0xB0, 0x22 + step)
-        assign(0x8A + step, 0x99, 0x22 + step)
-    # The balance and hanging tail cycle is the counterpart of the restored
-    # S2 tails animation. Pack it with both alternating balance body poses.
-    for step in range(8):
-        assign(0x8F + step, 0x9A + (step // 2) % 2, 0x29 + step % 4)
-    for step in range(3):
-        assign(TRANSFORM_FRAME_FIRST + step, 0xEB + step)
-    for step, body in enumerate(VICTORY_SOURCES):
-        assign(VICTORY + step, body)
-    for step, body in enumerate(IDLE_SOURCES):
-        assign(IDLE + step, body)
-    for step, body in enumerate(TIRED_SWIM_SOURCES):
-        assign(TIRED_SWIM + step, body, dx=-3, dy=-4)
-    for step in range(2):
-        assign(CARRY + step, 0xA2, 0x27 + step)
-        assign(CARRY_UP + step, 0xA1, 0x27 + step)
-        assign(SWIM_CARRY + step, 0xCF + step, dx=-3, dy=-4)
-    for group, (dx, dy) in enumerate(offsets):
-        for step in range(8):
-            assign(WALK8 + group * 8 + step, 1 + group * 8 + step, dx=dx, dy=dy)
+        if any(start + count > len(art) // 32 for count, start in cues):
+            raise ValueError("Sonic 2 Tails DPLC exceeds its source art")
+        data = b"".join(art[start * 32 : (start + count) * 32] for count, start in cues)
+        if any(tile + width * height > len(data) // 32 for _, _, width, height, tile, *_ in pieces):
+            raise ValueError("Sonic 2 Tails mapping exceeds its loaded tiles")
+        data = bytes((S2_COLOURS[b >> 4] << 4) | S2_COLOURS[b & 15] for b in data)
+        result.append((data, pieces, tuple(count for count, _ in cues)))
+    return result
+
+
+def frame_plan() -> list[tuple[int, int, int]]:
+    """Sonic 2 frame and origin correction for each Sonic 1 body ID."""
+    plan = [(1, 0, 4)] * FRAME_COUNT
+
+    def put(start, sources, dx=0, dy=4):
+        for index, source in enumerate(sources, start):
+            plan[index] = (source, dx, dy)
+
+    put(0, (0,), dy=0)
+    put(1, (1, 2, 3, 5, 4))
+    for heading, (dx, dy) in enumerate(((0, 4), (-3, 3), (-4, 0), (-3, -3))):
+        walk = tuple(0xE + heading * 8 + index for index in (2, 3, 4, 5, 6, 7, 0, 1))
+        run = range(0x2E + heading * 6, 0x32 + heading * 6)
+        put(6 + heading * 6, (walk[index] for index in (0, 1, 3, 4, 5, 7)), dx, dy)
+        put(WALK8 + heading * 8, walk, dx, dy)
+        put(0x1E + heading * 4, run, dx, dy)
+        put(0x5E + heading * 4, run, dx, dy)
+    put(0x2E, (0x48, 0x47, 0x46, 0x48, 0x47), dy=0)
+    put(0x33, (0x78, 0x79, 0x7A, 0x7B))
+    put(0x37, (0x67, 0x68, 0x5B, 0x69, 0x6A, 0x6E, 0x6F, 0x71, 0x73, 0x59, 0x6C, 0x6D, 2, 3))
+    put(0x45, range(0x63, 0x67))
+    put(
+        0x49,
+        (0x6B, 0x74, 0x5D, 0x5D, 0x5D, 0x75, 0x76, 0x77, 0x48, 0x47, 0x70, 0x72, 0x5D, 0x74, 0x5C),
+    )
+    put(0x58, (0x60, 0x61, 0x62, 0x60, 0x61, 0x62))
+    put(0x6E, (0x59, 0x5A, 0x59, 0x5A, 0x59))
+    put(0x73, (0xE, 0x12))
+    # Airborne grip frames retain the exact Sonic 2 origins.
+    put(0x75, (0x8B,) * 4, dy=0)
+    put(0x79, range(0x92, 0x97), dx=-3, dy=-4)
+    put(0x7E, (0x8E, 0x8F), dy=0)
+    put(0x80, (1,) * 5 + (4,) * 5 + (0x5B,) * 5)
+    put(0x8F, (0x69, 0x69, 0x6A, 0x6A) * 2)
+    put(TRANSFORM_FRAME_FIRST, range(0x9E, 0xA1))
+    put(VICTORY, (0x9C, 0x9D))
+    put(IDLE, (6, 7, 8))
+    put(TIRED_SWIM, range(0x99, 0x9C), dx=-3, dy=-4)
+    put(CARRY, (0x8C,) * 2, dy=0)
+    put(CARRY_UP, (0x8D,) * 2, dy=0)
+    put(SWIM_CARRY, (0x97, 0x98), dy=0)
+    put(CARRY_TIRED, (0x90, 0x91), dy=0)
     return plan
 
 
-def tail_shift(index: int) -> int:
-    if 1 <= index <= 4:
-        return 5
-    return 0 if 5 <= index <= 0x14 else 4
-
-
 def emit_frames(
-    name: str, frames: list[tuple[bytes, list[tuple[int, ...]]]]
+    name: str,
+    frames: list[tuple[bytes, list[tuple[int, ...]]]],
+    runs: list[tuple[int, ...]] | None = None,
 ) -> tuple[bytes, bytes, bytes]:
-    """Pack complete frames into a bounded S1 mapping/DPLC stream."""
+    """Pack S1 mappings and DPLC, reusing whole frames or source runs."""
     packed, seen = bytearray(), {}
+    source = "Sonic 2" if name.startswith("Tails") else "S3K"
     maps = [
-        f"; S3K {name}, repacked for the S1 player frame IDs.",
+        f"; {source} {name}, repacked for the S1 player frame IDs.",
         f"{name}Map_internal: mappingsTable",
     ]
     cues = [f"{name}DPLC_internal: mappingsTable"]
@@ -250,23 +231,27 @@ def emit_frames(
     for index, (data, pieces) in enumerate(frames):
         if len(data) // 32 > 32:
             raise ValueError(f"Frame {index:02X} exceeds the player VRAM slot")
-        if data not in seen:
-            seen[data] = len(packed) // 32
-            packed.extend(data)
-        start = seen[data]
         maps.extend(["", f"{name}Map_{index:02X}: spriteHeader"])
         for x, y, *rest in pieces:
             maps.append("\tspritePiece " + ", ".join(map(str, (x, y, *rest))))
         maps.append(f"{name}Map_{index:02X}_End")
         cues.extend(["", f"{name}PLC_{index:02X}: dplcHeader"])
-        remaining = len(data) // 32
-        while remaining:
-            count = min(remaining, 16)
-            if start > 0xFFF:
-                raise ValueError(f"{name} art exceeds the 12-bit DPLC source range")
-            cues.append(f"\tdplcEntry {count}, ${start:X}")
-            start += count
-            remaining -= count
+        counts = runs[index] if runs is not None else (len(data) // 32,)
+        offset = 0
+        for length in counts:
+            chunk = data[offset : offset + length * 32]
+            offset += length * 32
+            if chunk not in seen:
+                seen[chunk] = len(packed) // 32
+                packed.extend(chunk)
+            start = seen[chunk]
+            while length:
+                count = min(length, 16)
+                if start > 0xFFF:
+                    raise ValueError(f"{name} art exceeds the 12-bit DPLC source range")
+                cues.append(f"\tdplcEntry {count}, ${start:X}")
+                start += count
+                length -= count
         cues.append(f"{name}PLC_{index:02X}_End")
     maps += ["", "\teven", ""]
     cues += ["", "\teven", ""]
@@ -313,69 +298,136 @@ def translate_script(name: str, values: list[int], frames: dict[int, int]) -> by
     return "\n".join(lines).encode("ascii")
 
 
-def victory_script(path: Path) -> tuple[int, ...]:
-    """Frames of S3K's victory animation, AniTails13, before its loop command."""
-    values = anim_script(path, "AniTails13")
-    return tuple(values[1 : values.index(0xFE)])
-
-
-def wait_script(path: Path) -> bytes:
-    """S3K's waiting animation (AniTails05) for TailsAni_Wait."""
-    frames = {0xAD: 1, 0xAF: 2, 0xAE: 3, 0xB1: 4}
-    frames.update((body, IDLE + step) for step, body in enumerate(IDLE_SOURCES))
-    plan = frame_plan()
-    assert all(plan[index][0] == body for body, index in frames.items())
-    return translate_script("TailsAni_Wait", anim_script(path, "AniTails05"), frames)
+def wait_script() -> bytes:
+    # TailsAni_Wait in Sonic 2, using the same blink and yawn sequence.
+    frames = {1: 1, 2: 2, 3: 3, 5: 4, 6: IDLE, 7: IDLE + 1, 8: IDLE + 2}
+    values = [
+        7,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        3,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        6,
+        7,
+        8,
+        7,
+        8,
+        7,
+        8,
+        7,
+        8,
+        7,
+        8,
+        6,
+        0xFE,
+        0x1C,
+    ]
+    return translate_script("TailsAni_Wait", values, frames).replace(
+        b"S3K's script", b"Sonic 2's script"
+    )
 
 
 def expected_outputs(source: Path) -> dict[Path, bytes]:
     root = get_root()
-    if victory_script(source / (BASE + "Anim - Tails.asm")) != VICTORY_SOURCES:
-        raise ValueError("VICTORY_SOURCES no longer matches S3K's AniTails13")
-    body = (source / (BASE + "Art/Tails.bin")).read_bytes()
-    extra = (source / (BASE + "Art/Tails Extra.bin")).read_bytes()
-    tail = (source / (BASE + "Art/Tails tails.bin")).read_bytes()
-    body_maps = raw_table(source / (BASE + "Map - Tails.asm"))
-    body_cues = raw_table(source / (BASE + "DPLC - Tails.asm"))
-    tail_maps = raw_table(source / (BASE + "Map - Tails tails.asm"))
-    tail_cues = raw_table(source / (BASE + "DPLC - Tails tails.asm"))
-    frames = []
-    for body_id, tail_id, dx, dy in frame_plan():
-        sheet = extra if body_id >= EXTRA_BODY_FIRST else body
-        data, pieces = frame(sheet, body_maps, body_cues, body_id, PLAYER_COLOURS)
-        if tail_id and len(data) // 32 > BODY_TILES_WITH_TAIL:
-            raise ValueError(f"Body frame {body_id:02X} would overlap the tails art")
-        frames.append((data, [(x + dx, y + dy, *rest) for x, y, *rest in pieces]))
-    tail_frames = []
-    for index in range(TAIL_FRAMES):
-        data, pieces = frame(tail, tail_maps, tail_cues, index, PLAYER_COLOURS)
-        if len(data) // 32 > 32 - BODY_TILES_WITH_TAIL:
-            raise ValueError(f"Tail frame {index:02X} exceeds the tails art slot")
-        shift = tail_shift(index)
-        tail_frames.append((data, [(x, y + shift, *rest) for x, y, *rest in pieces]))
+    imported = s2_frames(source)
+
+    def positioned(source_id, dx, dy):
+        data, pieces, _ = imported[source_id]
+        return data, [(x + dx, y + dy, *rest) for x, y, *rest in pieces]
+
+    plan = frame_plan()
+    frames = [positioned(*entry) for entry in plan]
+    tail_frames = [
+        positioned(source_id, 0, 0 if 5 <= index <= 0x14 or 0x27 <= index <= 0x28 else 4)
+        for index, source_id in enumerate(TAIL_SOURCES)
+    ]
+    if any(len(data) > (32 - BODY_TILES_WITH_TAIL) * 32 for data, _ in tail_frames):
+        raise ValueError("Sonic 2 Tails tail frame exceeds the tail slot")
+    flight = [0x75, 0x7E, 0x7F, CARRY, CARRY_UP, CARRY_TIRED, CARRY_TIRED + 1]
+    if any(len(frames[index][0]) > BODY_TILES_WITH_TAIL * 32 for index in flight):
+        raise ValueError("Sonic 2 Tails flight body overlaps the tail slot")
     from s1tools.special_stage import ROLL_FRAMES, layered_assets
 
-    art, mappings, cues = emit_frames("Tails", frames)
+    art, mappings, cues = emit_frames(
+        "Tails", frames, [imported[source_id][2] for source_id, _, _ in plan]
+    )
     mappings = (
         f"fr_TailsTransform equ ${TRANSFORM_FRAME_FIRST:X}\nfr_TailsWalk equ ${WALK8:X}\n"
         f"fr_TailsVictory equ ${VICTORY:X}\nfr_TailsSwimTired equ ${TIRED_SWIM:X}\n"
         f"fr_TailsCarry equ ${CARRY:X}\nfr_TailsCarryUp equ ${CARRY_UP:X}\n"
-        f"fr_TailsSwimCarry equ ${SWIM_CARRY:X}\n\n"
+        f"fr_TailsSwimCarry equ ${SWIM_CARRY:X}\nfr_TailsCarryTired equ ${CARRY_TIRED:X}\n\n"
     ).encode("ascii") + mappings
-    tail_art, tail_mappings, tail_cues = emit_frames("TailsTail", tail_frames)
-    ss_art, ss_mappings, ss_cues, ss_tiles = layered_assets(
-        "TailsSS", frames, ROLL_FRAMES, SS_FUR, SS_LINE
+    tail_art, tail_mappings, tail_cues = emit_frames(
+        "TailsTail", tail_frames, [imported[source_id][2] for source_id in TAIL_SOURCES]
     )
-    ss_tail = list(layered_assets("TailsTailSS", tail_frames, SS_TAIL_FRAMES, SS_FUR, SS_LINE))
+    ss_art, ss_mappings, ss_cues, ss_tiles = layered_assets(
+        "TailsSS", frames, ROLL_FRAMES, SS_FUR, SS_LINE, (frames[0x75],)
+    )
+    ss_tail = list(
+        layered_assets(
+            "TailsTailSS",
+            tail_frames,
+            SS_TAIL_FRAMES,
+            SS_FUR,
+            SS_LINE,
+            tuple(tail_frames[0x27:0x29]),
+        )
+    )
+    ss_mappings = f"fr_TailsSSReturn equ ${ROLL_FRAMES.stop:X}\n\n".encode() + ss_mappings
     # The Special Stage tails take the player slot's last tiles, after the ball.
     if ss_tiles + ss_tail[3] > 32:
         raise ValueError("Tails' Special Stage ball and tails exceed the player VRAM slot")
-    ss_tail[1] = f"TailsTailSS_Tiles equ {ss_tail[3]}\n\n".encode("ascii") + ss_tail[1]
+    ss_tail[1] = (
+        f"TailsTailSS_Tiles equ {ss_tail[3]}\nfr_TailsTailSSReturn equ ${SS_TAIL_FRAMES.stop:X}\n\n"
+    ).encode("ascii") + ss_tail[1]
     outputs = {
         root / "artunc/Tails.unc": art,
         root / "_maps/Tails.asm": mappings,
         root / "_maps/Tails - Dynamic Gfx Script.asm": cues,
-        root / "_anim/Tails - Wait.asm": wait_script(source / (BASE + "Anim - Tails.asm")),
+        root / "_anim/Tails - Wait.asm": wait_script(),
         root / "artunc/Tails Tail.unc": tail_art,
         root / "_maps/Tails Tail.asm": tail_mappings,
         root / "_maps/Tails Tail - Dynamic Gfx Script.asm": tail_cues,
@@ -386,7 +438,9 @@ def expected_outputs(source: Path) -> dict[Path, bytes]:
         root / "_maps/Tails Tail SS.asm": ss_tail[1],
         root / "_maps/Tails Tail SS - Dynamic Gfx Script.asm": ss_tail[2],
     }
-    icon = nemesis_decode((source / "General/Sprites/HUD Icon/Tails Life Icon.bin").read_bytes())
+    icon = nemesis_decode(
+        (get_source("sk") / "General/Sprites/HUD Icon/Tails Life Icon.bin").read_bytes()
+    )
     outputs[root / "artkosm/HUD - Tails Life Counter Icon.kosm"] = encode_moduled(
         life_icon(icon, COLOURS)
     )
@@ -405,5 +459,5 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apply", action="store_true", help="write converted resources")
     args = parser.parse_args(argv)
-    write_outputs(expected_outputs(get_source("sk")), apply=args.apply)
+    write_outputs(expected_outputs(get_source("s2")), apply=args.apply)
     return 0

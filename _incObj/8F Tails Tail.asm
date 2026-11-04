@@ -33,6 +33,13 @@ TTail_Init:
 
 TTail_Main:
         jsr (Sidekick_TailParent).l
+        cmpa.w #v_sidekick_tail,a0
+        bne.s .checkSS
+        cmpi.b #sidekick_ss_return,(v_sidekick_state).w
+        beq.w TTail_SSReturn
+.checkSS:
+        btst #sprite_cam_bg_bit,obRender(a2) ; companion's SS projection survives the fade
+        bne.w TTail_Special
 		cmpi.b	#id_Special,(v_gamemode).w		; rolling through a Special Stage?
 		beq.w	TTail_Special
 		cmpi.b	#id_SonicPlayer,obID(a2)		; replaced by an ending or results object?
@@ -44,8 +51,13 @@ TTail_Main:
 	.player:
 		cmpi.b	#Character_Tails,(v_character_p1).w
 		bne.w	TTail_Delete
-		tst.w	(v_debuguse).w				; placement mode shows an item instead
+        cmpa.w #v_sidekick_tail,a0
+        beq.s .followParent
+		tst.w	(v_debuguse).w				; solo Tails is the item cursor
 		bne.w	TTail_Return
+.followParent:
+        tst.b victorypose(a2)                    ; results own the upper body/tail tiles
+        bne.w TTail_Hidden
 		move.w	obX(a2),obX(a0)
 		move.w	obY(a2),obY(a0)
 		move.b	obStatus(a2),d0
@@ -90,8 +102,11 @@ TTail_Main:
 TTail_Special:
 		cmpi.b	#Character_Tails,(v_character_p1).w
 		bne.w	TTail_Delete
-		tst.w	(v_debuguse).w				; placement mode shows an item instead
+        cmpa.w #v_sidekick_tail,a0
+        beq.s .followSSParent
+		tst.w	(v_debuguse).w
 		bne.w	TTail_Return
+.followSSParent:
 		move.l	#Map_TailsTailSS,obMap(a0)
 		move.w #ArtTile_Tails_Tail_SS,d0
         jsr (Sidekick_TailTile).l
@@ -109,10 +124,31 @@ TTail_Special:
 		move.w #ArtTile_Tails_Tail_SS*tile_size,d4
         cmpa.w #v_sidekick_tail,a0
         bne.s .ssDest
+        ori.b #sprite_cam_ss,obRender(a0) ; rotate alongside the companion body
         move.w #ArtTile_SidekickTail_SS*tile_size,d4
 .ssDest:
 		bsr.w	TTail_LoadGfxFrom
 		jmp	(DisplaySprite).l
+
+; The returning rotor follows the body's screen-space flight path.
+TTail_SSReturn:
+        move.w obX(a2),obX(a0)
+        move.w obScreenY(a2),obScreenY(a0)
+        move.b obRender(a2),obRender(a0)
+        andi.b #sprite_xflip,obRender(a0)
+        move.b #1,obPriority(a0)
+        move.l #Map_TailsTailSS,obMap(a0)
+        move.w #ArtTile_SidekickTail_SSReturn,obGfx(a0)
+        move.b (v_vblank_byte).w,d0
+        lsr.b #1,d0
+        andi.b #1,d0
+        addi.b #fr_TailsTailSSReturn,d0
+        move.b d0,obFrame(a0)
+        lea (TailsTailSSDynPLC).l,a2
+        move.l #Art_TailsTailSS,d6
+        move.w #ArtTile_SidekickTail_SSReturn*tile_size,d4
+        bsr.w TTail_LoadGfxFrom
+        jmp (DisplaySprite).l
 
 TTail_Hidden:
 		move.b	#-1,tail_vramframe(a0)			; reload once the slot is free again
@@ -322,7 +358,7 @@ TTail_LoadGfxFrom:
 		rts
 
 ; ---------------------------------------------------------------------------
-; Animation scripts (S3K AniTails_Tail).
+; Sonic 2 tail animation scripts in S1 frame order.
 ; ---------------------------------------------------------------------------
 
 tailani_Blank:		equ 0

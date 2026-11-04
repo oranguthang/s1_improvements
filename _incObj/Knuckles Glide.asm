@@ -169,12 +169,34 @@ Knuckles_GlideControl:
 Knuckles_ReleaseGlide:
         asr.w obVelX(a0)
         asr.w obVelX(a0)
+        bsr.s Knuckles_BeginGlideFall
+        bra.s Knuckles_Fall
+
+; Called after a successful boss hit has already set the rebound speed.
+Knuckles_BossBounce:
+        cmpi.b #Character_Knuckles,(v_character_p1).w
+        bne.s .return
+        cmpi.b #1,(v_knux_state).w
+        bne.s .return
+        bclr #0,obStatus(a0)
+        tst.w obVelX(a0)
+        bmi.s .facing
+        bset #0,obStatus(a0)
+.facing:
+        move.b #id_Float2,obAnim(a0)
+        bra.s Knuckles_BeginGlideFall
+.return:
+        rts
+
+Knuckles_BeginGlideFall:
         move.b #2,(v_knux_state).w
         move.b #8,(v_knux_timer).w       ; transition to the held falling pose once
         move.b #sonic_height,obHeight(a0)
         move.b #sonic_width,obWidth(a0)
         ; Keep the airborne origin, as in S3K. The floor sensors establish the
         ; standing origin at landing; raising it here would make gliding jump.
+        rts
+
 Knuckles_Fall:
         jsr (Sonic_JumpDirection).l
         jsr (Sonic_LevelBound).l

@@ -50,6 +50,7 @@ TailsSSDPLC_internal: mappingsTable
 	mappingsTableEntry.w TailsSSPLC_30
 	mappingsTableEntry.w TailsSSPLC_31
 	mappingsTableEntry.w TailsSSPLC_32
+	mappingsTableEntry.w TailsSSPLC_33
 
 TailsSSPLC_00: dplcHeader
 TailsSSPLC_00_End
@@ -213,5 +214,10 @@ TailsSSPLC_32: dplcHeader
 	dplcEntry 16, $11
 	dplcEntry 1, $21
 TailsSSPLC_32_End
+
+TailsSSPLC_33: dplcHeader
+	dplcEntry 16, $33
+	dplcEntry 11, $43
+TailsSSPLC_33_End
 
 	even

@@ -76,126 +76,122 @@ SidekickAsset_24: binclude "artkosm/sidekick/LZ Harpoon.kosm"
         even
 SidekickAsset_25: binclude "artkosm/sidekick/LZ Spiked Ball & Chain.kosm"
         even
-SidekickAsset_26: binclude "artkosm/sidekick/LZ Wheel.kosm"
+SidekickAsset_26: binclude "artkosm/sidekick/MZ Metal Blocks.kosm"
         even
-SidekickAsset_27: binclude "artkosm/sidekick/Lamppost.kosm"
+SidekickAsset_27: binclude "artkosm/sidekick/Monitor - Knuckles 1UP.kosm"
         even
-SidekickAsset_28: binclude "artkosm/sidekick/MZ Metal Blocks.kosm"
+SidekickAsset_28: binclude "artkosm/sidekick/Monitors.kosm"
         even
-SidekickAsset_29: binclude "artkosm/sidekick/Monitor - Knuckles 1UP.kosm"
+SidekickAsset_29: binclude "artkosm/sidekick/Prison Capsule.kosm"
         even
-SidekickAsset_2A: binclude "artkosm/sidekick/Monitors.kosm"
+SidekickAsset_2A: binclude "artkosm/sidekick/SBZ Spinning Platform.kosm"
         even
-SidekickAsset_2B: binclude "artkosm/sidekick/Prison Capsule.kosm"
+SidekickAsset_2B: binclude "artkosm/sidekick/SLZ Little Spikeball.kosm"
         even
-SidekickAsset_2C: binclude "artkosm/sidekick/SBZ Spinning Platform.kosm"
+SidekickAsset_2C: binclude "artkosm/sidekick/SLZ Pylon.kosm"
         even
-SidekickAsset_2D: binclude "artkosm/sidekick/SLZ Little Spikeball.kosm"
+SidekickAsset_2D: binclude "artkosm/sidekick/SLZ Seesaw.kosm"
         even
-SidekickAsset_2E: binclude "artkosm/sidekick/SLZ Pylon.kosm"
+SidekickAsset_2E: binclude "artkosm/sidekick/SYZ Bumper.kosm"
         even
-SidekickAsset_2F: binclude "artkosm/sidekick/SLZ Seesaw.kosm"
+SidekickAsset_2F: binclude "artkosm/sidekick/SYZ Large Spikeball.kosm"
         even
-SidekickAsset_30: binclude "artkosm/sidekick/SYZ Bumper.kosm"
+SidekickAsset_30: binclude "artkosm/sidekick/SYZ Small Spikeball.kosm"
         even
-SidekickAsset_31: binclude "artkosm/sidekick/SYZ Large Spikeball.kosm"
+SidekickAsset_31: binclude "artkosm/sidekick/Signpost - Knuckles Portrait.kosm"
         even
-SidekickAsset_32: binclude "artkosm/sidekick/SYZ Small Spikeball.kosm"
+SidekickAsset_32: binclude "artkosm/sidekick/Signpost.kosm"
         even
-SidekickAsset_33: binclude "artkosm/sidekick/Signpost - Knuckles Portrait.kosm"
+SidekickAsset_33: binclude "artkosm/sidekick/Spikes.kosm"
         even
-SidekickAsset_34: binclude "artkosm/sidekick/Signpost.kosm"
+SidekickAsset_34: binclude "artkosm/sidekick/Spring Horizontal.kosm"
         even
-SidekickAsset_35: binclude "artkosm/sidekick/Spikes.kosm"
+SidekickAsset_35: binclude "artkosm/sidekick/Spring Vertical.kosm"
         even
-SidekickAsset_36: binclude "artkosm/sidekick/Spring Horizontal.kosm"
+SidekickAsset_36: binclude "artkosm/sidekick/Switch.kosm"
         even
-SidekickAsset_37: binclude "artkosm/sidekick/Spring Vertical.kosm"
+SidekickAsset_37: binclude "artkosm/sidekick/Title Cards.kosm"
         even
-SidekickAsset_38: binclude "artkosm/sidekick/Switch.kosm"
+SidekickAsset_38: binclude "artkosm/sidekick/Unused - Goggles.kosm"
         even
-SidekickAsset_39: binclude "artkosm/sidekick/Title Cards.kosm"
-        even
-SidekickAsset_3A: binclude "artkosm/sidekick/Unused - Goggles.kosm"
-        even
-SidekickAsset_3B: binclude "artkosm/sidekick/Unused - LZ Sonic.kosm"
+SidekickAsset_39: binclude "artkosm/sidekick/Unused - LZ Sonic.kosm"
         align $20
-SidekickAsset_40_BeforeAlign:
-        if ((SidekickAsset_40_BeforeAlign&$1FFFF)+74592)>$20000
+SidekickAsset_3E_BeforeAlign:
+        if ((SidekickAsset_3E_BeforeAlign&$1FFFF)+74592)>$20000
         align $20000
         endif
-SidekickAsset_40: binclude "artunc/sidekick/Knuckles.unc"
-SidekickAsset_40_End:
+SidekickAsset_3E: binclude "artunc/sidekick/Knuckles.unc"
+SidekickAsset_3E_End:
         align $20
 Art_SidekickTails_BeforeAlign:
-        if ((Art_SidekickTails_BeforeAlign&$1FFFF)+56000)>$20000
+        if ((Art_SidekickTails_BeforeAlign&$1FFFF)+50528)>$20000
         align $20000
         endif
 Art_SidekickTails: binclude "artunc/Sidekick Tails.unc"
 Art_SidekickTails_End:
         align $20
 Art_SidekickTailsTail_BeforeAlign:
-        if ((Art_SidekickTailsTail_BeforeAlign&$1FFFF)+4448)>$20000
+        if ((Art_SidekickTailsTail_BeforeAlign&$1FFFF)+5440)>$20000
         align $20000
         endif
 Art_SidekickTailsTail: binclude "artunc/Sidekick Tails Tail.unc"
 Art_SidekickTailsTail_End:
         align $20
-SidekickAsset_3C_BeforeAlign:
-        if ((SidekickAsset_3C_BeforeAlign&$1FFFF)+3072)>$20000
+SidekickAsset_3A_BeforeAlign:
+        if ((SidekickAsset_3A_BeforeAlign&$1FFFF)+3072)>$20000
         align $20000
         endif
-SidekickAsset_3C: binclude "artunc/sidekick/Explosion Restore.unc"
+SidekickAsset_3A: binclude "artunc/sidekick/Explosion Restore.unc"
+SidekickAsset_3A_End:
+        align $20
+SidekickAsset_3B_BeforeAlign:
+        if ((SidekickAsset_3B_BeforeAlign&$1FFFF)+1152)>$20000
+        align $20000
+        endif
+SidekickAsset_3B: binclude "artunc/sidekick/Invincibility Stars Restore.unc"
+SidekickAsset_3B_End:
+        align $20
+SidekickAsset_3C_BeforeAlign:
+        if ((SidekickAsset_3C_BeforeAlign&$1FFFF)+1088)>$20000
+        align $20000
+        endif
+SidekickAsset_3C: binclude "artunc/sidekick/Invincibility Stars S2.unc"
 SidekickAsset_3C_End:
         align $20
 SidekickAsset_3D_BeforeAlign:
-        if ((SidekickAsset_3D_BeforeAlign&$1FFFF)+1152)>$20000
+        if ((SidekickAsset_3D_BeforeAlign&$1FFFF)+4000)>$20000
         align $20000
         endif
-SidekickAsset_3D: binclude "artunc/sidekick/Invincibility Stars Restore.unc"
+SidekickAsset_3D: binclude "artunc/sidekick/Knuckles SS.unc"
 SidekickAsset_3D_End:
         align $20
-SidekickAsset_3E_BeforeAlign:
-        if ((SidekickAsset_3E_BeforeAlign&$1FFFF)+1088)>$20000
-        align $20000
-        endif
-SidekickAsset_3E: binclude "artunc/sidekick/Invincibility Stars S2.unc"
-SidekickAsset_3E_End:
-        align $20
 SidekickAsset_3F_BeforeAlign:
-        if ((SidekickAsset_3F_BeforeAlign&$1FFFF)+4000)>$20000
+        if ((SidekickAsset_3F_BeforeAlign&$1FFFF)+864)>$20000
         align $20000
         endif
-SidekickAsset_3F: binclude "artunc/sidekick/Knuckles SS.unc"
+SidekickAsset_3F: binclude "artunc/sidekick/Shield.unc"
 SidekickAsset_3F_End:
         align $20
-SidekickAsset_41_BeforeAlign:
-        if ((SidekickAsset_41_BeforeAlign&$1FFFF)+864)>$20000
+SidekickAsset_46_BeforeAlign:
+        if ((SidekickAsset_46_BeforeAlign&$1FFFF)+448)>$20000
         align $20000
         endif
-SidekickAsset_41: binclude "artunc/sidekick/Shield.unc"
-SidekickAsset_41_End:
+SidekickAsset_46: binclude "artunc/sidekick/Super Sonic Stars.unc"
+SidekickAsset_46_End:
         align $20
 SidekickAsset_48_BeforeAlign:
-        if ((SidekickAsset_48_BeforeAlign&$1FFFF)+448)>$20000
+        if ((SidekickAsset_48_BeforeAlign&$1FFFF)+9024)>$20000
         align $20000
         endif
-SidekickAsset_48: binclude "artunc/sidekick/Super Sonic Stars.unc"
+SidekickAsset_48: binclude "artunc/sidekick/Title Cards Extended.unc"
 SidekickAsset_48_End:
-        align $20
-SidekickAsset_4A_BeforeAlign:
-        if ((SidekickAsset_4A_BeforeAlign&$1FFFF)+9024)>$20000
-        align $20000
-        endif
-SidekickAsset_4A: binclude "artunc/sidekick/Title Cards Extended.unc"
-SidekickAsset_4A_End:
-SidekickAsset_46 equ Art_SidekickSonicCombined+$0
-SidekickAsset_44 equ Art_SidekickSonicCombined+$AC60
-SidekickAsset_42 equ Art_SidekickSonicCombined+$D520
-SidekickAsset_45 equ Art_SidekickSonicCombined+$E5E0
-SidekickAsset_43 equ Art_SidekickSonicCombined+$EB60
-SidekickAsset_49 equ Art_SidekickSuperSonicCombined+$0
-SidekickAsset_47 equ Art_SidekickSuperSonicCombined+$15420
+SidekickAsset_44 equ Art_SidekickSonicCombined+$0
+SidekickAsset_42 equ Art_SidekickSonicCombined+$AC60
+SidekickAsset_40 equ Art_SidekickSonicCombined+$D520
+SidekickAsset_43 equ Art_SidekickSonicCombined+$E5E0
+SidekickAsset_41 equ Art_SidekickSonicCombined+$EB60
+SidekickAsset_47 equ Art_SidekickSuperSonicCombined+$0
+SidekickAsset_45 equ Art_SidekickSuperSonicCombined+$15420
         even
 Sidekick_PLCVariants:
         ifdef KosM_GHZ_2nd
@@ -312,118 +308,112 @@ Sidekick_PLCVariants:
         ifdef KosM_LzSpikeBall
         dc.l KosM_LzSpikeBall,SidekickAsset_25
         endif
-        ifdef KosM_LzWheel
-        dc.l KosM_LzWheel,SidekickAsset_26
-        endif
-        ifdef KosM_Lamp
-        dc.l KosM_Lamp,SidekickAsset_27
-        endif
         ifdef KosM_MzMetal
-        dc.l KosM_MzMetal,SidekickAsset_28
+        dc.l KosM_MzMetal,SidekickAsset_26
         endif
         ifdef KosM_KnucklesMonitor
-        dc.l KosM_KnucklesMonitor,SidekickAsset_29
+        dc.l KosM_KnucklesMonitor,SidekickAsset_27
         endif
         ifdef KosM_Monitors
-        dc.l KosM_Monitors,SidekickAsset_2A
+        dc.l KosM_Monitors,SidekickAsset_28
         endif
         ifdef KosM_Prison
-        dc.l KosM_Prison,SidekickAsset_2B
+        dc.l KosM_Prison,SidekickAsset_29
         endif
         ifdef KosM_SpinPform
-        dc.l KosM_SpinPform,SidekickAsset_2C
+        dc.l KosM_SpinPform,SidekickAsset_2A
         endif
         ifdef KosM_SlzSpike
-        dc.l KosM_SlzSpike,SidekickAsset_2D
+        dc.l KosM_SlzSpike,SidekickAsset_2B
         endif
         ifdef KosM_Pylon
-        dc.l KosM_Pylon,SidekickAsset_2E
+        dc.l KosM_Pylon,SidekickAsset_2C
         endif
         ifdef KosM_Seesaw
-        dc.l KosM_Seesaw,SidekickAsset_2F
+        dc.l KosM_Seesaw,SidekickAsset_2D
         endif
         ifdef KosM_Bumper
-        dc.l KosM_Bumper,SidekickAsset_30
+        dc.l KosM_Bumper,SidekickAsset_2E
         endif
         ifdef KosM_SyzSpike1
-        dc.l KosM_SyzSpike1,SidekickAsset_31
+        dc.l KosM_SyzSpike1,SidekickAsset_2F
         endif
         ifdef KosM_SyzSpike2
-        dc.l KosM_SyzSpike2,SidekickAsset_32
+        dc.l KosM_SyzSpike2,SidekickAsset_30
         endif
         ifdef KosM_KnucklesSignpost
-        dc.l KosM_KnucklesSignpost,SidekickAsset_33
+        dc.l KosM_KnucklesSignpost,SidekickAsset_31
         endif
         ifdef KosM_SignPost
-        dc.l KosM_SignPost,SidekickAsset_34
+        dc.l KosM_SignPost,SidekickAsset_32
         endif
         ifdef KosM_Spikes
-        dc.l KosM_Spikes,SidekickAsset_35
+        dc.l KosM_Spikes,SidekickAsset_33
         endif
         ifdef KosM_HSpring
-        dc.l KosM_HSpring,SidekickAsset_36
+        dc.l KosM_HSpring,SidekickAsset_34
         endif
         ifdef KosM_VSpring
-        dc.l KosM_VSpring,SidekickAsset_37
+        dc.l KosM_VSpring,SidekickAsset_35
         endif
         ifdef KosM_LzSwitch
-        dc.l KosM_LzSwitch,SidekickAsset_38
+        dc.l KosM_LzSwitch,SidekickAsset_36
         endif
         ifdef KosM_TitleCard
-        dc.l KosM_TitleCard,SidekickAsset_39
+        dc.l KosM_TitleCard,SidekickAsset_37
         endif
         ifdef KosM_Goggle
-        dc.l KosM_Goggle,SidekickAsset_3A
+        dc.l KosM_Goggle,SidekickAsset_38
         endif
         ifdef KosM_LzSonic
-        dc.l KosM_LzSonic,SidekickAsset_3B
+        dc.l KosM_LzSonic,SidekickAsset_39
         endif
         dc.l 0,0
 Sidekick_DMAVariants:
         ifdef Art_ExplosionRestore
-        dc.l Art_ExplosionRestore,Art_ExplosionRestore+3072,SidekickAsset_3C
+        dc.l Art_ExplosionRestore,Art_ExplosionRestore+3072,SidekickAsset_3A
         endif
         ifdef Art_InvincibilityStars
-        dc.l Art_InvincibilityStars,Art_InvincibilityStars+1152,SidekickAsset_3D
+        dc.l Art_InvincibilityStars,Art_InvincibilityStars+1152,SidekickAsset_3B
         endif
         ifdef Art_InvStarsS2
-        dc.l Art_InvStarsS2,Art_InvStarsS2+1088,SidekickAsset_3E
+        dc.l Art_InvStarsS2,Art_InvStarsS2+1088,SidekickAsset_3C
         endif
         ifdef Art_KnucklesSS
-        dc.l Art_KnucklesSS,Art_KnucklesSS+4000,SidekickAsset_3F
+        dc.l Art_KnucklesSS,Art_KnucklesSS+4000,SidekickAsset_3D
         endif
         ifdef Art_Knuckles
-        dc.l Art_Knuckles,Art_Knuckles+74592,SidekickAsset_40
+        dc.l Art_Knuckles,Art_Knuckles+74592,SidekickAsset_3E
         endif
         ifdef Art_Shield
-        dc.l Art_Shield,Art_Shield+864,SidekickAsset_41
+        dc.l Art_Shield,Art_Shield+864,SidekickAsset_3F
         endif
         ifdef Art_SonicAirPoses
-        dc.l Art_SonicAirPoses,Art_SonicAirPoses+4288,SidekickAsset_42
+        dc.l Art_SonicAirPoses,Art_SonicAirPoses+4288,SidekickAsset_40
         endif
         ifdef Art_SonicCarry
-        dc.l Art_SonicCarry,Art_SonicCarry+1152,SidekickAsset_43
+        dc.l Art_SonicCarry,Art_SonicCarry+1152,SidekickAsset_41
         endif
         ifdef Art_SonicFigure8
-        dc.l Art_SonicFigure8,Art_SonicFigure8+10432,SidekickAsset_44
+        dc.l Art_SonicFigure8,Art_SonicFigure8+10432,SidekickAsset_42
         endif
         ifdef Art_SonicVictory
-        dc.l Art_SonicVictory,Art_SonicVictory+1408,SidekickAsset_45
+        dc.l Art_SonicVictory,Art_SonicVictory+1408,SidekickAsset_43
         endif
         ifdef Art_Sonic
-        dc.l Art_Sonic,Art_Sonic+44128,SidekickAsset_46
+        dc.l Art_Sonic,Art_Sonic+44128,SidekickAsset_44
         endif
         ifdef Art_SuperSonicFigure8
-        dc.l Art_SuperSonicFigure8,Art_SuperSonicFigure8+11712,SidekickAsset_47
+        dc.l Art_SuperSonicFigure8,Art_SuperSonicFigure8+11712,SidekickAsset_45
         endif
         ifdef Art_SuperSonicStars
-        dc.l Art_SuperSonicStars,Art_SuperSonicStars+448,SidekickAsset_48
+        dc.l Art_SuperSonicStars,Art_SuperSonicStars+448,SidekickAsset_46
         endif
         ifdef Art_SuperSonic
-        dc.l Art_SuperSonic,Art_SuperSonic+87072,SidekickAsset_49
+        dc.l Art_SuperSonic,Art_SuperSonic+87072,SidekickAsset_47
         endif
         ifdef Unc_TitleCard
-        dc.l Unc_TitleCard,Unc_TitleCard+9024,SidekickAsset_4A
+        dc.l Unc_TitleCard,Unc_TitleCard+9024,SidekickAsset_48
         endif
         dc.l 0,0,0
 Pal_SidekickSonic: bincludeEndMarker "palette/Sidekick - Sonic.bin"
@@ -473,18 +463,18 @@ CharacterAssets_PairedSuperSonic:
         dc.b palid_SidekickSuperSonic,palid_SidekickSuperSonicWater,palid_SidekickSuperSonicSBZ3Water,plcid_PlayerHUD
         dc.b 7,7,$78,8                 ; ten steady frames, eight game frames each
 CharacterAssets_PairedKnuckles:
-        dc.l SidekickAsset_40,Map_Knuckles,KnucklesDynPLC,Ani_Knuckles
+        dc.l SidekickAsset_3E,Map_Knuckles,KnucklesDynPLC,Ani_Knuckles
         dc.l Pal_SidekickKnuckles,Pal_SidekickKnucklesWater,Pal_SidekickKnucklesSBZ3Water
         dc.l Pal_SuperSonicCycle,Pal_SuperSonicCycle_LZWater,Pal_SuperSonicCycle_SBZ3Water
         dc.l KnucklesAni_Run,KnucklesAni_Walk,KnucklesAni_Roll,KnucklesAni_Roll2,KnucklesAni_Push,KnucklesAni_Figure8
-        dc.l SidekickAsset_40
+        dc.l SidekickAsset_3E
         dc.b 0,0,palid_SidekickKnuckles,palid_SidekickKnucklesWater,palid_SidekickKnucklesSBZ3Water,plcid_KnucklesHUD
         dc.b 7,7,$78,8
 CharacterAssets_PairedSuperKnuckles:
-        dc.l SidekickAsset_40,Map_Knuckles,KnucklesDynPLC,Ani_Knuckles
+        dc.l SidekickAsset_3E,Map_Knuckles,KnucklesDynPLC,Ani_Knuckles
         dc.l Pal_SidekickSuperKnuckles,Pal_SidekickSuperKnucklesWater,Pal_SidekickSuperKnucklesSBZ3Water
         dc.l Pal_SuperKnucklesCycle,Pal_SuperKnucklesCycle_LZWater,Pal_SuperKnucklesCycle_SBZ3Water
         dc.l KnucklesAni_Run,KnucklesAni_Walk,KnucklesAni_Roll,KnucklesAni_Roll2,KnucklesAni_Push,KnucklesAni_Figure8
-        dc.l SidekickAsset_40
+        dc.l SidekickAsset_3E
         dc.b 0,0,palid_SidekickSuperKnuckles,palid_SidekickSuperKnucklesWater,palid_SidekickSuperKnucklesSBZ3Water,plcid_KnucklesHUD
         dc.b 2,14,$78,8          ; S3K: ten frames of three, the last held for fifteen

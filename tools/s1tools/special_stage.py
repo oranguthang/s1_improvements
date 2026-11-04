@@ -71,11 +71,14 @@ def layered_assets(
     used: range,
     fur: dict[int, int],
     line: int,
+    extra: tuple[tuple[bytes, list[tuple[int, ...]]], ...] = (),
 ) -> tuple[bytes, bytes, bytes, int]:
     """Art, mappings and DPLC with blank frames below the used range, and the
-    largest frame's tile count."""
+    largest rolling frame's tile count. Extra poses have their own VRAM slot."""
     out = [
         layered_frame(*frames[index], fur, line) if index in used else (b"", [])
         for index in range(used.stop)
     ]
-    return (*emit_frames(name, out), max(len(data) // 32 for data, _ in out))
+    rolling_tiles = max(len(data) // 32 for data, _ in out)
+    out.extend(layered_frame(data, pieces, fur, line) for data, pieces in extra)
+    return (*emit_frames(name, out), rolling_tiles)

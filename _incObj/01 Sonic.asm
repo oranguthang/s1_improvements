@@ -454,8 +454,13 @@ Sonic_Move:
 		bclr	#5,obStatus(a0)				; clear pushing flag
 		move.b	#id_Wait,obAnim(a0)			; use "standing" animation
 	if FeatureVictoryPoses
-		tst.b	victorypose(a0)				; has the act ended?
-		beq.s	.notVictory				; if not, branch
+		tst.b	victorypose(a0)
+		beq.s	.notVictory
+		cmpi.b	#id_GotThroughCard,(v_endcard+obID).w
+		beq.s	.victory
+		clr.b	victorypose(a0)				; discard a stale pose outside act results
+		bra.s	.notVictory
+	.victory:
 		move.b	#id_Victory,obAnim(a0)			; pose instead of balancing or looking around
 		bra.w	Sonic_ResetScr
 	.notVictory:

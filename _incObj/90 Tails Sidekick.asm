@@ -70,6 +70,8 @@ Sidekick_Spawn:
         move.b d0,obStatus(a1)
         cmpi.b #id_Special,(v_gamemode).w
         bne.s .tails
+        move.b #sprite_cam_ss,obRender(a1)
+        move.w #ArtTile_Sidekick_SS,obGfx(a1)
         move.l #Map_TailsSS,obMap(a1)
         move.b #sonic_roll_height,obHeight(a1)
         move.b #sonic_roll_width,obWidth(a1)
@@ -192,30 +194,28 @@ Sidekick_Run:
         tst.b (v_sidekick_ring_entry).w
         beq.w .return
 .leaderPresent:
+        cmpi.b #sidekick_ss_return,(v_sidekick_state).w
+        beq.w Sidekick_SSReturn
+        btst #sprite_cam_bg_bit,obRender(a0)
+        beq.s .levelScene
+        cmpi.b #2,(v_player+obRoutine).w
+        beq.s .normalScene
+        blo.w .return
+        ; Keep the last world position while the labyrinth spins and fades.
+        tst.b (v_sidekick_state).w
+        beq.w .visible
+        rts
+.levelScene:
         cmpi.b #6,(v_player+obRoutine).w
         bhs.w .return
-        cmpi.b #id_Special,(v_gamemode).w
-        bne.s .normalScene
-        cmpi.b #2,(v_player+obRoutine).w
-        bne.w .return
+        move.b #2,obPriority(a0)       ; default level priority, including return flights
+        tst.b victorypose(a0)
+        bne.w Sidekick_Victory
 .normalScene:
         cmpi.b #id_GotThroughCard,(v_endcard+obID).w
         beq.w .return
         tst.b (v_player+victorypose).w
         bne.w .return
-        tst.w (v_debuguse).w
-        beq.s .afterDebug
-        st.b (v_sidekick_wasdebug).w
-        clr.w (v_sidekick_pole).w
-        jsr (Sidekick_DropRider).l
-        rts
-.afterDebug:
-        tst.b (v_sidekick_wasdebug).w
-        beq.s .ready
-        clr.w (v_sidekick_wasdebug).w
-        move.b #-1,(v_sidekick_lastframe).w
-        move.b #-1,(v_sidekick_tail+tail_vramframe).w
-.ready:
         cmpi.b #2,(v_sidekick_state).w
         beq.w .wait
         cmpi.b #3,(v_sidekick_state).w
@@ -290,6 +290,8 @@ Sidekick_Run:
         jsr (SpeedToPos).l
         jsr (Sidekick_SSCommit).l
         jsr (Sidekick_SSBounds).l
+        tst.b (v_sidekick_state).w
+        bne.s .draw
         jsr (Sonic_Animate).l
 .draw:
         jsr (Sidekick_SwapContext).l
@@ -302,6 +304,8 @@ Sidekick_Run:
         jsr (Sidekick_SwapEffectContext).l
         bra.s .graphicsReady
 .ssGraphics:
+        cmpi.b #sidekick_ss_return,(v_sidekick_state).w
+        beq.w Sidekick_SSReturn
         jsr (Sidekick_LoadGfx).l
 .graphicsReady:
         tst.b (v_sidekick_state).w
@@ -335,22 +339,7 @@ Sidekick_Run:
         move.b #id_Fall,obAnim(a0)
         cmpi.b #id_Special,(v_gamemode).w
         bne.w .returnFlying
-        jsr (Sidekick_SSPlace).l
-        clr.b (v_sidekick_returning).w
-        move.b #sonic_roll_height,obHeight(a0)
-        move.b #sonic_roll_width,obWidth(a0)
-        clr.b sonss_touchedblock_id(a0)
-        clr.l sonss_touchedblock_ram(a0)
-        clr.w sonss_timeout_updown(a0)
-        clr.b sonss_ghoststate(a0)
-        move.b #id_Roll,obAnim(a0)
-        ori.b #6,obStatus(a0)
-.respawned:
-        clr.b (v_sidekick_state).w
-        clr.w (v_sidekick_stuck).w
-        clr.l (sk_ctx_flight).w
-        move.w #30,(sk_ctx_air).w
-        rts
+        jmp (Sidekick_SSStartReturn).l
 .returnFlying:
         move.b #3,(v_sidekick_state).w
         move.w (v_screenposy).w,obY(a0)
@@ -383,6 +372,11 @@ Sidekick_ReadControls:
         move.b (v_jpadpress_p2).w,d1
         bra.w .store
 .cpu:
+        tst.w (v_debuguse).w
+        beq.s .assist
+        moveq #0,d0                    ; the item cursor does not record player input
+        bra.w .pressed
+.assist:
         jsr (Sidekick_AssistControls).l
         tst.b d7
         bne.w .pressed
@@ -420,6 +414,12 @@ Sidekick_ReadControls:
         bne.s .notStuck
         tst.b d0
         beq.s .notStuck
+        ; Wait on Eggman's collapsing floor instead of jumping at its right wall.
+        tst.w (v_sidekick_platform).w
+        beq.s .stuckTimer
+        cmpi.b #id_FalseFloor,(v_sidekick_platform_id).w
+        beq.s .notStuck
+.stuckTimer:
         addq.w #1,(v_sidekick_stuck).w
         cmpi.w #45,(v_sidekick_stuck).w
         blo.s .pressed
@@ -560,7 +560,9 @@ Sidekick_LoadGfx:
         move.b (a2)+,d5
         subq.w #1,d5
         bmi.w .return
-        move.w #ArtTile_Sidekick*tile_size,d4
+        move.w obGfx(a0),d4
+        andi.w #$7FF,d4
+        lsl.w #5,d4
 .entry:
         moveq #0,d1
         move.b (a2)+,d1
@@ -597,15 +599,13 @@ SidekickTail:
         beq.w .return
         cmpi.b #2,(v_sidekick_state).w
         beq.w .return
-        cmpi.b #id_Special,(v_gamemode).w
-        bne.s .ordinaryScene
-        cmpi.b #2,(v_player+obRoutine).w
-        bne.w .return
-.ordinaryScene:
+        tst.b (v_sidekick_player+victorypose).w
+        bne.w .return                  ; the victory frames include the tails
+        btst #sprite_cam_bg_bit,(v_sidekick_player+obRender).w
+        bne.s .animate
         cmpi.b #6,(v_player+obRoutine).w
         bhs.w .return
-        tst.w (v_debuguse).w
-        bne.w .return
+.animate:
         jsr (Sidekick_SwapEffectContext).l
         jsr (TailsTail).l
         jsr (Sidekick_SwapEffectContext).l
@@ -626,8 +626,8 @@ Sidekick_TailTile:
         cmpa.w #v_sidekick_tail,a0
         bne.w .return
         andi.w #~$7FF,d0
-        cmpi.b #id_Special,(v_gamemode).w
-        bne.s .normalTail
+        btst #sprite_cam_bg_bit,(v_sidekick_player+obRender).w
+        beq.s .normalTail
         ori.w #ArtTile_SidekickTail_SS,d0
         rts
 .normalTail:

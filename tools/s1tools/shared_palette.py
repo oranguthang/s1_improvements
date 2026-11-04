@@ -30,6 +30,12 @@ def remap_art(path: str, raw: bytes) -> bytes:
             output[position] = lookup.get(byte >> 4, byte >> 4) << 4 | lookup.get(
                 byte & 15, byte & 15
             )
+    if path in ("artnem/Lamppost.nem", "artkosm/Lamppost.kosm"):
+        # Use the activated ball's silhouette and shadow for the unlit ball.
+        grey = {0: 0, 6: 6, 10: 6, 12: 7, 13: 9, 14: 9}
+        output[6 * 32 : 8 * 32] = bytes(
+            (grey[byte >> 4] << 4) | grey[byte & 15] for byte in raw[8 * 32 : 10 * 32]
+        )
     return bytes(output)
 
 

@@ -1,4 +1,6 @@
-; S3K TailsSS, repacked for the S1 player frame IDs.
+fr_TailsSSReturn equ $33
+
+; Sonic 2 TailsSS, repacked for the S1 player frame IDs.
 TailsSSMap_internal: mappingsTable
 	mappingsTableEntry.w TailsSSMap_00
 	mappingsTableEntry.w TailsSSMap_01
@@ -51,6 +53,7 @@ TailsSSMap_internal: mappingsTable
 	mappingsTableEntry.w TailsSSMap_30
 	mappingsTableEntry.w TailsSSMap_31
 	mappingsTableEntry.w TailsSSMap_32
+	mappingsTableEntry.w TailsSSMap_33
 
 TailsSSMap_00: spriteHeader
 TailsSSMap_00_End
@@ -214,5 +217,11 @@ TailsSSMap_32: spriteHeader
 	spritePiece 0, -8, 1, 1, 0, 0, 0, 0, 0
 	spritePiece -16, -16, 4, 4, 1, 0, 0, 1, 0
 TailsSSMap_32_End
+
+TailsSSMap_33: spriteHeader
+	spritePiece -8, -16, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -16, -8, 4, 3, 3, 0, 0, 0, 0
+	spritePiece -16, -16, 4, 3, 15, 0, 0, 1, 0
+TailsSSMap_33_End
 
 	even

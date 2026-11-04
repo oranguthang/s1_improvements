@@ -1,6 +1,7 @@
-; Persistent solo and companion play-mode selection.
+; Persistent play-mode selection and sound test.
 Tit_EnterOptions:
         clr.b (v_jpadpress1).w
+        clr.b (v_options_menuitem).w
         bsr.w LevSel_PrepareScreen
         bsr.w Options_Draw
         bsr.w LevSel_ShowScreen
@@ -10,16 +11,26 @@ Tit_EnterOptions:
         btst #bitStart,(v_jpadpress1).w
         bne.w Tit_MenuReturn
         bsr.w Options_ReadInput
-        tst.b d0
         beq.s .plc
         bsr.w Options_Draw
 .plc:
         bsr.w RunPLC
         bra.s .loop
 
-; d0 = 1 when the selection changed and needs redrawing.
+; Z clear when the selection changed and needs redrawing.
 Options_ReadInput:
         move.b (v_jpadpress1).w,d1
+        move.b d1,d0
+        andi.b #btnUp+btnDn,d0
+        beq.s .rowReady
+        cmpi.b #btnUp+btnDn,d0
+        beq.s .rowReady
+        eori.b #1,(v_options_menuitem).w
+        moveq #1,d0
+        rts
+.rowReady:
+        tst.b (v_options_menuitem).w
+        bne.s Options_SoundInput
         andi.b #btnL+btnR+btnABC,d1
         beq.s .unchanged
         jsr (GetPlayerOption).l
@@ -47,6 +58,18 @@ Options_ReadInput:
         moveq #0,d0
         rts
 
+Options_SoundInput:
+        bsr.w SoundTest_Adjust
+        bne.s .return
+        move.b (v_jpadpress1).w,d1
+        andi.b #btnB+btnC,d1
+        beq.s .return
+        move.w (v_levselsound).w,d0
+        bsr.w SoundTest_Play
+        moveq #0,d0
+.return:
+        rts
+
 Options_Draw:
         lea (vdp_data_port).l,a6
         locVRAM vram_win+(9<<7)+(16<<1),4(a6)
@@ -56,17 +79,30 @@ Options_Draw:
         bsr.w DevMenu_DrawText
         locVRAM vram_win+(11<<7)+(levsel_start_col<<1),4(a6)
         lea Options_Label(pc),a1
+        move.w #levsel_white,d3
+        tst.b (v_options_menuitem).w
+        bne.s .characterColour
         move.w #levsel_yellow,d3
-        moveq #16-1,d2
+.characterColour:
+        moveq #Options_Label_End-Options_Label-1,d2
         bsr.w DevMenu_DrawText
-        moveq #0,d0
-        move.b (v_character_selected).w,d0
+        jsr (GetPlayerOption).l
         mulu.w #18,d0
         lea Options_Names(pc),a1
         adda.w d0,a1
         moveq #18-1,d2
         bsr.w DevMenu_DrawText
-        locVRAM vram_win+(13<<7)+(levsel_start_col<<1),4(a6)
+        locVRAM vram_win+(12<<7)+(levsel_start_col<<1),4(a6)
+        lea Options_SoundLabel(pc),a1
+        move.w #levsel_white,d3
+        tst.b (v_options_menuitem).w
+        beq.s .soundColour
+        move.w #levsel_yellow,d3
+.soundColour:
+        moveq #Options_SoundLabel_End-Options_SoundLabel-1,d2
+        bsr.w DevMenu_DrawText
+        bsr.w SoundTest_DrawID
+        locVRAM vram_win+(14<<7)+(levsel_start_col<<1),4(a6)
         lea DevMenu_Hint(pc),a1
         move.w #levsel_white,d3
         moveq #19-1,d2
@@ -78,7 +114,11 @@ Options_Draw:
         charset 'A','X',$11
 Options_Header: dc.b "OPTIONS"
 Options_Label:
-        dc.b "CHARACTER       "
+        dc.b "CHARACTER   "
+Options_Label_End:
+Options_SoundLabel:
+        dc.b "SOUND TEST  "
+Options_SoundLabel_End:
 Options_Names:
         dc.b "SONIC             ","TAILS             ","KNUCKLES          "
         dc.b "SONIC AND TAILS   ","KNUCKLES AND TAILS"

@@ -35,7 +35,11 @@ DevMenu_ChkDefaults:
 		cmpi.b	#devmenu_magic,(v_dev_magic).w
 		beq.w	Settings_Normalize
 Settings_Defaults:
+	if FeatureSidekick&FeatureTails
+		move.b #PlayerOption_SonicTails,(v_character_selected).w
+	else
 		clr.b (v_character_selected).w
+	endif
 		clr.b (v_character_p1).w
 		move.b #Character_Off,(v_character_p2).w
 		clr.b (v_options_menuitem).w

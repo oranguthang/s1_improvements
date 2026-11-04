@@ -314,6 +314,8 @@ React_BossHit:
 		neg.w	obVelY(a0)				; repel Sonic verticallly
 		asr.w	obVelX(a0)				; halve current X-speed
 		asr.w	obVelY(a0)				; halve current Y-speed
+		bsr.s	React_DamageBoss
+		jmp	(Knuckles_BossBounce).l
 
 ; Damage the boss at a1 without moving the player (also used by Super Flickies).
 React_DamageBoss:

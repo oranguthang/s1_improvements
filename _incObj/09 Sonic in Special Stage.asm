@@ -794,9 +794,9 @@ SonicSS_NoItemBlock:
 SonicSS_MakeGhostSolid:
         cmpa.w #v_sidekick_player,a0
         beq.s SonicSS_GhostNotSolid
-        st.b (v_sidekick_ss_recheck).w
 		cmpi.b	#2,sonss_ghoststate(a0)			; have ghost block and then an invisible switch been passed?
 		bne.s	SonicSS_GhostNotSolid			; if not, branch
+        st.b (v_sidekick_ss_recheck).w
 
 		lea	(v_sslayout_actual).l,a1		; get start location of actual stage layout
 		moveq	#(v_sslayout_end-v_sslayout_actual)/ss_layout_rowlength-1,d1 ; iterate through all rows

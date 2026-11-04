@@ -1,7 +1,14 @@
 """Companion timing, carry poses, swept SS collision and stage ownership."""
 
 from check_sidekick_collision import setup
-from unicorn.m68k_const import UC_M68K_REG_A0, UC_M68K_REG_D4, UC_M68K_REG_D6
+from unicorn.m68k_const import (
+    UC_M68K_REG_A0,
+    UC_M68K_REG_D1,
+    UC_M68K_REG_D2,
+    UC_M68K_REG_D3,
+    UC_M68K_REG_D4,
+    UC_M68K_REG_D6,
+)
 
 
 def following():
@@ -111,6 +118,50 @@ def special():
     print("SS ownership, collectibles, ghost gates, fast wall sweeps and small bumper kicks passed")
 
 
+def special_projection():
+    c, body, scratch = setup()
+    c.w("v_gamemode", c.s["id_Special"])
+    c.w("v_screenposx", 800, 2)
+    c.w("v_screenposy", 700, 2)
+    c.w(body + c.s["obID"], c.s["id_SidekickTails"])
+    c.w(body + c.s["obRender"], c.s["sprite_cam_ss"] | c.s["sprite_rawmappings"])
+    c.w(body + c.s["obMap"], scratch, 4)
+    c.uc.mem_write(scratch, bytes(5))  # one opaque sprite piece at the object's origin
+    c.w(body + c.s["obX"], 990, 2)
+    c.w(body + c.s["obY"], 802, 2)
+    sat = c.s["v_spritetablebuffer"]
+    for angle, x, y in [(0, 318, 230), (0x4000, 298, 270), (0x8000, 258, 250), (0xC000, 278, 210)]:
+        c.w("v_ssangle", angle, 2)
+        c.reg(UC_M68K_REG_A0, body)
+        c.call("DisplaySprite")
+        c.call("BuildSprites")
+        assert (c.r(sat + 6, 2), c.r(sat, 2)) == (x, y)
+        assert (c.r(body + c.s["obX"], 2), c.r(body + c.s["obY"], 2)) == (990, 802)
+    print(
+        "SS sprite projection follows all four maze quadrants without changing physics coordinates"
+    )
+
+
+def edge_pose():
+    c, _, _ = setup()
+    p = c.s["v_player"]
+    c.reg(UC_M68K_REG_A0, p)
+    c.skip("ObjFloorDist", lambda cpu: cpu.reg(UC_M68K_REG_D1, 16))
+    c.w(p + c.s["angleright"], 3)
+    c.w(p + c.s["victorypose"], 1)
+    c.call("Sonic_Move")
+    assert not c.r(p + c.s["victorypose"]) and c.r(p + c.s["obAnim"]) == c.s["id_Balance"]
+    c.call("Sonic_Animate")
+    assert c.r(p + c.s["obFrame"]) == c.s["fr_Balance1"]
+    c.w(p + c.s["victorypose"], 1)
+    c.w(c.s["v_endcard"] + c.s["obID"], c.s["id_GotThroughCard"])
+    c.call("Sonic_Move")
+    assert c.r(p + c.s["obAnim"]) == c.s["id_Victory"]
+    print(
+        "The ledge uses balance frames even with a stale victory flag. Results retain the victory pose."
+    )
+
+
 def fade():
     c, _, _ = setup()
     observed = []
@@ -127,11 +178,123 @@ def fade():
     print("giant-ring fade advances actors and preserves the fade counters/mode")
 
 
+def ring_destination():
+    for current, expected in (
+        ("id_GHZ_act1", "id_GHZ_act2"),
+        ("id_GHZ_act2", "id_GHZ_act3"),
+        ("id_MZ_act2", "id_MZ_act3"),
+    ):
+        c, _, _ = setup()
+        c.skip("DisplaySprite")
+        card = c.s["v_endcardring"]
+        c.reg(UC_M68K_REG_A0, card)
+        c.w(card + c.s["obRoutine"], 0xA)
+        c.w("v_zone_act", c.s[current], 2)
+        c.w("v_gamemode", c.s["id_Level"])
+        c.w("f_bigring", 1)
+        c.call("GotThroughCard")
+        assert c.r("v_gamemode") == c.s["id_Special"]
+        assert c.r("v_zone_act", 2) == c.s[expected]
+        # Sidekick_RingFadeFrame temporarily runs objects in level mode.
+        c.w("v_gamemode", c.s["id_Level"])
+        c.call("GotThroughCard")
+        assert c.r("v_zone_act", 2) == c.s[expected]
+        assert c.r("v_gamemode") == c.s["id_Level"]
+        assert c.r("f_restart", 2) == 0
+    print("End ring chooses the next act once, even while the results card runs in the white fade")
+
+
+def results_pose():
+    c, b, _ = setup()
+    c.w("v_gamemode", c.s["id_Level"])
+    c.w("sk_ctx_character", c.s["Character_Tails"])
+    c.w("v_player", c.s["id_SonicPlayer"])
+    c.w(b + c.s["obGfx"], c.s["ArtTile_Sidekick"], 2)
+    c.w(b + c.s["obStatus"], 2)
+    c.w("v_sidekick_state", 3)  # still flying back when the leader finishes
+    c.w("v_sidekick_returning", 255)
+    c.w("v_sidekick_lastframe", 255)
+    transfers = []
+    c.skip(
+        "QueueDMATransfer",
+        lambda cpu: transfers.append(
+            (cpu.uc.reg_read(UC_M68K_REG_D2), cpu.uc.reg_read(UC_M68K_REG_D3))
+        ),
+    )
+    c.skip("DisplaySprite")
+    c.call("Sidekick_FinishScene")
+    assert c.r("v_sidekick_active") and c.r(b + c.s["victorypose"])
+    assert not c.r("v_sidekick_state") and not c.r("v_sidekick_returning")
+    assert c.r(b + c.s["obAnim"]) == c.s["id_Spring"]
+    assert transfers
+    c.w(b + c.s["obStatus"], 0)
+    c.reg(UC_M68K_REG_A0, b)
+    for _ in range(24):
+        c.call("Sidekick_Victory")
+    assert c.r(b + c.s["obFrame"]) == c.s["fr_TailsVictory"] + 1
+    start = c.s["ArtTile_Sidekick"] * 32
+    end = c.s["ArtTile_LevelBonuses"] * 32
+    assert max(dest + words * 2 for dest, words in transfers) == end
+    assert all(start <= dest and dest + words * 2 <= end for dest, words in transfers)
+    print("Tails lands and poses in the 18 tiles below the act bonus digits")
+
+
+def special_return():
+    c, body, _ = setup()
+    c.uc.mem_map(0xFF0000, 0x10000)
+    c.skip("DisplaySprite")
+    c.skip("QueueDMATransfer")
+    c.w("v_gamemode", c.s["id_Special"])
+    p = c.s["v_player"]
+    c.w(p + c.s["obRoutine"], 2)
+    c.w(p + c.s["obX"], 960, 2)
+    c.w(p + c.s["obY"], 900, 2)
+    c.w("v_screenposx", 800, 2)
+    c.w("v_screenposy", 788, 2)
+    c.w("v_ssangle", 0x4000, 2)
+    base = c.s["v_sslayout_base"]
+    # A solid area includes all adjacent candidates and the leader fallback.
+    for row in range(39, 44):
+        for col in range(38, 45):
+            c.w(base + row * 128 + col, 1)
+    c.reg(UC_M68K_REG_A0, body)
+    c.call("Sidekick_SSStartReturn")
+    for _ in range(50):
+        c.call("Sidekick_SSReturn")
+        assert c.r("v_sidekick_state") == c.s["sidekick_ss_return"]
+    assert c.r(body + c.s["obFrame"]) == c.s["fr_TailsSSReturn"]
+    for row in range(39, 44):
+        for col in range(38, 45):
+            c.w(base + row * 128 + col, 0)
+    for _ in range(10):
+        c.call("Sidekick_SSReturn")
+        if not c.r("v_sidekick_state"):
+            break
+    assert c.r("v_sidekick_state") == 0
+    assert c.r(body + c.s["obX"], 2) == 936 and c.r(body + c.s["obY"], 2) == 900
+    assert c.r(body + c.s["obFrame"]) == c.s["fr_Roll1"]
+    assert c.r(body + c.s["obRender"]) == c.s["sprite_cam_ss"]
+    # A closing gate under the visible companion starts the flight in place.
+    for row in range(39, 43):
+        for col in range(39, 43):
+            c.w(base + row * 128 + col, c.s["id_SS_RedWhite"])
+    c.call("Sidekick_SSBegin")
+    assert c.r("v_sidekick_state") == c.s["sidekick_ss_return"]
+    assert c.r(body + c.s["obX"], 2) == 288
+    assert c.r(body + c.s["obScreenY"], 2) == 216
+    print("Special Stage returns visibly from a blocked spot and curls only on clear ground")
+
+
 def run():
     following()
     poses()
     special()
+    special_projection()
+    special_return()
+    edge_pose()
     fade()
+    ring_destination()
+    results_pose()
 
 
 if __name__ == "__main__":

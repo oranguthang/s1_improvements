@@ -97,55 +97,50 @@ TailsTailPLC_0C: dplcHeader
 TailsTailPLC_0C_End
 
 TailsTailPLC_0D: dplcHeader
-	dplcEntry 6, $30
+	dplcEntry 8, $30
 TailsTailPLC_0D_End
 
 TailsTailPLC_0E: dplcHeader
-	dplcEntry 6, $36
+	dplcEntry 8, $38
 TailsTailPLC_0E_End
 
 TailsTailPLC_0F: dplcHeader
-	dplcEntry 6, $3C
+	dplcEntry 8, $40
 TailsTailPLC_0F_End
 
 TailsTailPLC_10: dplcHeader
-	dplcEntry 6, $42
+	dplcEntry 8, $48
 TailsTailPLC_10_End
 
 TailsTailPLC_11: dplcHeader
-	dplcEntry 6, $48
+	dplcEntry 8, $50
 TailsTailPLC_11_End
 
 TailsTailPLC_12: dplcHeader
-	dplcEntry 6, $4E
+	dplcEntry 8, $58
 TailsTailPLC_12_End
 
 TailsTailPLC_13: dplcHeader
-	dplcEntry 6, $54
+	dplcEntry 8, $60
 TailsTailPLC_13_End
 
 TailsTailPLC_14: dplcHeader
-	dplcEntry 6, $5A
+	dplcEntry 8, $68
 TailsTailPLC_14_End
 
 TailsTailPLC_15: dplcHeader
-	dplcEntry 6, $60
 TailsTailPLC_15_End
 
 TailsTailPLC_16: dplcHeader
-	dplcEntry 9, $66
 TailsTailPLC_16_End
 
 TailsTailPLC_17: dplcHeader
-	dplcEntry 9, $6F
 TailsTailPLC_17_End
 
 TailsTailPLC_18: dplcHeader
-	dplcEntry 6, $78
 TailsTailPLC_18_End
 
 TailsTailPLC_19: dplcHeader
-	dplcEntry 9, $7E
 TailsTailPLC_19_End
 
 TailsTailPLC_1A: dplcHeader
@@ -181,31 +176,31 @@ TailsTailPLC_21: dplcHeader
 TailsTailPLC_21_End
 
 TailsTailPLC_22: dplcHeader
-	dplcEntry 6, $60
+	dplcEntry 8, $70
 TailsTailPLC_22_End
 
 TailsTailPLC_23: dplcHeader
-	dplcEntry 9, $66
+	dplcEntry 12, $78
 TailsTailPLC_23_End
 
 TailsTailPLC_24: dplcHeader
-	dplcEntry 9, $6F
+	dplcEntry 12, $84
 TailsTailPLC_24_End
 
 TailsTailPLC_25: dplcHeader
-	dplcEntry 6, $78
+	dplcEntry 6, $90
 TailsTailPLC_25_End
 
 TailsTailPLC_26: dplcHeader
-	dplcEntry 9, $7E
+	dplcEntry 12, $96
 TailsTailPLC_26_End
 
 TailsTailPLC_27: dplcHeader
-	dplcEntry 4, $87
+	dplcEntry 8, $A2
 TailsTailPLC_27_End
 
 TailsTailPLC_28: dplcHeader
-	dplcEntry 4, $87
+	dplcEntry 8, $A2
 TailsTailPLC_28_End
 
 TailsTailPLC_29: dplcHeader

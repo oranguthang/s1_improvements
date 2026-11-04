@@ -2145,16 +2145,21 @@ LevSel_SelectionMade:
 		cmpi.w	#$9E,d0					; is sound $9E being played?
 		beq.s	LevSel_Credits				; if yes, go to Credits
 LevSel_NoCheat:
-	if FixBugs=0
-		; This is a workaround for a bug (see PlaySoundID in the sound driver for more info)
-		cmpi.w	#bgm__Last+1,d0				; is sound $80-$93 being played?
-		blo.s	LevSel_PlaySnd				; if yes, branch
-		cmpi.w	#sfx__First,d0				; is sound $94-$9F being played?
-		blo.s	LevelSelect				; if yes, branch
-LevSel_PlaySnd:
-	endif
-		bsr.w	QueueSound2				; play selected sound
+		bsr.w	SoundTest_Play
 		bra.s	LevelSelect				; loop level select
+
+; d0.w = selected sound ID. Shared with Options.
+SoundTest_Play:
+	if FixBugs=0
+		; The original driver treats unused IDs between music and SFX as music.
+		cmpi.w	#bgm__Last+1,d0
+		blo.s	.play
+		cmpi.w	#sfx__First,d0
+		bhs.s	.play
+		rts
+.play:
+	endif
+		bra.w	QueueSound2
 ; ===========================================================================
 
 LevSel_Ending:
@@ -2420,9 +2425,18 @@ LevSel_SndTest:
 		beq.w	LevSel_SSControls
 		cmpi.w	#levsel_sndtest_row,(v_levselitem).w	; is sound test row selected?
 		bne.s	LevSel_NoMove				; if not, branch
-		move.b	(v_jpadpress1).w,d1			; get currently pressed buttons
-		andi.b	#btnR+btnL+btnA,d1			; left/right/A changes sound selection
-		beq.s	LevSel_NoMove				; if not, branch
+		bsr.w	SoundTest_Adjust
+		beq.s	LevSel_NoMove
+		bra.w	LevSelTextLoad
+
+LevSel_NoMove:
+		rts
+
+; Z clear when the sound ID changed. Shared with Options.
+SoundTest_Adjust:
+		move.b	(v_jpadpress1).w,d1
+		andi.b	#btnR+btnL+btnA,d1
+		beq.s	SoundTest_NoChange
 
 		move.w	(v_levselsound).w,d0			; get currently selected sound ID
 		btst	#bitL,d1				; is left pressed?
@@ -2446,11 +2460,11 @@ LevSel_A_WithB:
 LevSel_SetSound:
 		andi.w	#$FF,d0					; every byte is a sound ID
 		move.w	d0,(v_levselsound).w			; set sound test number
-		bsr.w	LevSelTextLoad				; refresh text
-
-LevSel_NoMove:
+		moveq	#1,d0
 		rts
-; End of function LevSelControls
+SoundTest_NoChange:
+		rts
+; End of function SoundTest_Adjust
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------
@@ -2516,13 +2530,16 @@ LevSelTextLoad:
 		move.w	#levsel_yellow,d3			; draw numbers in yellow
 LevSel_DrawSnd:
 		locVRAM	levsel_vram_sndtestnum			; write sound test number position to VRAM
+		bsr.s	SoundTest_DrawID
+		jmp	(LevSel_DrawSSNumber).l
+
+; Draw the shared two-digit sound ID at the current VRAM address.
+SoundTest_DrawID:
 		move.w	(v_levselsound).w,d0			; get currently selected sound ID
 		move.b	d0,d2					; backup number
 		lsr.b	#4,d0					; move first digit to lower nybble
 		bsr.w	LevSel_ChgSnd				; draw 1st digit
 		move.b	d2,d0					; restore backup
-		bsr.w	LevSel_ChgSnd				; draw 2nd digit
-		jmp	(LevSel_DrawSSNumber).l
 ; ===========================================================================
 
 LevSel_ChgSnd:
@@ -2644,6 +2661,7 @@ GM_Level:	; fading out from previous game mode
 Level_NoMusicFade:
 		bsr.w	ClearPLC				; clear any remaining PLC entries
 		bsr.w	PaletteFadeOut				; fade out from the previous screen
+		jsr	(UpdateSceneCharacter).l		; act restarts bypass MainGameLoop
 		disable_ints
 		moveq	#plcid_Points,d0			; SS/Continue/ending art may have overwritten the static points
 		bsr.w	QuickPLC				; restore all nine tiles before any level/demo objects can run

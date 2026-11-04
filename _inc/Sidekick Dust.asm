@@ -6,8 +6,6 @@ SidekickDust:
         beq.w .hidden
         tst.b (v_sidekick_state).w
         bne.w .hidden
-        tst.w (v_debuguse).w
-        bne.w .hidden
         cmpi.b #6,(v_player+obRoutine).w
         bhs.w .hidden
         cmpi.b #id_GotThroughCard,(v_endcard+obID).w

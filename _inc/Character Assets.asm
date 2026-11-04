@@ -24,14 +24,13 @@ UpdateSceneCharacter:
         bsr.w GetPlayerOption
         cmpi.w #PlayerOption_SonicTails,d0
         blo.s .solo
-        move.b #Character_Tails,(v_character_p2).w
         moveq #Character_Sonic,d1
         cmpi.w #PlayerOption_KnucklesTails,d0
         bne.s .leader
         moveq #Character_Knuckles,d1
 .leader:
         move.b d1,(v_character_p1).w
-        rts
+        bra.s .withTails
 .solo:
         move.b d0,(v_character_p1).w
 .return:
@@ -40,8 +39,20 @@ UpdateSceneCharacter:
     if FeatureSidekick&FeatureTails
         ; Both attract and credits recordings remain Sonic's original inputs;
         ; a live sidekick follows independently, including the SS attract demo.
-        move.b #Character_Tails,(v_character_p2).w
+    else
+        rts
     endif
+.withTails:
+        cmpi.w #id_FZ,(v_zone_act).w
+        bne.s .enableSidekick
+        move.b (v_gamemode).w,d0
+        andi.b #$1C,d0
+        cmpi.b #id_Level,d0
+        beq.s .return
+        cmpi.b #id_Demo,d0
+        beq.s .return
+.enableSidekick:
+        move.b #Character_Tails,(v_character_p2).w
         rts
 
 ; d0.w = enabled, validated persistent play mode. Keeps address registers.

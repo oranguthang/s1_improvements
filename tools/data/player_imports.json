@@ -462,6 +462,12 @@
     ]
   },
   "input_files": {
+    "s2/art/uncompressed/Tails's art.bin": "246d1d1af99655200ce1241f3fcba9b26923c202523c896a720095cab56edb4b",
+    "s2/art/uncompressed/Tails poses.bin": "8df0a0baa0f878da1d093d2e1f0fddf53cfaf5934f20478686d676bd83f4165a",
+    "s2/mappings/sprite/Tails.asm": "996374df61092a05184082099e018b2f8432f0a56afe5598a5d9b7ff0b2e2f4f",
+    "s2/mappings/sprite/Tails poses.asm": "7c8e3afa701c5dd7dae154ccbe50f41c6e536c6548dad759650d5d5e6fcab12f",
+    "s2/mappings/spriteDPLC/Tails.asm": "ca488a0fd6f91816bdef02f7522bbb33898cb9bfd6441b5709dc6a1f1aa29eca",
+    "s2/mappings/spriteDPLC/Tails poses.asm": "2662f048d61518f31f617a0c267123c1e660491cffb61b87347235d575e4ae10",
     "s2/art/uncompressed/Sonic's art.bin": "75ee80865f4d01f8695ceecabea4e99282cab09ed883d72981ce06e64647c502",
     "s2/mappings/sprite/Sonic.asm": "97871fa285558e851e9a10b17d91d1f8a02521b32306b0d8f6699a5f67ff7149",
     "s2/mappings/spriteDPLC/Sonic.asm": "6ed4c5181035a3179bb269127e1662809dfa57078f27d2e68002f1c2e828f332",

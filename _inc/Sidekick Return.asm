@@ -74,6 +74,25 @@ Sidekick_ReturnFlight:
 .timeout:
         subq.w #1,(v_sidekick_timer).w
         bpl.s .draw
+        ; Use the current camera and position, not last frame's render flag.
+        moveq #0,d1
+        move.b obActWid(a0),d1
+        move.w obX(a0),d0
+        sub.w (v_screenposx).w,d0
+        add.w d1,d0
+        bmi.s .lost
+        add.w d1,d1
+        addi.w #320,d1
+        cmp.w d1,d0
+        bge.s .lost
+        move.w obY(a0),d0
+        sub.w (v_screenposy).w,d0
+        addi.w #32,d0
+        cmpi.w #224+64,d0
+        bhs.s .lost
+        clr.w (v_sidekick_timer).w      ; still visible, retry only after leaving the screen
+        bra.s .draw
+.lost:
         jsr (Sidekick_Lost).l
 .draw:
         jsr (Sidekick_LoadGfx).l

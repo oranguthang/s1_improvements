@@ -394,6 +394,18 @@ def figure8_pack(frame):
     return (bytes(art), pieces)
 
 
+# Keep the blue body registered to the first frame in each diagonal
+# cycle. CD's unadjusted drawings shift by up to four pixels.
+FIGURE8_DIAGONAL_OFFSETS = {
+    5: (0, -3),
+    6: (-1, 1),
+    7: (0, -4),
+    13: (-3, 0),
+    14: (1, 1),
+    15: (-4, 0),
+}
+
+
 def figure8_assets(source):
     normal = figure8_cd_frames(source)
     superframes = []
@@ -426,6 +438,10 @@ def figure8_assets(source):
             maps.append(f"{label}: spriteHeader")
             dx = round(3 * math.sin(i // 4 * math.pi / 4))
             dy = round(3 * math.cos(i // 4 * math.pi / 4))
+            if form == "Sonic":
+                align_x, align_y = FIGURE8_DIAGONAL_OFFSETS.get(i, (0, 0))
+                dx += align_x
+                dy += align_y
             for x, y, w, h, t, xf, yf in pieces:
                 maps.append(
                     f"\tspritePiece {x + dx}, {y + dy}, {w}, {h}, {t}, {int(xf)}, {int(yf)}, 0, 0"
