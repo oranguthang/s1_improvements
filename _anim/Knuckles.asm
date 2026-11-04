@@ -36,6 +36,7 @@ Ani_Knuckles:
         dc.w KnucklesAni_Figure8-Ani_Knuckles
         dc.w KnucklesAni_Fall-Ani_Knuckles
         dc.w KnucklesAni_Victory-Ani_Knuckles
+        dc.w KnucklesAni_Carry-Ani_Knuckles ; 24
 
 ; The descriptor selects eight walking frames: Sonic_Animate adds 8 per
 ; floor orientation. The order follows S3K's walk script (7, 8, 1-6).
@@ -217,3 +218,6 @@ KnucklesAni_Victory: dc.b 5,knux_victory_frame,knux_victory_frame+1,knux_victory
 KnucklesAni_Transform: dc.b 2,knux_transform_frame,knux_transform_frame,knux_transform_frame+1,knux_transform_frame+2,knux_transform_frame+1,knux_transform_frame+2,knux_transform_frame+1,knux_transform_frame+2,knux_transform_frame+1,knux_transform_frame+2,knux_transform_frame+1,knux_transform_frame+2,afChange,id_Walk
 		even
 	even
+
+KnucklesAni_Carry: dc.b $13,knux_carry_frame,afEnd
+        even

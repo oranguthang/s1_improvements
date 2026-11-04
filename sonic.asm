@@ -98,6 +98,8 @@ FeatureSuper = 1
 ;	| Super transformation for every character and the Super run in the good ending
 FeatureTails = 1
 ;	| Tails can be selected in OPTIONS
+FeatureSidekick = 1
+;	| Sonic and Tails / Knuckles and Tails, including gameplay and Special Stage demos
 FeatureKnuckles = 1
 ;	| Knuckles can be selected in OPTIONS
 FeatureS2Stars = 1
@@ -124,7 +126,7 @@ FeatureCDDrowning = 0
 Feature7thEmerald = 0
 ;	| If 1, a cyan seventh Chaos Emerald waits in Special Stage 7, a copy of stage 6
 
-	if (FeatureSkidDust|FeatureSpinDash|FeaturePeelOut|FeatureAirRoll|FeatureHomingAttack|FeatureLightDash|FeatureSpringPoses|FeatureExtendedCamera|FeatureMomentum|FeatureRollJumpSteering|FeatureInstantTally|FeatureExtraLives|FeatureLamppostRings|FeatureSuper|FeatureTails|FeatureKnuckles|FeatureCentiseconds|FeatureS2Stars|FeatureVictoryPoses|FeatureS3KDrums|FeatureCDDrowning|FeatureInfiniteLives|FeatureTextCredits|Feature7thEmerald)&~1
+	if (FeatureSkidDust|FeatureSpinDash|FeaturePeelOut|FeatureAirRoll|FeatureHomingAttack|FeatureLightDash|FeatureSpringPoses|FeatureExtendedCamera|FeatureMomentum|FeatureRollJumpSteering|FeatureInstantTally|FeatureExtraLives|FeatureLamppostRings|FeatureSuper|FeatureTails|FeatureSidekick|FeatureKnuckles|FeatureCentiseconds|FeatureS2Stars|FeatureVictoryPoses|FeatureS3KDrums|FeatureCDDrowning|FeatureInfiniteLives|FeatureTextCredits|Feature7thEmerald)&~1
 		error "Feature options must be 0 or 1"
 	endif
 
@@ -3999,6 +4001,7 @@ GM_Credits:
 
 		bsr.w	EndingDemoLoad				; prepare loading the next ending demo
 
+        jsr (UpdateSceneCharacter).l
         jsr (GetLevelHeader).l
         movea.l LevelHeader_MainPLC(a2),a1
         move.l a1,d0
@@ -4565,6 +4568,7 @@ Art_Sonic:	binclude	"artunc/Sonic.unc"
 Art_SonicFigure8: binclude "artunc/Sonic Figure8.unc"
 Art_SonicAirPoses: binclude "artunc/Sonic Air Poses.unc"
 Art_SonicVictory: binclude "artunc/Sonic Victory.unc"
+Art_SonicCarry: binclude "artunc/Sonic Carry.unc"
 		even
 
 Art_SuperSonic:	binclude	"artunc/Super Sonic.unc"
@@ -5623,6 +5627,17 @@ TailsSSDynPLC:	include "_maps/Tails SS - Dynamic Gfx Script.asm"
 Map_TailsTailSS: include "_maps/Tails Tail SS.asm"
 TailsTailSSDynPLC: include "_maps/Tails Tail SS - Dynamic Gfx Script.asm"
 		include	"_incObj/8F Tails Tail.asm"
+		include "_incObj/90 Tails Sidekick.asm"
+        include "_inc/Sidekick Collision.asm"
+        include "_inc/Sidekick Special Stage.asm"
+        include "_inc/Sidekick Carry.asm"
+        include "_inc/Sidekick Return.asm"
+        include "_inc/Sidekick Effects.asm"
+        include "_inc/Sidekick Water.asm"
+        include "_inc/Sidekick Gimmicks.asm"
+        include "_inc/Sidekick Dust.asm"
+        include "_inc/Sidekick Debug HUD.asm"
+        include "_inc/Sidekick Palette.asm"
 	if FeatureS2Stars
 		include	"_incObj/02 Invincibility Stars S2.asm"
 Map_InvStarsS2:	include	"_maps/Invincibility Stars S2.asm"
@@ -5679,6 +5694,34 @@ Art_KnucklesSS_End:
 ; blob, and build.lua appends that table to the end of the file. Nothing may
 ; follow the blob: add new ROM data above this point.
 ; ---------------------------------------------------------------------------
+        even
+Sidekick_GeneratedAssets:
+        include "_inc/Sidekick Effects Assets.asm"
+        include "_inc/Sidekick Dust Assets.asm"
+        include "_inc/Sidekick Platform Assets.asm"
+        include "_inc/Sidekick Stage Assets.asm"
+        include "_inc/Sidekick Debug Assets.asm"
+        include "_inc/Sidekick Assets.asm"
+        align $20000
+Art_SidekickTails: binclude "artunc/Sidekick Tails.unc"
+Art_SidekickTails_End:
+        align $20
+Art_SidekickTailsTail: binclude "artunc/Sidekick Tails Tail.unc"
+Art_SidekickTailsTail_End:
+        align $20
+Art_SidekickStars_BeforeAlign:
+        if ((Art_SidekickStars_BeforeAlign&$1FFFF)+24*tile_size)>$20000
+        align $20000
+        endif
+Art_SidekickStars: binclude "artunc/Sidekick Invincibility Stars.unc"
+Art_SidekickStars_End:
+        align $20
+Art_SidekickDebugFont_BeforeAlign:
+        if ((Art_SidekickDebugFont_BeforeAlign&$1FFFF)+19*tile_size)>$20000
+        align $20000
+        endif
+Art_SidekickDebugFont: binclude "artunc/Sidekick Debug Font.unc"
+Art_SidekickDebugFont_End:
 		even
 	if MDDebugger
 	include "_debug/md-debugger/ErrorHandler.asm"

@@ -400,6 +400,7 @@ CollapseData_8x2_Shuffle: ; 8 fragments, shuffled order
 
 ; SlopeObject2:
 SlopeObject_AssumeStoodOn:
+        jsr (Sidekick_Slope).l
 		lea	(v_player).w,a1				; get Sonic object
 		btst	#3,obStatus(a1)				; is Sonic standing on a platform object?
 		beq.s	.return					; if not, branch

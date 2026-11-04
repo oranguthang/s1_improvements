@@ -3,12 +3,13 @@
 ; ROM pointers avoid a shared RAM cache that would mix two player selections.
 
 ; Apply the saved choice to gameplay, the Continue screen and the ending.
-; Recorded demos and other presentation screens always use Sonic. Clobbers d0.
+; Recorded demos use Sonic with the companion; other presentation uses Sonic. Clobbers d0.
 UpdateSceneCharacter:
-        move.b #-1,(v_sonframenum).w ; reload art even if the new character uses the same frame
+        move.b #-1,(v_sonframenum).w
         clr.b (v_character_p1).w
+        move.b #Character_Off,(v_character_p2).w
         tst.w (f_demo).w
-        bne.s .return
+        bne.s .demo
         move.b (v_gamemode).w,d0
         andi.b #$1C,d0
         cmpi.b #id_Level,d0
@@ -20,38 +21,67 @@ UpdateSceneCharacter:
         cmpi.b #id_Ending,d0
         bne.s .return
 .playable:
-        move.b (v_character_selected).w,d0
-        cmpi.b #Character_Count,d0
-        bhs.s .return
-    if (FeatureTails&FeatureKnuckles)=0
-        move.l a1,-(sp)
-        ext.w d0
-        lea (CharacterEnabled).l,a1
-        tst.b (a1,d0.w)                 ; left out of this build: stay Sonic
-        movea.l (sp)+,a1                ; keeps the flags
-        beq.s .return
-    endif
+        bsr.w GetPlayerOption
+        cmpi.w #PlayerOption_SonicTails,d0
+        blo.s .solo
+        move.b #Character_Tails,(v_character_p2).w
+        moveq #Character_Sonic,d1
+        cmpi.w #PlayerOption_KnucklesTails,d0
+        bne.s .leader
+        moveq #Character_Knuckles,d1
+.leader:
+        move.b d1,(v_character_p1).w
+        rts
+.solo:
         move.b d0,(v_character_p1).w
 .return:
         rts
-
-; d0.w = the selected solo character, Sonic if this build leaves it out.
-GetSelectedCharacter:
-        moveq #0,d0
-        move.b (v_character_selected).w,d0
-        cmpi.b #Character_Count,d0
-        bhs.s .sonic
-    if (FeatureTails&FeatureKnuckles)=0
-        move.l a1,-(sp)
-        lea (CharacterEnabled).l,a1
-        tst.b (a1,d0.w)
-        movea.l (sp)+,a1                ; keeps the flags
-        beq.s .sonic
+.demo:
+    if FeatureSidekick&FeatureTails
+        ; Both attract and credits recordings remain Sonic's original inputs;
+        ; a live sidekick follows independently, including the SS attract demo.
+        move.b #Character_Tails,(v_character_p2).w
     endif
         rts
+
+; d0.w = enabled, validated persistent play mode. Keeps address registers.
+GetPlayerOption:
+        moveq #0,d0
+        move.b (v_character_selected).w,d0
+        cmpi.w #PlayerOption_Count,d0
+        bhs.s .sonic
+        move.l a1,-(sp)
+        lea PlayerOptionsEnabled(pc),a1
+        tst.b (a1,d0.w)
+        movea.l (sp)+,a1
+        beq.s .sonic
+        rts
 .sonic:
+        moveq #PlayerOption_Sonic,d0
+        rts
+
+; d0.w = selected leader, independent of scene/demo state.
+GetSelectedCharacter:
+        bsr.s GetPlayerOption
+        cmpi.w #PlayerOption_SonicTails,d0
+        blo.s .return
+        cmpi.w #PlayerOption_KnucklesTails,d0
+        beq.s .knuckles
         moveq #Character_Sonic,d0
         rts
+.knuckles:
+        moveq #Character_Knuckles,d0
+.return:
+        rts
+
+PlayerOptionsEnabled:
+        dc.b 1,FeatureTails,FeatureKnuckles
+        dc.b FeatureSidekick&FeatureTails,FeatureSidekick&FeatureTails&FeatureKnuckles
+PlayerOptionsEnabled_End:
+        if (PlayerOptionsEnabled_End-PlayerOptionsEnabled)<>PlayerOption_Count
+        fatal "Add an enabled flag for each play mode."
+        endif
+        even
 
 ; The Special Stage results are a Sonic scene, but their continue icon shows
 ; the selected character: Tails' and Knuckles' go over mini Sonic's tiles
@@ -118,6 +148,10 @@ GetCharacterAssets:
         addq.w #4,d2
 .normal:
         lea (CharacterAssets).l,a3
+        jsr (Sidekick_PaletteActive).l
+        beq.s .tableReady
+        lea (CharacterAssets_Paired).l,a3
+.tableReady:
         movea.l (a3,d2.w),a3
         movem.l (sp)+,d0-d2
         move.w (sp)+,ccr
@@ -161,7 +195,10 @@ GetPlayerWaterPaletteID:
         moveq #0,d0
         move.b LevelHeader_WaterSonic(a2),d0
         cmpi.b #Character_Sonic,(v_character_p1).w
+        bne.s .notSonic
+        jsr (Sidekick_PaletteActive).l
         beq.s .return
+.notSonic:
         cmpi.b #Character_Count,(v_character_p1).w
         bhs.s .return
         move.l a3,-(sp)

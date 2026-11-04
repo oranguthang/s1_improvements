@@ -30,3 +30,5 @@ Symbols require ConvSym. Windows and Linux binaries are bundled. On other platfo
 `python tests/check_dust_and_music.py` checks the assembled SRAM migration, SUPER MUSIC selection, skid-cloud timing and debug signpost loading. It needs the default ROM build and `unicorn==2.1.4`.
 
 Install optional resource tools with `python -m pip install -e ".[dev]"`. Run `python -m s1tools --help` for command groups. Python 3.11 or newer is required for these tools, not for ROM assembly.
+
+`python tests/check_sidekick.py` checks the default built ROM's cooperative Tails physics, object interactions, carry/swimming, private state, SRAM choices and resource ownership. It also requires `unicorn==2.1.4`; see [companion controls](docs/gameplay.md#tails-companion).

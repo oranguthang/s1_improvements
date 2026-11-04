@@ -244,6 +244,7 @@ ResetDMAQueue macro
 ; sub_144E: DMA_68KtoVRAM: QueueCopyToVRAM: QueueVDPCommand:
 Add_To_DMA_Queue:
 QueueDMATransfer:
+        jsr (Sidekick_RemapDMA).l
 	if UseVIntSafeDMA==1
 		move.w	sr,-(sp)									; Save current interrupt mask
 		disableInts											; Mask off interrupts

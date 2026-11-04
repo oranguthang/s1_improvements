@@ -558,6 +558,10 @@ Poi_Index:	dc.w Poi_Main-Poi_Index
 Poi_Main:	; Routine 0
 		addq.b	#2,obRoutine(a0)			; advance to Poi_Slower
 		move.l	#Map_Points,obMap(a0)			; set mappings
+        jsr (Sidekick_PaletteActive).l
+        beq.s .normalPoints
+        move.l #Map_Points_Paired,obMap(a0)
+.normalPoints:
 		move.w	#ArtTile_Points|Tile_Pal2,obGfx(a0)	; set art tile and palette
 		move.b	#sprite_cam_field,obRender(a0)		; set to playfield-positioned mode
 		move.b	#1,obPriority(a0)			; set sprite priority (above Sonic)

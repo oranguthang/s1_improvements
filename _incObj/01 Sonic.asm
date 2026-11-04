@@ -65,6 +65,7 @@ Sonic_Main:	; Routine 0
 		move.b	#id_TailsTail,(v_tailsobj).w		; Tails' tails are a separate object, as in S3K
 		clr.b	(v_tailsobj+obRoutine).w
 .noTails:
+        jsr (Sidekick_Spawn).l
 ; ---------------------------------------------------------------------------
 
 ; Obj01_Control:
@@ -98,6 +99,10 @@ Sonic_Control:	; Routine 2
         tst.b d0
         bne.s .ignoremodes
 .normalModeControl:
+        jsr (Sidekick_CarriedMovement).l
+        tst.b d0
+        bne.s .ignoremodes
+        jsr (Sidekick_RequestAssist).l
 		cmpi.b	#Character_Sonic,(v_character_p1).w
 		beq.s	.abilities				; Sonic checks Super combos in Sonic_MdJump2
 		bsr.w	Sonic_PartnerSuperCombo			; partners: a Super combo takes priority over flight or gliding
@@ -269,6 +274,7 @@ Sonic_UpdateTransformPose:
 
 ; Sonic_RecordPos:
 Sonic_RecordPosition:
+        jsr (Sidekick_RecordInput).l
 		move.w	(v_trackpos).w,d0			; get current index for the tracking array
 		lea	(v_tracksonic).w,a1			; load tracking array
 		lea	(a1,d0.w),a1				; set pointer to current index
@@ -1146,6 +1152,10 @@ Sonic_SquashUnused:
 ; ---------------------------------------------------------------------------
 
 Sonic_LevelBound:
+        cmpa.w #v_sidekick_player,a0
+        bne.s .leader
+        jmp (Sidekick_LevelBound).l
+.leader:
 		move.l	obX(a0),d1				; get Sonic's current X-position
 		move.w	obVelX(a0),d0				; get Sonic's current X-velocity
 		ext.l	d0					; sign-extend X-velocity

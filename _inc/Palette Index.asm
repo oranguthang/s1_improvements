@@ -52,6 +52,7 @@ palid_SuperTailsSBZ3Water: makePalEntry Pal_SuperTailsSBZ3Water,v_palette_line_1
 palid_SuperKnuckles: makePalEntry Pal_SuperKnuckles,v_palette_line_1
 palid_SuperKnucklesWater: makePalEntry Pal_SuperKnucklesWater,v_palette_line_1
 palid_SuperKnucklesSBZ3Water: makePalEntry Pal_SuperKnucklesSBZ3Water,v_palette_line_1
+        include "_inc/Sidekick Palette Index.asm"
 	even
 
 

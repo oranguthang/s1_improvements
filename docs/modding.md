@@ -20,6 +20,7 @@ The `Feature*` switches in `sonic.asm` turn this project's gameplay additions on
 | `FeatureExtraLives` | Rings award lives only at 100 and 200. |
 | `FeatureLamppostRings` | Restarting from a lamppost starts with no rings. Returning from a giant ring still keeps them. |
 | `FeatureSuper` | No character can transform, and the good ending keeps the normal form. The CHEATS ring settings stay but have no effect. |
+| `FeatureSidekick` | Hides the Sonic & Tails and Knuckles & Tails choices and disables the demo companion. Requires `FeatureTails`. |
 | `FeatureTails`, `FeatureKnuckles` | OPTIONS skips that character, and a saved selection of it falls back to Sonic. Its art, ending and code stay in the ROM. |
 | `FeatureS2Stars` | Invincibility shows Sonic 1's four trailing stars instead of Sonic 2's (both use the shared white and gray). |
 | `FeatureVictoryPoses` | After the signpost the player runs off to the right, and after a capsule walks right, as in the original game. |
@@ -41,11 +42,23 @@ Five optional alternatives are off by default; 1 enables them:
 
 ## Shared palettes
 
-The selected solo character owns the protected colours at indices 2–5 of palette line 0: blue for Sonic or orange for Tails. Knuckles uses 2/4/5 for red/pink fur and 3 for green shoe panels. Each has dry, Labyrinth and Scrap Brain Act 3 palettes. Gameplay objects and badniks keep stable colours outside these slots, allowing future Super forms to cycle fur independently of them. Each Super cycle writes indices 2–5 as well. Super Tails' first entry repeats his normal index 2, and Super Knuckles' second entry repeats his normal index 3, so his green shoe panels never cycle. Simultaneous players with independent fur ramps would require a separate palette allocation and further resource changes.
+The selected solo character owns the protected colours at indices 2–5 of palette line 0: blue for Sonic or orange for Tails. Knuckles uses 2/4/5 for red/pink fur and 3 for green shoe panels. Each has dry, Labyrinth and Scrap Brain Act 3 palettes. Gameplay objects and badniks keep stable colours outside these slots, allowing future Super forms to cycle fur independently of them. Each Super cycle writes indices 2–5 as well. Super Tails' first entry repeats his normal index 2, and Super Knuckles' second entry repeats his normal index 3, so his green shoe panels never cycle. The paired modes allocate independent orange slots for the normal companion as described below.
 
 The remaining colours are black at 1, white at 6, gray at 7/8/9, skin at A/B, red shades at C/D/E and yellow at F. All character palettes agree outside the protected slots, preserving the original Sonic 1 object colours and three gray shades. Knuckles' cuffs use shared yellow and tan instead of replacing the dark red or yellow entries with orange.
 
 Shared level objects and badnik art use stable indices for affected details. Their gray, red and yellow indices stay intact. Mixed sheets retain tiles belonging only to other palette lines. HUD labels and counters use the level's first palette line for yellow and white; player portraits keep line 0. Graphic resources are shared rather than duplicated just to recolour them. Flicky feathers use the shared red shoe shades C/D/E, so released birds and ending birds keep their colours during player palette changes. The shield and its monitor icon use stable gray shades; the shield icon and static screen frames in the monitor sheet are remapped. The GAME OVER and TIME OVER letters outline in the grays instead of indices 2–5, as the monitor icons do. Hidden end-of-act bonus objects remap only character indices 2–5 to gray; their shared red, yellow, tan and white details keep their original colours. Invincibility stars retain the active character colours. `player palette` reproduces the palettes and HUD index changes from the checked source bundle.
+
+## Companion resources
+
+`FeatureSidekick` enables two paired option IDs (3/4), retaining the original solo IDs (0/1/2). Disabling Tails also disables both paired selections; disabling Knuckles disables Knuckles & Tails. `Character_Count` remains three. `v_character_p1` is always the actual leader, and `v_character_p2` is Tails or `$FF`. Demo selection forces Sonic & Tails without changing the saved option.
+
+The companion body/tail/dust use reserved OST slots 15/16/17. Its private RAM begins at `$FFFF8800`, above the Special Stage rotation matrix and below ending flowers. Terrain physics swaps a listed, aligned context instead of exchanging player objects. The object update preserves ExecuteObjects' d7 counter. Solids maintain a private platform reference, so P2 cannot overwrite P1's standing/pushing flags. Item ownership remains shared/P1, including monitor power-ups.
+
+Paired normal gameplay keeps the leader's fur at palette-0 indices 2–5 and gives Tails orange at 8/E. Audited shared grey 8 folds into 7 and darkest shoe red E into D; other palette lines remain intact. Tails' two darkest fur shades use stable tan B. These changes apply only to paired play. Mixed SYZ tiles and the GHZ boss chain have separate copies, preserving other palette-line users. The audit manifest is `tools/data/sidekick_palette.json`. Special Stages retain their existing layered body/tail art and palettes.
+
+The body and tail share 32 tiles at `$55E–$57D`. Original explosion art `$5A0–$5FF` remains intact. Paired S2 stars pack 24 nonempty tiles into the inactive shield slot and gaps around points/body art. Points share identical zero tiles; dust maps scatter across audited per-zone gaps. The paired SBZ spinning-platform copy omits six empty tiles. These copies preserve visible pixels. Debug coordinates use a 19-glyph font while the companion is visible; shield/stars/Super effects temporarily hide that optional row. End-card/SS result art takes ownership only after the companion is hidden.
+
+`python -m s1tools.sidekick` verifies every generated companion resource; `--apply` regenerates them after an intentional source change. Normal assembly uses checked-in resources. Run `python tests/check_sidekick.py` on a default built ROM with `unicorn==2.1.4` for context, collision, carry, water, stage gimmick, palette, VRAM and SRAM regressions.
 
 ## Underwater colour transition
 
@@ -204,3 +217,8 @@ The animation driver still expects Sonic's animation IDs, frame conventions and 
 The shared-art range is inclusive at `SharedFirst` and exclusive at `SharedEnd`; equal values disable it. Super Sonic uses this range for the original spring/air-pose art. DPLC offsets within that range refer to `SharedArt`. Super palette cycles retain the existing eight-byte frame format and transformation/reversion sequence; the steady-frame count and timing come from the descriptor. Palette refresh changes only indices 2–5, so replacement characters must account for the other shared colours.
 
 Normal Sonic retains the player-water palette ID from the act header; other registered characters use their descriptor's LZ or SBZ3 ID. The lives icon is queued when the title, level or Special Stage results load. If a selection changes during gameplay, update mappings and palettes and invalidate `v_sonframenum` before drawing: the frame cache alone cannot detect a different art source.
+
+
+Paired Sonic art keeps the original concatenation order of the base sheet, Figure8, air poses, victory and carried poses. DPLC indices span those sheets; substituting only the base sheet gives valid-looking pointers into unrelated art for appended frames. The normal and Super paired concatenations each stay in one DMA bank. `check_sidekick_fixes.py` checks every normal/Super DPLC payload, including the shared spring/fall range. The separate carried animation uses S2 Sonic Hang2 ($6B/$6C) or S3K Knuckles $91; horizontal pole hangs retain their own animation.
+
+Special Stage spawn/return chooses a clear adjacent position using the actual wall sensors, falling back to the leader's validated pose in narrow passages. Ordinary returning flight clears rotor control when it ends; its carry exclusion lasts until touchdown. Live CPU following replays the current horizontal input and limits excess near-leader ground speed; demos retain their recorded timing.

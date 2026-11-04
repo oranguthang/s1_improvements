@@ -92,7 +92,11 @@ Bub_ChkWater:	; Routine 4
 		bne.s	.display				; if yes, branch
 	endif
 		bsr.w	Bub_ChkSonic				; has Sonic touched the bubble?
-		beq.s	.display				; if not, branch
+        bne.s .leaderBubble
+        jsr (Sidekick_TryBubble).l
+        beq.w .display
+        bra.w .burst
+.leaderBubble:
 
 		bsr.w	ResumeMusic				; cancel countdown music (if necessary)
 		move.w	#sfx_Bubble,d0

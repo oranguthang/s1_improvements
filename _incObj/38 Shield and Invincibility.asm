@@ -179,6 +179,7 @@ ShieldStars_LoadGfx:
 		cmpa.w	#VDP_Command_Buffer_Slot,a1		; does every transfer fit?
 		bhi.s	.full					; if not, queue nothing and retry next frame
 		move.w	d4,(v_shieldartkey).w
+        clr.b (v_sidekick_debug_ready).w
 		subq.w	#1,d5					; loop count
 		move.l	d1,d6					; keep art source
 		move.w	#ArtTile_Shield*tile_size,d4		; target VRAM address

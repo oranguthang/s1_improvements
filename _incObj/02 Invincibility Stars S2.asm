@@ -54,6 +54,11 @@ IStar_Init:	; Routine 0
 		move.b	#4,obRoutine(a1)
 		move.l	#Map_InvStarsS2,obMap(a1)
 		move.w	#ArtTile_InvStarsS2,obGfx(a1)
+        jsr (Sidekick_PaletteActive).l
+        beq.s .normalMap
+        move.l #Map_InvStarsS2_Paired,obMap(a1)
+        clr.w obGfx(a1)
+.normalMap:
 		move.b	#sprite_cam_field|sprite_subsprites,obRender(a1)
 		move.b	#1,obPriority(a1)
 		move.b	#64/2,obActWid(a1)			; stars reach 31 pixels out
@@ -80,6 +85,9 @@ IStar_Main:	; Routine 2
 		tst.b	istar_ready(a0)				; are the tiles queued?
 		bne.s	.ready
 		bsr.w	IStar_LoadGfx
+        tst.b istar_ready(a0)
+        bne.s .ready
+        rts
 	.ready:
 		lea	(v_player).w,a1
 		move.w	obX(a1),obX(a0)				; circle around the player
@@ -107,10 +115,14 @@ IStar_Main:	; Routine 2
 		neg.w	d0
 	.spin:
 		add.b	d0,istar_angle(a0)
-		bra.s	IStar_Display
+		bra.w	IStar_Display
 ; ===========================================================================
 
 IStar_Trail:	; Routine 4
+        tst.b (v_starsobj1+istar_ready).w
+        bne.s .hasArt
+        rts
+.hasArt:
 		tst.b	(v_invinc).w				; has invincibility run out?
 		beq.w	IStar_Delete
 		tst.b	(v_supersonic).w
@@ -196,6 +208,10 @@ IStar_Offsets:
 ; ---------------------------------------------------------------------------
 
 IStar_LoadGfx:
+        jsr (Sidekick_PaletteActive).l
+        beq.s .normal
+        jmp (Sidekick_StarsGfx).l
+.normal:
 		move.w	sr,-(sp)
 		disableInts					; keep VBlank from flushing the queue meanwhile
 		movea.w	(VDP_Command_Buffer_Slot).w,a1

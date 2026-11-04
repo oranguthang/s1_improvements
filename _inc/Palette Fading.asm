@@ -293,6 +293,7 @@ PaletteWhiteOut:
 		bsr.w	RunPLC
 		move.b	#id_VBlank_PaletteFade,(v_vblank_routine).w ; set VBlank routine to fade-in ($12)
 		bsr.w	WaitForVBlank				; wait for VBlank to transfer CRAM and sync screen
+        jsr (Sidekick_RingFadeFrame).l
 		bchg	#0,d6
 		beq.s	.fadeMainLoop
 		bsr.s	WhiteOut_ToWhite			; fade-out all affected colors to white bit more

@@ -161,6 +161,10 @@ id_TryChaos:		objptr	TryChaos		; 8C
 id_SuperSonicStars:	objptr	SuperSonicStars		; 8D
 id_SuperTailsFlickies:	objptr	SuperTailsFlickies	; 8E
 id_TailsTail:		objptr	TailsTail		; 8F
+id_SidekickTails:	objptr SidekickTails	; 90
+id_SidekickTail:		objptr SidekickTail	; 91
+id_SidekickDust: objptr SidekickDust ; 92
+id_SidekickAirBubble: objptr SidekickAirBubble ; 93
 
 ; ---------------------------------------------------------------------------
 

@@ -378,6 +378,7 @@ Debug_ShowItem:
 		move.b	(v_debugitem).w,d0			; get currently selected item in debug list
 		lsl.w	#3,d0					; each entry is 8 bytes
 		move.l	(a2,d0.w),obMap(a0)			; load mappings for displayed item
+        jsr (Sidekick_SpinPlatformMap).l
 		move.w	6(a2,d0.w),obGfx(a0)			; load VRAM setting for displayed item
 		move.b	5(a2,d0.w),obFrame(a0)			; load frame number for displayed item
 		rts						; return

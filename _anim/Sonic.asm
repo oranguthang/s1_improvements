@@ -110,6 +110,8 @@ fr_Fall1: equ $73
 fr_Fall2: equ $74
 fr_Victory1: equ $75
 fr_Victory2: equ $76
+fr_SonicCarry1: equ $77
+fr_SonicCarry2: equ $78
 fr_SuperSpringTwirl1: equ $E6
 fr_SuperFall1: equ $EB
 fr_SuperAirPosesEnd: equ $ED
@@ -179,6 +181,7 @@ id_Transform:	sonani	SonAni_Null	; $20 (Super Sonic only)
 id_Figure8: sonani SonAni_Figure8	; $21
 id_Fall: sonani SonAni_Fall	; $22
 id_Victory: sonani SonAni_Victory	; $23 (FeatureVictoryPoses)
+id_Carry: sonani SonAni_Carry ; $24, held from below Tails
 
 ; ---------------------------------------------------------------------------
 ; --- Special animations (walk/run/roll/push) ---
@@ -377,3 +380,6 @@ SonAni_Fall: dc.b 3,fr_Fall1,fr_Fall2,afEnd
 ; Two-finger victory pose by AleDrawer2008, in Sonic 1's style.
 SonAni_Victory: dc.b 7,fr_Victory1,fr_Victory2,afEnd
 	even
+
+SonAni_Carry: dc.b $13,fr_SonicCarry1,fr_SonicCarry2,afEnd
+        even

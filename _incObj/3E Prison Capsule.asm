@@ -105,7 +105,10 @@ Pri_Switch:	; Routine 4
 		move.w	pri_origY(a0),obY(a0)			; force Y-position to stay at initial
 
 		tst.b	obSolid(a0)				; is Sonic standing on the switch?
+        bne.s .pressed
+        jsr (Sidekick_ButtonOnTop).l
 		beq.s	.return					; if not, branch
+.pressed:
 		clr.b	(f_lockscreen).w			; boss is over, so restore level music during reversion
 		clr.b	(f_bossmusic).w			; fallback for custom boss/capsule placements
 		jsr	(Sonic_RevertFromEvent).l		; smoothly return Super Sonic to normal colours

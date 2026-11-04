@@ -100,6 +100,7 @@ Map_Sonic_internal:	mappingsTable
 	include "_maps/Sonic - Figure8 Map Entries.asm"
 	include "_maps/Sonic - Air Poses Map Entries.asm"
 	include "_maps/Sonic - Victory Map Entries.asm"
+	include "_maps/Sonic - Carry Map Entries.asm"
 
 MS_Null:	spriteHeader
 MS_Null_End
@@ -636,3 +637,4 @@ MS_SpinDash_End
 
 	include "_maps/Sonic - Air Poses Map.asm"
 	include "_maps/Sonic - Victory Map.asm"
+	include "_maps/Sonic - Carry Map.asm"

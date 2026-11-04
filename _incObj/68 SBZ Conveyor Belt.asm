@@ -37,6 +37,7 @@ Conv_Main:	; Routine 0
 ; ---------------------------------------------------------------------------
 
 Conv_Action:	; Routine 2
+        jsr (Sidekick_Conveyor).l
 		bsr.s	Conveyor_MoveSonic			; handle Sonic getting pushed along the conveyor belt
 
 		out_of_range.s	.delete				; has object gone out of range? if yes, branch
@@ -47,12 +48,13 @@ Conv_Action:	; Routine 2
 ; ===========================================================================
 
 Conveyor_MoveSonic:
+        lea (v_player).w,a1
+Conveyor_MovePlayer:
 		moveq	#0,d2					; clear d2
 		move.b	conv_width(a0),d2			; get half-width of conveyor belt
 		move.w	d2,d3					; copy half-width
 		add.w	d3,d3					; make the copy full-width
 
-		lea	(v_player).w,a1				; load Sonic object
 		move.w	obX(a1),d0				; get Sonic's current X-position
 		sub.w	obX(a0),d0				; get conveyor belt's Y-position
 		add.w	d2,d0					; add conveyor belt's half-width

@@ -32,11 +32,13 @@ TTail_Init:
 		move.b	#-1,tail_vramframe(a0)
 
 TTail_Main:
-		lea	(v_player).w,a2
-		cmpi.b	#id_SonicSpecial,obID(a2)		; rolling through a Special Stage?
+        jsr (Sidekick_TailParent).l
+		cmpi.b	#id_Special,(v_gamemode).w		; rolling through a Special Stage?
 		beq.w	TTail_Special
 		cmpi.b	#id_SonicPlayer,obID(a2)		; replaced by an ending or results object?
 		beq.s	.player
+		cmpi.b #id_SidekickTails,obID(a2)
+        beq.s .player
 		cmpi.b	#id_ContSonic,obID(a2)			; the Continue screen's player keeps them
 		bne.w	TTail_Delete
 	.player:
@@ -53,6 +55,7 @@ TTail_Main:
 		move.w	obGfx(a2),d0
 		andi.w	#Tile_Prio,d0				; follow the player's plane priority
 		ori.w	#ArtTile_Tails_Tail,d0
+        jsr (Sidekick_TailTile).l
 		move.w	d0,obGfx(a0)
 
 		bsr.w	TTail_SelectAnim
@@ -90,7 +93,9 @@ TTail_Special:
 		tst.w	(v_debuguse).w				; placement mode shows an item instead
 		bne.w	TTail_Return
 		move.l	#Map_TailsTailSS,obMap(a0)
-		move.w	#ArtTile_Tails_Tail_SS,obGfx(a0)
+		move.w #ArtTile_Tails_Tail_SS,d0
+        jsr (Sidekick_TailTile).l
+        move.w d0,obGfx(a0)
 		move.w	obX(a2),obX(a0)
 		move.w	obY(a2),obY(a0)
 		move.b	obStatus(a2),d0
@@ -101,7 +106,11 @@ TTail_Special:
 		bsr.w	TTail_Directional
 		lea	(TailsTailSSDynPLC).l,a2
 		move.l	#Art_TailsTailSS,d6
-		move.w	#ArtTile_Tails_Tail_SS*tile_size,d4
+		move.w #ArtTile_Tails_Tail_SS*tile_size,d4
+        cmpa.w #v_sidekick_tail,a0
+        bne.s .ssDest
+        move.w #ArtTile_SidekickTail_SS*tile_size,d4
+.ssDest:
 		bsr.w	TTail_LoadGfxFrom
 		jmp	(DisplaySprite).l
 
@@ -272,7 +281,12 @@ TTail_BodyFitsHalf:
 TTail_LoadGfx:
 		lea	(TailsTailDynPLC).l,a2
 		move.l	#Art_TailsTail,d6
-		move.w	#ArtTile_Tails_Tail*tile_size,d4
+		move.w #ArtTile_Tails_Tail*tile_size,d4
+        cmpa.w #v_sidekick_tail,a0
+        bne.s .normalDest
+        move.l #Art_SidekickTailsTail,d6
+        move.w #ArtTile_SidekickTail*tile_size,d4
+.normalDest:
 
 ; Input a2 = DPLC table, d6 = art, d4 = VRAM address.
 TTail_LoadGfxFrom:

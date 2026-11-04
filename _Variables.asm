@@ -143,7 +143,10 @@ v_starsobj4:		equ	v_objspace+object_size*11	; object variable space for the invi
 v_superstars:		equ	v_starsobj1			; Super Sonic speed trail uses the first stars slot
 
 v_splash:		equ	v_objspace+object_size*12	; object variable space for the water splash ($40 bytes)
-v_tailsobj:		equ	v_objspace+object_size*14	; Tails' tails, behind the player ($40 bytes)
+v_tailsobj:		equ	v_objspace+object_size*14	; solo Tails' tails
+v_sidekick_player:	equ v_objspace+object_size*15
+v_sidekick_tail:	equ v_objspace+object_size*16
+v_sidekick_dust: equ v_objspace+object_size*17
 v_sonicbubbles:		equ	v_objspace+object_size*13	; object variable space for the bubbles that come out of Sonic's mouth/drown countdown ($40 bytes)
 v_watersurface1:	equ	v_objspace+object_size*30	; object variable space for the water surface #1 ($40 bytes)
 v_watersurface2:	equ	v_objspace+object_size*31	; object variable space for the water surface #1 ($40 bytes)
@@ -635,6 +638,87 @@ v_ss_scroll_bubbles:	ds.b	$28				; buffer to store scroll positions for SS backg
 v_ss_scroll_clouds:	ds.b	$1C				; buffer to store scroll positions for SS background clouds
 	dephase
 
+
+
+; Two-player gameplay work area. ROM-backed chunks leave this RAM free in
+; levels; title/SS initialization may clear it. Ending flowers start at9400.
+        phase v_256x256_def+$8800
+v_sidekick_ram:
+v_sidekick_active: ds.b 1
+v_sidekick_state: ds.b 1          ; 0 active, 2 waiting, 3 flying back, 4 drowning
+v_sidekick_lastframe: ds.b 1
+v_sidekick_prevheld: ds.b 1
+v_sidekick_manual: ds.w 1
+v_sidekick_timer: ds.w 1
+v_sidekick_stuck: ds.w 1
+v_sidekick_lastx: ds.w 1
+v_sidekick_prev_y: ds.w 1
+v_sidekick_trackindex: ds.w 1
+v_sidekick_platform: ds.w 1
+v_sidekick_platform_x: ds.w 1
+v_sidekick_platform_y: ds.w 1
+v_sidekick_platform_id: ds.b 1
+v_sidekick_platform_seen: ds.b 1
+v_sidekick_spring_object: ds.w 1
+v_sidekick_incontext: ds.b 1
+v_sidekick_spring_delay: ds.b 1
+v_sidekick_carry: ds.b 1
+v_sidekick_assist: ds.b 1
+v_sidekick_carrydelay: ds.w 1
+v_sidekick_rider_x: ds.w 1
+v_sidekick_rider_y: ds.w 1
+v_sidekick_airframes: ds.w 1
+v_sidekick_wasdebug: ds.w 1
+v_sidekick_context:
+sk_ctx_character: ds.b 1
+sk_ctx_super: ds.b 1
+sk_ctx_superpal: ds.b 1
+sk_ctx_god: ds.b 1
+sk_ctx_controls: ds.w 1
+sk_ctx_flight: ds.b 4
+sk_ctx_knux: ds.b 8
+sk_ctx_speeds: ds.w 3
+sk_ctx_camera_y: ds.w 1
+sk_ctx_camera_delay: ds.b 1
+sk_ctx_playerctrl: ds.b 1
+sk_ctx_camera_x: ds.w 1
+sk_ctx_slide: ds.b 1
+sk_ctx_tunnel: ds.b 1
+sk_ctx_shield: ds.b 1
+sk_ctx_invinc: ds.b 1
+sk_ctx_shoes: ds.b 1
+sk_ctx_lightdash: ds.b 1
+sk_ctx_lightdash_active: ds.b 1
+sk_ctx_align_debug: ds.b 1
+sk_ctx_debug: ds.w 1
+sk_ctx_debugmode: ds.w 1
+sk_ctx_lockctrl: ds.b 1
+sk_ctx_angle1: ds.b 1
+sk_ctx_angle2: ds.b 1
+sk_ctx_align_itembonus: ds.b 1
+sk_ctx_itembonus: ds.w 1
+sk_ctx_air: ds.w 1
+v_sidekick_context_end:
+        even
+v_sidekick_history: ds.b 256      ; delayed held buttons, using v_trackbyte indices
+v_sidekick_debug_ready: ds.b 1
+v_sidekick_returning: ds.b 1
+v_sidekick_pole: ds.w 1
+v_sidekick_poletimer: ds.w 1
+v_sidekick_debugmap: ds.b 108
+v_sidekick_ring_entry: ds.w 1
+v_sidekick_ss_oldx: ds.l 1
+v_sidekick_ss_oldy: ds.l 1
+v_sidekick_ss_recheck: ds.b 1
+v_sidekick_ss_impulse: ds.b 1
+v_sidekick_ram_end:
+        if v_sidekick_ram<v_256x256_def+$8400
+        fatal "Companion work overlaps the Special Stage rotation matrix"
+        endif
+        if v_sidekick_ram_end>v_ending_flowers
+        fatal "Companion work overlaps ending flowers"
+        endif
+        dephase
 
 ; Error handler
 	phase	v_error_workspace

@@ -678,7 +678,7 @@ ArtTile_Invincibility:		equ ArtTile_Shield		; never shown with the shield
 ArtTile_SuperSonicStars:	equ ArtTile_Shield		; 14 tiles; shield hidden and stars removed while Super
 ArtTile_SuperTailsFlickies:	equ ArtTile_Shield		; 14 tiles; Super Tails has no stars
 ArtTile_Game_Over:		equ $55E			; $553-$57F no longer hold shield/stars art
-ArtTile_InvStarsS2:		equ ArtTile_Game_Over	; 34 tiles up to the title cards, see 02 Invincibility Stars S2.asm
+ArtTile_InvStarsS2:		equ $55E	; 34 tiles up to the title cards, see 02 Invincibility Stars S2.asm
 ArtTile_Title_Card:		equ $580
 ArtTile_Animal_1:		equ $580
 ArtTile_Animal_2:		equ $592
@@ -700,7 +700,7 @@ ArtTile_Tails_Tail:		equ ArtTile_Sonic+Sonic_Slot_Tiles-Tails_Tail_Tiles
 ArtTile_Tails_Tail_SS:		equ ArtTile_Sonic+Sonic_Slot_Tiles-TailsTailSS_Tiles ; Special Stage tails (see _maps/Tails Tail SS.asm)
 ArtTile_Points:			equ ArtTile_Shield+Shield_Slot_Tiles ; $553-$55B, after shield/stars
 Points_Tiles:			equ 9
-ArtTile_Debug_Stats:		equ ArtTile_Points+Points_Tiles ; SPR label and decimal sprite count
+ArtTile_Debug_Stats:		equ $56E ; SPR label and decimal sprite count
 Debug_Stats_Tiles:		equ 5
 ArtTile_Lamppost:		equ $D800/$20			; ten tiles just before the HUD
 ArtTile_SpinDust:		equ $F400/$20
@@ -726,11 +726,15 @@ ArtTile_Hidden_Points:		equ $4B6
 ArtTile_Warp:			equ $541
 ArtTile_Mini_Sonic:		equ $551
 ArtTile_Bonuses:		equ $570
+ArtTile_LevelBonuses:	equ $570
+ArtTile_Sidekick:	equ $55E
+ArtTile_SidekickTail:	equ ArtTile_Sidekick+16
+ArtTile_SidekickTail_SS: equ ArtTile_Sidekick+32-TailsTailSS_Tiles
 ; Debug coordinates share tiles with the Game Over art ($55E-$57F) and the
 ; bonus counters. HudDb_ChkHidden keeps them hidden, and their tiles
 ; unwritten, while either can be on screen; all 16 are rewritten every
 ; frame they are shown.
-ArtTile_Debug_Coords:		equ $570
+ArtTile_Debug_Coords:		equ $55E
 Debug_Coords_Tiles:		equ 16
 ArtTile_Signpost:		equ $680
 
@@ -808,17 +812,17 @@ ArtTile_Ending_STH:		equ $5C5
 	if ArtTile_Points+Points_Tiles>ArtTile_Game_Over
 		fatal "Points must survive Game Over art loading"
 	endif
-	if ArtTile_Debug_Stats+Debug_Stats_Tiles>ArtTile_Debug_Coords
+	if ArtTile_Debug_Stats+Debug_Stats_Tiles>ArtTile_Sidekick+32
 		fatal "SPR stats overlap debug coordinate digits"
 	endif
 	if ArtTile_Shield+Shield_Slot_Tiles>ArtTile_Debug_Coords
 		error "Shield/stars DPLC slot overlaps the debug coordinates"
 	endif
-	if ArtTile_Debug_Coords+Debug_Coords_Tiles>ArtTile_Title_Card
-		error "Debug coordinates overlap the title cards"
+	if ArtTile_Debug_Coords+Debug_Coords_Tiles>ArtTile_Title_Card+128
+		error "Debug coordinates exceed the shared title-card region"
 	endif
-	if ArtTile_InvStarsS2+34>ArtTile_Title_Card
-		error "Sonic 2 stars overlap the title cards"
+	if ArtTile_InvStarsS2+34>ArtTile_Title_Card+128
+		error "Sonic 2 stars exceed the shared title-card region"
 	endif
 	if ArtTile_InvStarsS2<ArtTile_Points+Points_Tiles
 		error "Sonic 2 stars overlap the points"
@@ -907,6 +911,14 @@ Character_Tails: equ 1
 Character_Knuckles: equ 2
 Character_Count: equ 3
 Character_Off: equ $FF
+
+; Persistent play modes are separate from the three character asset IDs.
+PlayerOption_Sonic: equ 0
+PlayerOption_Tails: equ 1
+PlayerOption_Knuckles: equ 2
+PlayerOption_SonicTails: equ 3
+PlayerOption_KnucklesTails: equ 4
+PlayerOption_Count: equ 5
 CharacterAsset_Art: equ 0
 CharacterAsset_Map: equ 4
 CharacterAsset_DPLC: equ 8

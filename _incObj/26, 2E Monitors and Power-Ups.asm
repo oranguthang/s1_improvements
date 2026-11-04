@@ -56,6 +56,7 @@ Mon_Main:	; Routine 0
 		move.b	obSubtype(a0),obAnim(a0)		; use subtype as animation ID
 
 Mon_Solid:	; Routine 2
+        jsr (Sidekick_MonitorSolid).l
 		move.b	ob2ndRout(a0),d0			; is monitor set to fall or being stood on?
 		beq.s	.normal					; if not, branch
 		subq.b	#2,d0					; is monitor specifically set to fall?

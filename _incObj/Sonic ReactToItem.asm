@@ -223,6 +223,13 @@ React_CollisionDetected:
 		cmpi.b	#col_32x32,d0				; has a monitor been touched? ($46)
 		beq.s	React_Monitor				; if yes, branch
 
+        ; A companion can collect ordinary/lost rings, but only the
+        ; leader may start the giant-ring transition.
+        cmpa.w #v_sidekick_player,a0
+        bne.s .ring
+        cmpi.b #id_GiantRing,obID(a1)
+        beq.s .return
+.ring:
 		; Assume object is a ring (standard, lost, or giant)
 		cmpi.w	#90,flashtime(a0)			; has Sonic recently been hurt and has more than 90 frames of flashing time left?
 		bhs.w	.return					; if yes, prevent collecting ring
@@ -435,6 +442,10 @@ React_ChkHurt:
 ; ---------------------------------------------------------------------------
 
 HurtSonic:
+        cmpa.w #v_sidekick_player,a0
+        bne.s .leader
+        jmp (Sidekick_Hurt).l
+.leader:
 		tst.b	(v_dev_god).w				; is God Mode on?
 		bne.w	KillSonic_God				; if yes, ignore the damage
 		tst.b	(v_shield).w				; does Sonic have a shield?
@@ -519,6 +530,10 @@ HurtSonic:
 ; ---------------------------------------------------------------------------
 
 KillSonic:
+        cmpa.w #v_sidekick_player,a0
+        bne.s .leader
+        jmp (Sidekick_Lost).l
+.leader:
 		tst.w	(v_debuguse).w				; is debug mode active?
 		bne.w	.return					; if yes, branch
 		tst.b	(v_dev_god).w				; is God Mode on? (crushers, time over)
@@ -650,7 +665,14 @@ React_Yadrin:
 
 ; .D7orE1:
 React_SYZBumper:
+        tst.b (v_sidekick_incontext).w
+        beq.s React_SpecialFlag
+        jmp (Sidekick_Bumper).l
 React_LZPole:
+        tst.b (v_sidekick_incontext).w
+        beq.s React_SpecialFlag
+        jmp (Sidekick_GrabPole).l
+React_SpecialFlag:
 		addq.b	#1,obColProp(a1)			; set flag that object has been touched (handled in object itself)
 		rts						; return
 ; End of function React_Special

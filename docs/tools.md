@@ -128,3 +128,8 @@ After changing act header resource paths, run `sonlvl sync --write`. Only resour
 ## Verification boundaries
 
 Resource checks validate file formats, indices, checksums and decoded output. They do not prove emulator timing or all gameplay behaviours. Retain normal playtesting when changing code, resource ownership or level geometry.
+
+
+## Companion art and palettes
+
+`python -m s1tools.sidekick` verifies the paired character palettes, selected palette-line copies, packed effects, per-zone dust mappings, mixed stage resources and debug font. `--apply` regenerates them from the checked-in solo resources and `tools/data/sidekick_palette.json`. Normal ROM builds do not require Python. Resource regeneration does not replace emulator playtesting; after geometry/PLC changes also run the built-ROM checks in `tests/check_sidekick.py`.

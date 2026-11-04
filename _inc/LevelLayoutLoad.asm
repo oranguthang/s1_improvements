@@ -18,6 +18,7 @@ LevelDataLoad:
         beq.s .skipPLC
         jsr (AddPLCFromAddress).l
 .skipPLC:
+        jsr (Sidekick_LevelData).l
         rts
 ; End of function LevelDataLoad
 

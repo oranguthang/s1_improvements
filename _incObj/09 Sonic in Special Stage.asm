@@ -56,6 +56,7 @@ SonicSS_Main:	; Routine 0
 		move.b	#id_TailsTail,(v_tailsobj).w		; Tails' rolling tails follow him here too
 		clr.b	(v_tailsobj+obRoutine).w
 	.noTails:
+        jsr (Sidekick_Spawn).l
 
 		move.b	#id_Roll,obAnim(a0)			; set to rolling animation
 		bset	#2,obStatus(a0)				; set rolling flag
@@ -129,6 +130,7 @@ SonicSS_Display:
 		move.w	d0,(v_ssangle).w			; save new angle
 
 		jsr	(Sonic_Animate).l			; animate Sonic (accessing Obj01)
+        jsr (Sonic_RecordPosition).l
 		rts						; return
 ; End of function SonicSS_Control
 
@@ -592,6 +594,11 @@ SonicSS_FindWall_CheckType:
 		beq.s	.return					; if yes, branch
 		cmpi.b	#id_SS_Ring,d4				; is block ID < $3A? (solid blocks, ring is first non-solid)
 		blo.s	.solidblock				; if yes, branch
+        cmpa.w #v_sidekick_player,a0
+        bne.s .ordinaryItems
+        cmpi.b #id_SS_Ghost,d4
+        beq.s .solidblock              ; companion cannot seal a gate ahead of P1
+.ordinaryItems:
 		; IDs $3A-$4A are non-solid blocks (e.g. rings)
 		cmpi.b	#id_SS_Glass_Ani1,d4			; is block ID >= $4B (special blocks for broken glass)
 		bhs.s	.solidblock				; if yes, branch
@@ -757,6 +764,8 @@ SonicSS_NoEmerald:
 
 ; Obj09_ChkGhost:
 SonicSS_ChkGhost:
+        cmpa.w #v_sidekick_player,a0
+        beq.s SonicSS_NoItemBlock       ; only the leader may close ghost walls
 		cmpi.b	#id_SS_Ghost,d4				; is the item a ghost block?
 		bne.s	SonicSS_ChkGhostTag			; if not, branch
 
@@ -783,6 +792,9 @@ SonicSS_NoItemBlock:
 
 ; Obj09_MakeGhostSolid:
 SonicSS_MakeGhostSolid:
+        cmpa.w #v_sidekick_player,a0
+        beq.s SonicSS_GhostNotSolid
+        st.b (v_sidekick_ss_recheck).w
 		cmpi.b	#2,sonss_ghoststate(a0)			; have ghost block and then an invisible switch been passed?
 		bne.s	SonicSS_GhostNotSolid			; if not, branch
 

@@ -15,6 +15,10 @@ LightDash_StallFrames: equ 3
 ; Called in the airborne modes before their normal A action. A failed search
 ; leaves the press intact. Success skips the rest of the calling mode.
 Sonic_LightDashStart:
+        cmpa.w #v_sidekick_player,a0
+        bne.s .leader
+        rts
+.leader:
 	if FeatureLightDash=0
 		rts						; Light Dash disabled
 	endif

@@ -36,7 +36,7 @@ But_Pressed:	; Routine 2
 		; Covers an out-of-range error due to the below fix.
 		bpl.w	.display				; if not, branch
 	else
-		bpl.s	.display				; if not, branch
+		bpl.w	.display				; if not, branch
 	endif
 
 		move.w	#32/2+sonic_solid_width,d1		; collision width
@@ -79,6 +79,8 @@ But_Pressed:	; Routine 2
 	.checkSonicOnTop:
 		tst.b	obSolid(a0)				; is Sonic standing on top of button?
 		bne.s	.pressed				; if yes, branch
+        jsr (Sidekick_ButtonOnTop).l
+        bne.s .pressed
 		bclr	d3,(a3)					; clear stored button pressed state
 		bra.s	.handleFlashing				; skip pressed logic
 ; ===========================================================================

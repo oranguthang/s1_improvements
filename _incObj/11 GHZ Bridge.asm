@@ -414,6 +414,7 @@ Bri_Data_Align:	; Values used to align logs to the left & right of the one being
 ; ===========================================================================
 
 Bri_ChkDel:
+        jsr (Sidekick_Bridge).l
 		out_of_range.w	.deleteBridge			; has bridge gone out of range? if yes, delete it with all child logs
 	if FixBugs
 		; This has been moved to prevent a display-after-free bug.

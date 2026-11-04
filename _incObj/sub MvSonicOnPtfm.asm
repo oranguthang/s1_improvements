@@ -9,6 +9,7 @@
 ; ---------------------------------------------------------------------------
 
 MvSonicOnPtfm:	; custom platform height (in d3)
+        jsr (Sidekick_RideCustom).l
 		lea	(v_player).w,a1				; get Sonic object
 		move.w	obY(a0),d0				; get Y-position of platform
 		sub.w	d3,d0					; subtract input height from platform Y-position
@@ -16,6 +17,7 @@ MvSonicOnPtfm:	; custom platform height (in d3)
 ; ===========================================================================
 
 MvSonicOnPtfm2:	; assume platform height (fixed to 9px)
+        jsr (Sidekick_Ride).l
 		lea	(v_player).w,a1				; get Sonic object
 		move.w	obY(a0),d0				; get Y-position of platform
 		subi.w	#9,d0					; subtract assumed height of 9px from platform Y-position

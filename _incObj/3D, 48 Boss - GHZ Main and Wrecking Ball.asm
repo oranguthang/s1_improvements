@@ -458,6 +458,7 @@ GBall_MakeLinks:
 		move.b	#6,obRoutine(a1)			; set routine to GBall_Link
 		move.l	#Map_Swing_GHZ,obMap(a1)		; load mappings and art
 		move.w	#ArtTile_GHZ_MZ_Swing,obGfx(a1)
+        jsr (Sidekick_BossChainTile).l
 		move.b	#1,obFrame(a1)				; set current animation frame
 		addq.b	#1,obSubtype(a0)			; set subtype of wrecking ball object to 1
 

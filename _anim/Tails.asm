@@ -36,6 +36,7 @@ Ani_Tails:
         dc.w TailsAni_Figure8-Ani_Tails
         dc.w TailsAni_Fall-Ani_Tails
         dc.w TailsAni_Victory-Ani_Tails
+        dc.w TailsAni_Hang-Ani_Tails ; 24, not a leader in paired play
 
 ; Eight S3K walk frames per floor orientation (descriptor walk count 8), in
 ; S3K's order (7, 8, 1-6).

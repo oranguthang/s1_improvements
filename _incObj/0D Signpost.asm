@@ -193,6 +193,7 @@ GotThroughAct:
 		clr.b	(v_invinc).w				; disable invincibility
 		clr.b	(f_timecount).w				; stop time counter
 		move.b	#id_GotThroughCard,(v_endcard).w	; load end card object (and prevent this routine from running again)
+        jsr (Sidekick_FinishScene).l
 		jsr	(GRing_EndAct).l				; hand the shared ring tiles over to the results card
 		jsr	(ClearPLC).l				; drop pending art that would overwrite the card
 		jsr	(Got_LoadArt).l				; load the end-of-act card letters

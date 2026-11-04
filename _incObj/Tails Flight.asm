@@ -126,12 +126,17 @@ Tails_FlightPose:
         move.w (v_framecount).w,d0
         btst #6,obStatus(a0)
         bne.s .swim
-        moveq #$77,d0                  ; ascending while a pulse lasts, so a ceiling
-        tst.b (v_tails_flap).w         ; that keeps zeroing the climb does not flicker
+        moveq #$75,d0                  ; S3K free-flight body, including ascent
+        cmpa.w #v_sidekick_player,a0
+        bne.s .fatigue
+        tst.b (v_sidekick_carry).w
+        beq.s .fatigue
+        move.w #fr_TailsCarryUp,d0
+        tst.b (v_tails_flap).w
         bne.s .fatigue
         tst.w obVelY(a0)
         bmi.s .fatigue
-        moveq #$75,d0                  ; flying
+        move.w #fr_TailsCarry,d0
 .fatigue:
         move.w #sfx_TailsFly,d1
         tst.w (v_tails_flytime).w
@@ -147,6 +152,15 @@ Tails_FlightPose:
 .swim:
         tst.w (v_tails_flytime).w
         beq.s .swimTired
+        cmpa.w #v_sidekick_player,a0
+        bne.s .freeSwim
+        tst.b (v_sidekick_carry).w
+        beq.s .freeSwim
+        lsr.w #2,d0
+        andi.w #1,d0
+        addi.w #fr_TailsSwimCarry,d0
+        bra.s .frame
+.freeSwim:
         lsr.w #2,d0
         divu.w #5,d0
         swap d0

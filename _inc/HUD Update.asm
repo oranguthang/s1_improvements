@@ -108,7 +108,13 @@ HUD_Update:
 		beq.s	.finish					; if not, branch
 		clr.b	(f_endactbonus).w			; clear update flag
 
-		locVRAM	ArtTile_Bonuses*tile_size		; set VRAM address
+        cmpi.b #id_Special,(v_gamemode).w
+        beq.s .ssBonusAddress
+        locVRAM ArtTile_LevelBonuses*tile_size
+        bra.s .bonusAddressReady
+.ssBonusAddress:
+		locVRAM ArtTile_Bonuses*tile_size
+.bonusAddressReady:
 		moveq	#0,d1					; clear d1
 		move.w	(v_timebonus).w,d1			; load time bonus
 		bsr.w	Hud_TimeRingBonus			; write time bonus digits to VRAM
@@ -151,6 +157,8 @@ TimeOver:
 ; ---------------------------------------------------------------------------
 
 HudDebug:
+        jsr (Sidekick_DebugWanted).l
+        bne.s .return
 		bsr.w	HudDb_ChkHidden				; may the debug tiles be used now?
 		bne.s	.return
 		bsr.w	HudDb_XY				; camera/player coordinates (upper right)
@@ -265,7 +273,8 @@ HudDb_XY:
 
 HudDb_XY_Write:
 		moveq	#8-1,d6					; write 8 digits in total
-		lea	(Art_Text).l,a1				; load uncompressed 8x8 font graphics
+		lea	(Art_Text).l,a1
+        jsr (Sidekick_RemapRawA1).l				; load uncompressed 8x8 font graphics
 
 .loopdigits:
 		rol.w	#4,d1					; move uppest nybble in word to lowest nybble
@@ -289,6 +298,7 @@ HudDb_XY_Write:
 HudDb_Sprites:
 		locVRAM	ArtTile_Debug_Stats*tile_size
 		lea	(Art_Text).l,a1
+        jsr (Sidekick_RemapRawA1).l
 		lea	HudDb_SpriteLabel(pc),a2
 		moveq	#3-1,d6
 .label:

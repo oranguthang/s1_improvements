@@ -2,6 +2,9 @@ fr_TailsTransform equ $97
 fr_TailsWalk equ $9A
 fr_TailsVictory equ $BA
 fr_TailsSwimTired equ $BF
+fr_TailsCarry equ $C2
+fr_TailsCarryUp equ $C4
+fr_TailsSwimCarry equ $C6
 
 ; S3K Tails, repacked for the S1 player frame IDs.
 TailsMap_internal: mappingsTable
@@ -199,6 +202,12 @@ TailsMap_internal: mappingsTable
 	mappingsTableEntry.w TailsMap_BF
 	mappingsTableEntry.w TailsMap_C0
 	mappingsTableEntry.w TailsMap_C1
+	mappingsTableEntry.w TailsMap_C2
+	mappingsTableEntry.w TailsMap_C3
+	mappingsTableEntry.w TailsMap_C4
+	mappingsTableEntry.w TailsMap_C5
+	mappingsTableEntry.w TailsMap_C6
+	mappingsTableEntry.w TailsMap_C7
 
 TailsMap_00: spriteHeader
 TailsMap_00_End
@@ -1316,5 +1325,35 @@ TailsMap_C1: spriteHeader
 	spritePiece -16, -15, 4, 3, 2, 0, 0, 0, 0
 	spritePiece -24, 1, 1, 1, 14, 0, 0, 0, 0
 TailsMap_C1_End
+
+TailsMap_C2: spriteHeader
+	spritePiece -13, -15, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -21, -7, 4, 3, 3, 0, 0, 0, 0
+TailsMap_C2_End
+
+TailsMap_C3: spriteHeader
+	spritePiece -13, -15, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -21, -7, 4, 3, 3, 0, 0, 0, 0
+TailsMap_C3_End
+
+TailsMap_C4: spriteHeader
+	spritePiece -13, -15, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -21, -7, 4, 3, 3, 0, 0, 0, 0
+TailsMap_C4_End
+
+TailsMap_C5: spriteHeader
+	spritePiece -13, -15, 3, 1, 0, 0, 0, 0, 0
+	spritePiece -21, -7, 4, 3, 3, 0, 0, 0, 0
+TailsMap_C5_End
+
+TailsMap_C6: spriteHeader
+	spritePiece -15, -30, 2, 1, 0, 0, 0, 0, 0
+	spritePiece -15, -22, 3, 4, 2, 0, 0, 0, 0
+TailsMap_C6_End
+
+TailsMap_C7: spriteHeader
+	spritePiece -15, -30, 2, 1, 0, 0, 0, 0, 0
+	spritePiece -15, -22, 3, 4, 2, 0, 0, 0, 0
+TailsMap_C7_End
 
 	even

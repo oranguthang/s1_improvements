@@ -16,6 +16,7 @@
 ; ---------------------------------------------------------------------------
 
 SolidObject:
+        jsr (Sidekick_Solid).l
 		tst.b	obSolid(a0)				; is Sonic standing on the object?
 		beq.w	Solid_ChkCollision			; if not, branch
 		move.w	d1,d2
@@ -56,6 +57,7 @@ SolidObject:
 
 ; SolidObject71:
 SolidObject_NoRenderChk:
+        jsr (Sidekick_Solid).l
 		tst.b	obSolid(a0)
 		beq.w	Solid_SkipRenderChk
 		move.w	d1,d2
@@ -100,6 +102,7 @@ SolidObject_NoRenderChk:
 
 ; SolidObject2F:
 SolidObject_Heightmap:
+        jsr (Sidekick_Heightmap).l
 		lea	(v_player).w,a1
 		tst.b	obRender(a0)
 		bpl.w	Solid_NoCollision			; branch if object is off screen

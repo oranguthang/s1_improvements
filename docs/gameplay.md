@@ -1,5 +1,15 @@
 # Gameplay and controls
 
+## Tails companion
+
+Choose SONIC & TAILS or KNUCKLES & TAILS in OPTIONS. Tails follows the leader automatically, replaying directional and jump inputs with Sonic 2's 16-frame delay. Positional steering helps him catch up when he falls behind. Any directional/action input on controller 2 takes control of him for ten seconds; without further input the CPU resumes. Jump, press A/B/C again to fly or swim, and repeat to climb. Flight and swimming have independent eight-second endurance. Down+A/B/C charges his Spin Dash.
+
+To call CPU Tails, jump and press Up+A/B/C in the air. When he catches you, hold Up to climb and Left/Right to steer. Press A/B/C to jump free. Controller 2 overrides the CPU pilot. With DEBUG enabled, use Up+A or Up+C to call him and A/C to jump free: P1's B retains its placement-mode shortcut. A flying Tails can also catch an airborne leader directly from below. Landing, obstacles, damage, exhaustion and scripted scenes release the rider. Returning from offscreen is a separate flight: Tails keeps flying until landing and cannot catch the leader before then. Free flight and carrying use distinct original S3K poses; the hanging leader is aligned and mirrored with the pilot as in Sonic 2.
+
+Tails collects rings and attacks enemies, bosses and monitors. Rings, score and monitor rewards belong to the shared game/P1, as in Sonic 2. His damage, air supply and disappearance do not remove the leader's rings or lives. After falling behind or drowning he returns from above. When the leader enters a giant ring, Tails keeps moving through the ring flash and white fade. The leader owns the camera, checkpoints, goal and Special Stage transitions; the companion remains normal when the leader becomes Super. God Mode protects P1.
+
+Both pairs include Tails in Special Stages; he replays delayed Left/Right/jump inputs, and controller 2 can move and jump there. The camera and rotation blocks belong to the leader. Tails treats GOAL, UP, DOWN and R as ordinary walls and cannot close one-way gates ahead of the leader. He can collect rings and emeralds, break glass and bounce off star bumpers. An emerald collected by either player ends the stage normally. Tails also appears in every attract and credits gameplay demo. During recordings he leaves rings, enemies and scripted objects unchanged to preserve the original leader path. The ending cutscene itself retains the leader's original choreography.
+
 ## Special Stages
 
 Special Stage rotation and jump calculations use matching angular precision. Bumpers and jumps preserve the stage collision rules.

@@ -42,6 +42,7 @@ Spin_Main:	; Routine 0
 		bpl.s	Spin_Trapdoor				; if not, branch (object is a trapdoor)
 		addq.b	#2,obRoutine(a0)			; advance to Spin_Spinner
 		move.l	#Map_Spin,obMap(a0)			; set alternate mappings
+        jsr (Sidekick_SpinPlatformMap).l
 		move.w	#ArtTile_SBZ_Spinning_Platform,obGfx(a0) ; set alternate art tile
 		move.b	#32/2,obActWid(a0)			; set alternate sprite display width
 		move.b	#2,obAnim(a0)				; use spinning platforms animations
@@ -87,7 +88,7 @@ Spin_Trapdoor:	; Routine 2
 		move.w	obX(a0),d4				; collision X-position (stood-on)
 		bsr.w	SolidObject				; make trapdoor solid
 
-		bra.w	RememberState				; display trapdoor, or delete it if out of range
+		jmp	(RememberState).l				; display trapdoor, or delete it if out of range
 ; ---------------------------------------------------------------------------
 
 .notSolid:
@@ -99,7 +100,7 @@ Spin_Trapdoor:	; Routine 2
 		clr.b	obSolid(a0)				; clear trapdoor's solidity flag
 
 	.display:
-		bra.w	RememberState				; display trapdoor, or delete it if out of range
+		jmp	(RememberState).l				; display trapdoor, or delete it if out of range
 ; ===========================================================================
 
 Spin_Spinner:	; Routine 4

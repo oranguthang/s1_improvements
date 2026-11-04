@@ -29,6 +29,30 @@ Bump_Hit:	; Routine 2
 		clr.b	obColProp(a0)				; reset bumper to not touched
 
 		lea	(v_player).w,a1				; load Sonic object
+        bsr.w Bump_ApplyHit
+        bra.w Bump_Display
+; ---------------------------------------------------------------------------
+
+Bump_Display:
+		lea	(Ani_Bump).l,a1				; load bumper animation script
+		bsr.w	AnimateSprite				; advance animation
+		out_of_range.s	.delete				; is bumper out of range? if yes, branch
+		bra.w	DisplaySprite				; otherwise, keep displaying sprite
+; ===========================================================================
+
+.delete:
+		respawn_entry.s	.norespawnentry		; state of this placed object
+		bclr	#7,(a2)				; clear respawn block flag so object can spawn again
+
+	.norespawnentry:
+		bra.w	DeleteObject				; display bumper sprite
+; ===========================================================================
+
+		include	"_anim/Bumper.asm"
+Map_Bump:	include	"_maps/Bumper.asm"
+
+; a0 = bumper, a1 = player; display/animation remains in its own OST update.
+Bump_ApplyHit:
 		move.w	obX(a0),d1				; get Sonic's X-position
 		move.w	obY(a0),d2				; get Sonic's Y-position
 		sub.w	obX(a1),d1				; find difference to bumper's X-position
@@ -52,34 +76,18 @@ Bump_Hit:	; Routine 2
 
 		respawn_entry.s	.addscore		; state of this placed object
 		cmpi.b	#10+$80,(a2)			; has bumper been hit 10 times? ($80 is bit 7, i.e. respawn block flag)
-		bhs.s	Bump_Display				; if yes, award no more points
+		bhs.w	.return				; if yes, award no more points
 		addq.b	#1,(a2)				; remember one more bumper hit in respawn data
 	.addscore:
 		moveq	#1,d0					; set to add 10 points
 		jsr	(AddPoints).l				; add to score
 
 		bsr.w	FindFreeObj				; find a free object slot
-		bne.s	Bump_Display				; if object RAM is full, branch
+		bne.w	.return				; if object RAM is full, branch
 		_move.b	#id_Points,obID(a1)			; load floating points object
 		move.w	obX(a0),obX(a1)				; set to use bumper's X-position
 		move.w	obY(a0),obY(a1)				; set to use bumper's Y-position
 		move.b	#4,obFrame(a1)				; set to use "10" frame
-; ---------------------------------------------------------------------------
 
-Bump_Display:
-		lea	(Ani_Bump).l,a1				; load bumper animation script
-		bsr.w	AnimateSprite				; advance animation
-		out_of_range.s	.delete				; is bumper out of range? if yes, branch
-		bra.w	DisplaySprite				; otherwise, keep displaying sprite
-; ===========================================================================
-
-.delete:
-		respawn_entry.s	.norespawnentry		; state of this placed object
-		bclr	#7,(a2)				; clear respawn block flag so object can spawn again
-
-	.norespawnentry:
-		bra.w	DeleteObject				; display bumper sprite
-; ===========================================================================
-
-		include	"_anim/Bumper.asm"
-Map_Bump:	include	"_maps/Bumper.asm"
+.return:
+        rts

@@ -424,6 +424,10 @@ LZWindTunnels:
 
 	.loadSonic:
 		lea	(v_player).w,a1				; load Sonic player object
+        tst.b (v_sidekick_incontext).w
+        beq.s .playerReady
+        movea.l a0,a1
+.playerReady:
 
 .loopWindTunnelSets:
 		move.w	obX(a1),d0				; get Sonic's current X-position
@@ -538,7 +542,11 @@ LZWind_Data:	dc.w $A80, $300, $C10,  $380	; LZ act 1 values (1st set)
 ; ---------------------------------------------------------------------------
 
 LZWaterSlides:
-		lea	(v_player).w,a1				; load Sonic player object?
+		lea	(v_player).w,a1				; load Sonic player object
+        tst.b (v_sidekick_incontext).w
+        beq.s .playerReady
+        movea.l a0,a1
+.playerReady:
 		btst	#1,obStatus(a1)				; is Sonic in air?
 		bne.s	.exitWaterSlide				; if yes, ignore water slides
 

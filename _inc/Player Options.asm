@@ -1,4 +1,4 @@
-; Public solo character selection.
+; Persistent solo and companion play-mode selection.
 Tit_EnterOptions:
         clr.b (v_jpadpress1).w
         bsr.w LevSel_PrepareScreen
@@ -22,39 +22,23 @@ Options_ReadInput:
         move.b (v_jpadpress1).w,d1
         andi.b #btnL+btnR+btnABC,d1
         beq.s .unchanged
-        moveq #0,d0
-        move.b (v_character_selected).w,d0
-    if FeatureTails&FeatureKnuckles
-        btst #bitL,d1
-        beq.s .next
-        subq.w #1,d0
-        bpl.s .store
-        moveq #Character_Count-1,d0
-        bra.s .store
-.next:
-        addq.w #1,d0
-        cmpi.w #Character_Count,d0
-        blo.s .store
-        moveq #0,d0
-    else
+        jsr (GetPlayerOption).l
         moveq #1,d2
         btst #bitL,d1
         beq.s .step
         moveq #-1,d2
-.step:                                  ; skip characters left out of this build
+.step:
         add.w d2,d0
         bpl.s .notBelow
-        moveq #Character_Count-1,d0
+        moveq #PlayerOption_Count-1,d0
 .notBelow:
-        cmpi.w #Character_Count,d0
+        cmpi.w #PlayerOption_Count,d0
         blo.s .inRange
         moveq #0,d0
 .inRange:
-        lea (CharacterEnabled).l,a1
+        lea (PlayerOptionsEnabled).l,a1
         tst.b (a1,d0.w)
         beq.s .step
-    endif
-.store:
         move.b d0,(v_character_selected).w
         jsr (Settings_Save).l
         moveq #1,d0
@@ -77,10 +61,10 @@ Options_Draw:
         bsr.w DevMenu_DrawText
         moveq #0,d0
         move.b (v_character_selected).w,d0
-        mulu.w #8,d0
+        mulu.w #18,d0
         lea Options_Names(pc),a1
         adda.w d0,a1
-        moveq #8-1,d2
+        moveq #18-1,d2
         bsr.w DevMenu_DrawText
         locVRAM vram_win+(13<<7)+(levsel_start_col<<1),4(a6)
         lea DevMenu_Hint(pc),a1
@@ -96,10 +80,11 @@ Options_Header: dc.b "OPTIONS"
 Options_Label:
         dc.b "CHARACTER       "
 Options_Names:
-        dc.b "SONIC   ","TAILS   ","KNUCKLES"
+        dc.b "SONIC             ","TAILS             ","KNUCKLES          "
+        dc.b "SONIC AND TAILS   ","KNUCKLES AND TAILS"
 Options_Names_End:
         charset
-        if (Options_Names_End-Options_Names)<>Character_Count*8
-        fatal "Add an eight-character option name for each character."
+        if (Options_Names_End-Options_Names)<>PlayerOption_Count*18
+        fatal "Add an eighteen-character option name for each play mode."
         endif
         even

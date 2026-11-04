@@ -19,6 +19,7 @@
 ; ---------------------------------------------------------------------------
 
 PlatformObject:
+        jsr (Sidekick_Platform).l
 		lea	(v_player).w,a1
 		tst.w	obVelY(a1)				; is Sonic moving up/jumping?
 		bmi.w	Plat_Exit				; if yes, branch
@@ -125,6 +126,7 @@ Plat_Exit:
 ; See also: SlopeObject_AssumeStoodOn inside Object 1A - Collapsing GHZ Ledges
 
 SlopeObject:
+        jsr (Sidekick_Slope).l
 		lea	(v_player).w,a1
 		tst.w	obVelY(a1)				; is Sonic moving up/jumping?
 		bmi.w	Plat_Exit				; if yes, branch
@@ -164,6 +166,7 @@ SlopeObject:
 
 ; Swing_Solid:
 PlatformObject_CustomHeight:
+        jsr (Sidekick_PlatformCustom).l
 		lea	(v_player).w,a1
 		tst.w	obVelY(a1)				; is Sonic moving up/jumping?
 		bmi.w	Plat_Exit				; if yes, branch

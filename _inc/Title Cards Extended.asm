@@ -225,10 +225,12 @@ TTL_WriteLetters:
 
 ; a1 = source tiles, d1 = tile count minus 1.
 TTL_LoadTiles:
+        jsr (Sidekick_RemapRawA1).l
+.loop:
 		rept	tile_size/4
 		move.l	(a1)+,(a6)
 		endm
-		dbf	d1,TTL_LoadTiles
+		dbf	d1,.loop
 		rts
 
 ; a1 = oval art. Loads the oval, "ACT" and the act number from tile 0.
@@ -535,7 +537,7 @@ TTLCard_Got_TBonus:	spriteHeader
 	spritePiece	-7, -8, 1, 2, $14A, 0, 0, 1, 0			; "S"
 	spritePiece	-$A, -9, 2, 1, TTL_SmOval, 0, 0, 0, 0		; small oval (upper half)
 	spritePiece	-$B, -1, 2, 1, TTL_SmOval, 1, 1, 0, 0		; small oval (lower half)
-	spritePiece	$28, -8, 4, 2, -$10, 0, 0, 0, 0			; tally (first four digits)
+	spritePiece	$28, -8, 4, 2, (ArtTile_LevelBonuses-ArtTile_Title_Card), 0, 0, 0, 0			; tally (first four digits)
 	spritePiece	$48, -8, 1, 2, $170, 0, 0, 0, 0			; tally (last digit)
 TTLCard_Got_TBonus_End
 
@@ -545,7 +547,7 @@ TTLCard_Got_RBonus:	spriteHeader
 	spritePiece	-7, -8, 1, 2, $14A, 0, 0, 1, 0			; "S"
 	spritePiece	-$A, -9, 2, 1, TTL_SmOval, 0, 0, 0, 0		; small oval (upper half)
 	spritePiece	-$B, -1, 2, 1, TTL_SmOval, 1, 1, 0, 0		; small oval (lower half)
-	spritePiece	$28, -8, 4, 2, -8, 0, 0, 0, 0			; tally (first four digits)
+	spritePiece	$28, -8, 4, 2, (ArtTile_LevelBonuses+8-ArtTile_Title_Card), 0, 0, 0, 0			; tally (first four digits)
 	spritePiece	$48, -8, 1, 2, $170, 0, 0, 0, 0			; tally (last digit)
 TTLCard_Got_RBonus_End
 	even

@@ -24,9 +24,10 @@ SpinDust_Init:
 		move.b	#1,obPriority(a0)		; set sprite priority to 1 (in front of Sonic)
 		move.b	#$10,obActWid(a0)		; set width to $10
 		move.w	#(SpinDust_VRAM/$20),obGfx(a0)	; set VRAM location to $F400 (tile offset $7A0)
+        jsr (Sidekick_DustMap).l
 
 SpinDust_Main:
-		lea	(v_player).w,a2			; the selected player uses this slot
+        jsr (Sidekick_DustParent).l
 		btst	#0,spindash_flag(a2)
 		beq.w	SpinDust_CheckSkid
 		clr.b	objoff_31(a0)			; spin art replaces the shared skid tiles
@@ -69,6 +70,10 @@ SpinDust_Hide:
 ; ---------------------------------------------------------------------------
 
 LoadDustDynPLC:
+        cmpi.b #id_SidekickDust,obID(a0)
+        bne.s .leader
+        jmp (Sidekick_LoadDustDynPLC).l
+.leader:
 		moveq	#0,d0				; clear d0
 		move.b	obFrame(a0),d0			; load frame number
 		lea	(DustDynPLC).l,a2 		; load DPLC script
@@ -217,15 +222,15 @@ SpinDust_CheckSkid:
 		move.l	#Art_SkidDust,d1
 		move.w	#SpinDust_VRAM,d2
 		move.w	#16*16,d3
-		jsr	(QueueDMATransfer).l
-		lea	(v_player).w,a2
+        jsr (Sidekick_SkidTransfer).l
+        jsr (Sidekick_DustParent).l
 .loaded:
 		subq.b	#1,objoff_30(a0)
 		bpl.w	.return
 		move.b	#3,objoff_30(a0)
 		jsr	(FindFreeObj).l
 		bne.w	.return
-		move.b	#id_SpinDust,obID(a1)
+		move.b	obID(a0),obID(a1)
 		move.b	#4,obRoutine(a1)
 		move.l	#Map_SkidDust,obMap(a1)
 		move.b	#4,obRender(a1)
@@ -233,6 +238,7 @@ SpinDust_CheckSkid:
 		andi.w	#$8000,d0
 		ori.w	#SpinDust_VRAM/$20,d0
 		move.w	d0,obGfx(a1)
+        jsr (Sidekick_DustSkidMap).l
 		move.b	#1,obPriority(a1)
 		move.b	#4,obActWid(a1)
 		move.b	#4,obTimeFrame(a1)
@@ -256,7 +262,8 @@ SpinDust_CheckSkid:
 SpinDust_SkidPuff:
 		tst.w	(v_debuguse).w
 		bne.s	.delete
-		btst	#0,(v_player+spindash_flag).w
+        jsr (Sidekick_DustParent).l
+		btst	#0,spindash_flag(a2)
 		bne.s	.delete		; the slot now contains Spin Dash art
 		subq.b	#1,obTimeFrame(a0)
 		bpl.s	.display

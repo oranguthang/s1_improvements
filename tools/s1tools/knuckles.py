@@ -32,7 +32,8 @@ VICTORY = WALK8 + 4 * 8
 # script uses; the whole wait script is translated from S3K (see wait_script).
 IDLE = VICTORY + 4
 IDLE_SOURCES = (0xD4, 0xD7, 0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE)
-FRAME_COUNT = IDLE + len(IDLE_SOURCES)
+CARRY = IDLE + len(IDLE_SOURCES)
+FRAME_COUNT = CARRY + 1
 
 # In the Special Stage, Knuckles' fur is drawn from palette line 2, the red
 # blocks' line (see s1tools.special_stage). Its darkest slot takes the green
@@ -119,6 +120,7 @@ def frame_plan() -> list[tuple[int, int, int]]:
     for group in range(4):
         for step in range(8):
             assign(WALK8 + group * 8 + step, 1 + group * 8 + step)
+    assign(CARRY, 0x91)
     return plan
 
 

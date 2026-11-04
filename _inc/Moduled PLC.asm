@@ -3,7 +3,7 @@
 ; Art is tile-aligned, so every module is a multiple of 32 bytes.
 
 AddPLC:
-        movem.l a1-a2,-(sp)
+        movem.l a0-a2,-(sp)
         lea     (ArtLoadCues).l,a1
         add.w   d0,d0
         move.w  (a1,d0.w),d0
@@ -12,7 +12,7 @@ AddPLC:
 
 ; Input a1=PLC list pointer. Same append/overflow policy as AddPLC by numeric ID.
 AddPLCFromAddress:
-        movem.l a1-a2,-(sp)
+        movem.l a0-a2,-(sp)
 PLC_AppendList:
         lea     (v_plc_buffer).w,a2
 .findspace:
@@ -29,8 +29,10 @@ PLC_CopyList:
 .loop:
         cmpa.l  #v_plc_buffer_only_end,a2
         bhs.s   .overflow
-        move.l  (a1)+,(a2)+
-        move.w  (a1)+,(a2)+
+        movea.l (a1)+,a0
+        jsr (Sidekick_RemapPLC).l
+        move.l a0,(a2)+
+        move.w (a1)+,(a2)+
         dbf     d0,.loop
         bra.s   .peak
 .overflow:
@@ -45,11 +47,11 @@ PLC_CopyList:
         bls.s   .return
         move.b  d0,(v_plc_peak).w
 .return:
-        movem.l (sp)+,a1-a2
+        movem.l (sp)+,a0-a2
         rts
 
 NewPLC:
-        movem.l a1-a2,-(sp)
+        movem.l a0-a2,-(sp)
         lea     (ArtLoadCues).l,a1
         add.w   d0,d0
         move.w  (a1,d0.w),d0
@@ -169,7 +171,8 @@ QuickPLC:
         bmi.s   .done
 .entry:
         movea.l (a4)+,a0
-        move.w  (a4)+,d7
+        jsr (Sidekick_RemapPLC).l
+        move.w (a4)+,d7
         move.w  (a0)+,d6
 .module:
         move.w  d6,d5

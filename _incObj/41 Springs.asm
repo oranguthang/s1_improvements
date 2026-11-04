@@ -8,6 +8,7 @@ Springs:
 		move.b	obRoutine(a0),d0
 		move.w	Spring_Index(pc,d0.w),d1
 		jsr	Spring_Index(pc,d1.w)
+        jsr (Sidekick_SpringAnimation).l
 	if FixBugs
 		; Objects shouldn't call DisplaySprite and DeleteObject in
 		; the same frame or else cause a null-pointer dereference.
