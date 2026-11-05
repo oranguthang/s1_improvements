@@ -35,8 +35,11 @@ PauseGame:
 
 	; Pause_ChkBC:
 	.checkSlowMotion:
-		tst.b	(f_slomocheat).w			; debug alone does not enable frame stepping
+		tst.w	(f_debugmode).w				; DEBUG also enables the pause controls
+		bne.s	.checkBC
+		tst.b	(f_slomocheat).w
 		beq.s	.checkUnpausing
+	.checkBC:
 		btst	#bitB,(v_jpadhold1).w			; is button B held down?
 		bne.s	.slowMotion				; if yes, do continuous slow-motion
 		btst	#bitC,(v_jpadpress1).w			; is button C pressed?
