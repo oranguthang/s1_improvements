@@ -1337,10 +1337,13 @@ Sonic_Jump:
 		blt.w	.return					; if yes, prevent jumping
 
 		move.w	#son_jumpspeed,d2			; set initial jump force
-		cmpi.b #Character_Knuckles,(v_character_p1).w
-		bne.s .sonicJump
-		move.w #$600,d2
-.sonicJump:
+		cmpi.b	#Character_Knuckles,(v_character_p1).w
+		bne.s	.checkSuperSonic
+		move.w	#$600,d2				; Knuckles keeps this jump in Super form
+		bra.s	.checkunderwater
+.checkSuperSonic:
+		cmpi.b	#Character_Sonic,(v_character_p1).w
+		bne.s	.checkunderwater			; Tails keeps his normal jump too
 		tst.b	(v_supersonic).w
 		beq.s	.checkunderwater
 		move.w	#$800,d2				; Super Sonic jumps higher

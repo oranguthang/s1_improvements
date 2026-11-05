@@ -52,6 +52,12 @@ Sonic_UpdateSpindash:
 		moveq	#0,d0				; clear d0
 		move.b	spindash_count(a0),d0		; get number of Spin Dash revs that were performed
 		lsl.w	#7,d0				; multiply by $80 for each rev
+		tst.b	(v_supersonic).w
+		beq.s	.releaseSpeed
+		cmpi.b	#Character_Tails,(v_character_p1).w
+		bne.s	.releaseSpeed
+		addi.w	#$200,d0			; Super Tails' launch bonus from S3K
+.releaseSpeed:
 		move.w	d0,d1				; copy for camera-delay calculation
 		addi.w	#$800,d0			; add base speed of $800
 
