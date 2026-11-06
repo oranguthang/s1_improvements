@@ -19,13 +19,27 @@ Tails_FlightControl:
         tst.b (v_lightdash).w
         bne.w .cancel
         tst.b (v_tails_flying).w
-        bne.s .flying
+        bne.w .flying
+        cmpa.w #v_sidekick_player,a0
+        bne.s .playerFlight
+        tst.w (v_sidekick_manual).w
+        bne.s .playerFlight
+        tst.b (v_sidekick_assist).w     ; scripted assists use their own takeoff
+        beq.w .inactive
+        bra.s .startFlight
+.playerFlight:
+        if FeatureAirRoll
+        btst #2,obStatus(a0)
+        beq.w .inactive
+        endif
+.startFlight:
         move.b (v_jpadpress2).w,d0
         andi.b #btnABC,d0
         beq.w .inactive
         move.b #1,(v_tails_flying).w
         move.w #8*60,(v_tails_flytime).w
         clr.b (v_tails_flap).w
+        clr.b tails_swim_phase(a0)
         bclr #2,obStatus(a0)
         beq.s .size
         subq.w #sonic_height-sonic_roll_height,obY(a0)
@@ -35,8 +49,8 @@ Tails_FlightControl:
         bclr #4,obStatus(a0)
         bclr #5,obStatus(a0)
         clr.b jumping(a0)
-        move.w #-$100,obVelY(a0)
         move.b #id_Float1,obAnim(a0)
+        bra.s .move                     ; keep Y speed; only a fresh press starts a stroke
 .flying:
         tst.w (v_tails_flytime).w
         beq.s .gravity
@@ -133,6 +147,7 @@ Tails_FlightPose:
         move.w (v_framecount).w,d0
         btst #6,obStatus(a0)
         bne.s .swim
+        clr.b tails_swim_phase(a0)
         moveq #$75,d0                  ; Sonic 2 free-flight body
         cmpa.w #v_sidekick_player,a0
         bne.s .fatigue
@@ -161,13 +176,14 @@ Tails_FlightPose:
         add.w d1,d0
         move.w #sfx_TailsTired,d1
 .sound:
-        bsr.s Tails_FlightSound
+        bsr.w Tails_FlightSound
         bra.s .frame
 .swim:
         cmpa.w #v_sidekick_player,a0
         bne.s .freeSwim
         tst.b (v_sidekick_carry).w
         beq.s .freeSwim
+        clr.b tails_swim_phase(a0)
         lsr.w #2,d0
         andi.w #1,d0
         addi.w #fr_TailsSwimCarry,d0
@@ -175,12 +191,26 @@ Tails_FlightPose:
 .freeSwim:
         tst.w (v_tails_flytime).w
         beq.s .swimTired
-        lsr.w #2,d0
-        divu.w #5,d0
-        swap d0
+        ; S3K uses 8 frames per pose while drifting and 4 while rising.
+        ; Accumulate phase so changing speed does not skip or rewind poses.
+        moveq #0,d0
+        move.b tails_swim_phase(a0),d0
+        moveq #1,d1
+        tst.w obVelY(a0)
+        bpl.s .advanceSwim
+        addq.b #1,d1
+.advanceSwim:
+        add.b d0,d1
+        cmpi.b #5*8,d1
+        blo.s .storeSwimPhase
+        subi.b #5*8,d1
+.storeSwimPhase:
+        move.b d1,tails_swim_phase(a0)
+        lsr.w #3,d0
         addi.b #$79,d0
         bra.s .frame
 .swimTired:
+        clr.b tails_swim_phase(a0)
         divu.w #12,d0                 ; S3K AniTails28: three frames, 12f each
         andi.l #$FFFF,d0
         divu.w #3,d0

@@ -552,26 +552,7 @@ KillSonic:
 
 		jsr (Sonic_CancelCharge).l
 		jsr	(Sonic_SaveDebugDeathMusic).l		; remember music before death clears powerup flags
-		move.b	#0,(v_invinc).w				; remove invincibility
-		clr.b	(v_supersonic).w
-		clr.w	(v_superframe).w
-		clr.w	(v_superpal_frame).w
-		clr.b	(v_superpal_timer).w
-		clr.b	(v_superpal_state).w
-		character_asset CharacterAsset_Map,obMap(a0),GetPlayer1Assets_Normal
-		move.b	#-1,(v_sonframenum).w
-		cmpi.b	#id_SuperSonicStars,(v_superstars).w
-		bne.s	.starsCleared				; Super Tails' first Flicky flies away by itself
-		clr.b	(v_superstars).w
-		clr.b	(v_superstars+obRoutine).w		; restart cleanly if the slot is reused
-		clr.b	(v_superstars+objoff_30).w		; Super stars flag = invincibility stars lag
-	.starsCleared:
-		clr.w	(v_shieldartkey).w			; slot may still hold Super stars tiles
-		; The palette copy uses a1/a2. Crushers keep their object pointer in a2,
-		; and the death sound still needs that killing object below.
-		movem.l	a1-a2,-(sp)
-		jsr	(Sonic_RefreshPalettes).l
-		movem.l	(sp)+,a1-a2
+		bsr.w	Sonic_ClearDeathSuper
 		move.b	#6,obRoutine(a0)			; set Sonic to "Sonic_Death" routine
 		jsr	(Knuckles_EndAbility).l		; restore the standing hitbox before damage/death
 		jsr	(Sonic_ResetOnFloor).l			; reset airborne state
@@ -614,6 +595,29 @@ KillSonic_God:
 		rts						; return
 ; End of function KillSonic
 
+; Use normal sprites and colours as soon as the death sequence starts.
+Sonic_ClearDeathSuper:
+		move.b	#0,(v_invinc).w				; remove invincibility
+		clr.b	(v_supersonic).w
+		clr.w	(v_superframe).w
+		clr.w	(v_superpal_frame).w
+		clr.b	(v_superpal_timer).w
+		clr.b	(v_superpal_state).w
+		character_asset CharacterAsset_Map,obMap(a0),GetPlayer1Assets_Normal
+		move.b	#-1,(v_sonframenum).w
+		cmpi.b	#id_SuperSonicStars,(v_superstars).w
+		bne.s	.starsCleared				; Super Tails' first Flicky flies away by itself
+		clr.b	(v_superstars).w
+		clr.b	(v_superstars+obRoutine).w		; restart cleanly if the slot is reused
+		clr.b	(v_superstars+objoff_30).w		; Super stars flag = invincibility stars lag
+	.starsCleared:
+		clr.w	(v_shieldartkey).w			; slot may still hold Super stars tiles
+		; The palette copy uses a1/a2. Crushers keep their object pointer in a2,
+		; and the death sound still needs that killing object below.
+		movem.l	a1-a2,-(sp)
+		jsr	(Sonic_RefreshPalettes).l
+		movem.l	(sp)+,a1-a2
+		rts
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------

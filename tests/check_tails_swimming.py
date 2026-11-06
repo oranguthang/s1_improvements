@@ -10,9 +10,21 @@ def main():
     c.w(p+c.s['obRoutine'],2);c.w(p+c.s['obStatus'],0x42)
     c.w(p+c.s['obX'],0x180,2);c.w(p+c.s['obY'],0x120,2)
     c.w('v_tails_flytime',240,2)
-    for time in range(20):
-        c.w('v_framecount',time,2);c.call('Tails_FlightPose')
-        assert c.r(p+c.s['obFrame'])==0x79+time//4
+    phase = p + c.s['tails_swim_phase']
+    for y_speed, duration in [(0, 8), (0xFF00, 4)]:
+        c.w(p+c.s['obVelY'], y_speed, 2)
+        c.w(phase, 0)
+        for frame in range(10*duration):
+            c.call('Tails_FlightPose')
+            assert c.r(p+c.s['obFrame']) == 0x79 + (frame//duration)%5
+    # Switch tempo partway through a pose, without skipping or restarting it.
+    c.w(phase, 18)
+    c.w(p+c.s['obVelY'], 0, 2)
+    c.call('Tails_FlightPose')
+    assert c.r(p+c.s['obFrame']) == 0x7B and c.r(phase) == 19
+    c.w(p+c.s['obVelY'], 0xFF00, 2)
+    c.call('Tails_FlightPose')
+    assert c.r(p+c.s['obFrame']) == 0x7B and c.r(phase) == 21
     c.w('v_tails_flytime',0,2)
     for time in range(72):
         c.w('v_framecount',time,2);c.call('Tails_FlightPose')

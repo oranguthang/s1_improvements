@@ -4,7 +4,9 @@
 ; ---------------------------------------------------------------------------
 
 GiantRing:
-		tst.b	(v_endcard).w				; results cards now own the shared tiles
+		tst.b	(v_endcard).w				; the act has ended
+		beq.s	.active
+		cmpi.b	#gring_vanish_routine,obRoutine(a0)
 		beq.s	.active
 		cmpi.b	#8,obRoutine(a0)			; retain a hidden parent until its flash is done
 		beq.w	GRing_WaitFlash
@@ -20,6 +22,8 @@ GRing_Index:	dc.w GRing_Main-GRing_Index
 		dc.w GRing_Collect-GRing_Index
 		dc.w GRing_Delete-GRing_Index
 		dc.w GRing_WaitFlash-GRing_Index
+gring_vanish_routine:	equ *-GRing_Index
+		dc.w GRing_Vanish-GRing_Index
 
 gring_kind:	equ objoff_38	; zero for end ring, one/two for free rings, $FF for bonus flash
 gring_parent:	equ objoff_3C	; parent giant ring object address used by flash object
@@ -56,12 +60,9 @@ GRing_Main:	; Routine 0
 		cmpi.w	#-64,d0				; 32 pixels before the top edge
 		blt.s	.waitForApproach
 		cmpi.w	#288,d0				; 32 pixels beyond the bottom edge
-		ble.s	.checkEmeralds
+		ble.s	.checkSubtype
 	.waitForApproach:
 		rts
-	.checkEmeralds:
-		jsr	(HasAllEmeralds).l
-		beq.s	GRing_Okay			; every subtype becomes a 50-ring bonus
 	.checkSubtype:
 		tst.b	obSubtype(a0)			; free rings have no ring-count requirement
 		bne.s	GRing_Okay
@@ -219,10 +220,9 @@ GRing_Delete:	; Routine 6
 GRing_WaitFlash:	; Routine 8
 		rts						; parent is hidden until flash releases it
 
-; Results cards overlap the giant-ring/explosion slot. An uncollected end
-; ring can remain in the locked camera forever, so waiting for it to leave
-; the screen deadlocks RunPLC. Remove it before building the next sprites.
-; Keep flash ownership: an active flash must finish before the card DMA.
+; End the ring's collision as the player poses. Visible rings switch to the
+; resident sparkle tiles immediately, including any sprite already queued.
+; Keep the card waiting for the sparkle or for a collection flash in flight.
 GRing_EndAct:
 		movem.l	d0-d2/a1,-(sp)
 		clr.w	(v_gfxbigring).w			; cancel unfinished ring uploads
@@ -235,6 +235,19 @@ GRing_EndAct:
 		bne.s	.next
 		cmpi.b	#8,obRoutine(a1)			; flash still needs its parent at frame 3
 		beq.s	.next
+		tst.b	obRender(a1)				; was the ring visible on the previous frame?
+		bpl.s	.delete
+		tst.b	obColType(a1)				; only rings that had finished loading
+		beq.s	.delete
+		move.b	#gring_vanish_routine,obRoutine(a1)
+		clr.b	obColType(a1)
+		move.l	#Map_GRingVanish,obMap(a1)
+		move.w	#ArtTile_Ring_Sparkle|Tile_Pal2,obGfx(a1)
+		clr.b	obFrame(a1)
+		move.b	#16,obTimeFrame(a1)
+		bset	#1,(v_gfxringslotstate).w		; hold off the results until the stars are gone
+		bra.s	.next
+	.delete:
 		jsr	(DeleteChild).l				; advances a1 past the cleared slot
 		bra.s	.advance
 	.next:
@@ -244,6 +257,49 @@ GRing_EndAct:
 		movem.l	(sp)+,d0-d2/a1
 		rts
 
+GRing_Vanish:
+		subq.b	#1,obTimeFrame(a0)
+		bmi.s	.done
+		move.b	obTimeFrame(a0),d0
+		lsr.b	#2,d0
+		eori.b	#3,d0
+		move.b	d0,obFrame(a0)
+		bra.w	DisplaySprite
+	.done:
+		bclr	#1,(v_gfxringslotstate).w
+		bra.w	DeleteObject
+
+Map_GRingVanish:	mappingsTable
+		mappingsTableEntry.w .burst
+		mappingsTableEntry.w .expand
+		mappingsTableEntry.w .scatter
+		mappingsTableEntry.w .fade
+
+.burst:	spriteHeader
+		spritePiece -8, -8, 2, 2, 0, 0, 0, 0, 0
+		spritePiece -18, -22, 2, 2, 0, 1, 0, 0, 0
+		spritePiece 2, 6, 2, 2, 0, 0, 1, 0, 0
+.burst_End
+
+.expand:	spriteHeader
+		spritePiece -25, -29, 2, 2, 0, 1, 1, 0, 0
+		spritePiece 6, -22, 2, 2, 0, 0, 0, 0, 0
+		spritePiece -24, 4, 2, 2, 0, 0, 1, 0, 0
+		spritePiece 8, 13, 2, 2, 0, 1, 0, 0, 0
+.expand_End
+
+.scatter:	spriteHeader
+		spritePiece -30, -34, 2, 2, 0, 0, 1, 0, 0
+		spritePiece 12, -28, 2, 2, 0, 1, 0, 0, 0
+		spritePiece -30, 8, 2, 2, 0, 1, 1, 0, 0
+		spritePiece 14, 18, 2, 2, 0, 0, 0, 0, 0
+.scatter_End
+
+.fade:	spriteHeader
+		spritePiece -33, -38, 2, 2, 0, 1, 0, 0, 0
+		spritePiece 19, 22, 2, 2, 0, 0, 1, 0, 0
+.fade_End
+		even
 
 ; ===========================================================================
 ; ---------------------------------------------------------------------------

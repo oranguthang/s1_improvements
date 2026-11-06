@@ -263,6 +263,16 @@ Drown_Countdown:; Routine $A
 		bhs.w	.gotoSpawnExtraBubbles			; if air is above 0, branch (and always spawn a bubble)
 
 		; Sonic drowns here
+		tst.b	(v_supersonic).w
+		bne.s	.clearSuper
+		tst.b	(v_superpal_state).w
+		beq.s	.resumeMusic
+	.clearSuper:
+		move.l	a0,-(sp)
+		lea	(v_player).w,a0
+		jsr	(Sonic_ClearDeathSuper).l
+		movea.l	(sp)+,a0
+	.resumeMusic:
 		bsr.w	ResumeMusic				; restart level music
 		move.b	#$81,(f_playerctrl).w			; lock controls and disable object interaction
 		move.w	#sfx_Drown,d0				; set drowning sound

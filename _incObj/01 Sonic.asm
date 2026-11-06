@@ -1414,6 +1414,10 @@ Sonic_Jump:
 Sonic_JumpHeight:
 		tst.b	jumping(a0)				; is Sonic airborne specifically from a jump?
 		beq.s	.capyvel				; if not, just cap Y speed normally
+	if FeatureAirRoll
+		cmpi.b	#2,jumping(a0)
+		beq.s	.capyvel				; an Air Roll preserves the spring launch
+	endif
 		move.w	#-$400,d1				; set max jump height
 		btst	#6,obStatus(a0)				; is Sonic underwater?
 		beq.s	.notunderwater				; if not, continue
@@ -2006,6 +2010,7 @@ Sonic_FloorRight:
 Sonic_ResetOnFloor:
 		bclr	#5,obStatus(a0)				; clear push flag
 		bclr	#1,obStatus(a0)				; clear in-air flag
+		clr.w	(v_tails_flying).w			; end flight and the ascent pulse on landing
 	if FeatureRollJumpSteering=0
 		bclr	#4,obStatus(a0)				; clear roll-jump flag
 	endif
@@ -3348,6 +3353,11 @@ Sonic_AirRoll:
 		beq.s	.notDemo
 		rts
 	.notDemo:
+		cmpa.w	#v_sidekick_player,a0
+		bne.s	.human
+		tst.w	(v_sidekick_manual).w
+		beq.s	.return
+	.human:
 		moveq	#btnABC,d0
 		and.b	(v_jpadpress2).w,d0
 		beq.s	.return
@@ -3358,6 +3368,9 @@ Sonic_AirRoll:
 		move.b	#sonic_roll_height,obHeight(a0)
 		move.b	#sonic_roll_width,obWidth(a0)
 		addq.w	#sonic_height-sonic_roll_height,obY(a0)
+		cmpi.b	#Character_Sonic,(v_character_p1).w
+		beq.s	.return
+		move.b	#2,jumping(a0)			; keep the launch speed when the button is released
 .return:
 		rts
 

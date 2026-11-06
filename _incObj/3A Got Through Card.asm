@@ -27,9 +27,16 @@ got_finalX:	equ	objoff_32	; target X-position for card while moving out (SBZ2 cu
 ; ===========================================================================
 
 Got_ChkPLC:	; Routine 0
-		tst.l	(v_plc_buffer).w			; have title card patterns in PLC finished decompressing?
-		beq.s	Got_Main				; if yes, branch
-		rts						; otherwise, wait until PLC queue is empty
+		tst.b	(v_gfxringslotstate).w			; wait for the ring or collection flash
+		bne.s	.return
+		tst.b	(v_plc_dma_pending).w			; wait until queued art has reached VRAM
+		bne.s	.return
+		tst.l	(v_plc_buffer).w
+		bne.s	.return
+		jsr	(Got_LoadArt).l				; safe to replace the shared tiles now
+		bra.s	Got_Main
+	.return:
+		rts
 ; ===========================================================================
 
 Got_Main:

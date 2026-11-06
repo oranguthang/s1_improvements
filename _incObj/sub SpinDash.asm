@@ -54,9 +54,10 @@ Sonic_UpdateSpindash:
 		lsl.w	#7,d0				; multiply by $80 for each rev
 		tst.b	(v_supersonic).w
 		beq.s	.releaseSpeed
+		addi.w	#$300,d0			; S3K Super Sonic and Knuckles launch bonus
 		cmpi.b	#Character_Tails,(v_character_p1).w
 		bne.s	.releaseSpeed
-		addi.w	#$200,d0			; Super Tails' launch bonus from S3K
+		subi.w	#$100,d0			; Super Tails' launch bonus is $200
 .releaseSpeed:
 		move.w	d0,d1				; copy for camera-delay calculation
 		addi.w	#$800,d0			; add base speed of $800

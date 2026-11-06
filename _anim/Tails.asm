@@ -176,7 +176,7 @@ TailsAni_Shrink:	dc.b 3
 		even
 
 TailsAni_Hurt:	dc.b 3
-		dc.b fr_Injury
+		dc.b fr_Slide					; side-facing hurt pose, as in Sonic 2 and 3
 		dc.b afEnd
 		even
 

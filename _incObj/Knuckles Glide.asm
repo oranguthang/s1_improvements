@@ -23,8 +23,7 @@ Knuckles_GlideControl:
         bne.w .cancel
         cmpi.b #id_GetAir,obAnim(a0)
         beq.w .cancel
-        ; A spring interrupts an existing glide or fall, but the player may
-        ; start a fresh glide during the following airborne frames.
+        ; A spring interrupts an existing glide or fall.
         cmpi.b #id_Spring,obAnim(a0)
         bne.s .ability
         tst.b (v_knux_state).w
@@ -47,6 +46,10 @@ Knuckles_GlideControl:
         beq.w Knuckles_Fall
         tst.b d0
         bne.w .glide
+        if FeatureAirRoll
+        btst #2,obStatus(a0)
+        beq.w .inactive
+        endif
         move.b (v_jpadpress2).w,d0
         andi.b #btnABC,d0
         beq.w .inactive
@@ -153,13 +156,24 @@ Knuckles_GlideControl:
         jsr (Sonic_Floor).l
         btst #1,obStatus(a0)
         bne.w .moved
+        move.b obAngle(a0),d0
+        addi.b #$20,d0
+        andi.b #$C0,d0
+        bne.s .slopeLanding             ; S3K: slide only on near-horizontal ground
         move.b #5,(v_knux_state).w
         move.b #knux_slide_frame,(v_knux_frame).w
         move.w obInertia(a0),obVelX(a0)
 .moved:
         move.b #id_Float1,obAnim(a0)
+.handled:
         moveq #1,d0
         rts
+.slopeLanding:
+        jsr (Knuckles_EndAbility).l
+        move.w obInertia(a0),obVelX(a0) ; keep the speed calculated by Sonic_Floor
+        clr.w obVelY(a0)
+        move.b #id_Walk,obAnim(a0)
+        bra.s .handled
 .cancel:
         jsr (Knuckles_EndAbility).l
 .inactive:
